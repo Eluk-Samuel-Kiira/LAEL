@@ -3,6 +3,8 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Home\DashboardController;
 use App\Http\Controllers\Home\SettingsController;
+use App\Http\Controllers\Home\UnitOfMeasureController;
+use App\Http\Controllers\Home\CurrencyController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -20,6 +22,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/profile/upload-image', [ProfileController::class, 'uploadImage'])->name('profile.upload_image');
+
 
     // Settings
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
@@ -28,6 +32,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/logo-upload', [SettingsController::class, 'uploadLogo'])->name('logo.upload');
     Route::post('/favicon-upload', [SettingsController::class, 'uploadFavicon'])->name('favicon.upload');
 
+    // Units of measure
+    Route::resource('uom', UnitOfMeasureController::class);
+    Route::post('/uom-status/{id}', [UnitOfMeasureController::class, 'changeUOMStatus'])->name('uom.status');
+
+    // Currency
+    Route::resource('currency', CurrencyController::class);
+    Route::post('/currency-status/{id}', [CurrencyController::class, 'changeCurrencyStatus'])->name('currency.status');
 
 
 

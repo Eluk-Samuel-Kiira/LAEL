@@ -40,7 +40,7 @@
                                 <span class="path4"></span>
                             </i>
                         </span>
-                        <span class="menu-title" style="font-family:  {{ getMailOptions('font_family') }}; font-size: {{ getMailOptions('font_size') }}rem">{{__('Dashboards')}}</span>
+                        <span class="menu-title" style="font-family:  {{ getMailOptions('font_family') }}; font-size: {{ getMailOptions('font_size') }}rem">{{__('auth._dashboard')}}</span>
                         <span class="menu-arrow"></span>
                     </span>
 
@@ -50,7 +50,7 @@
                                 <span class="menu-bullet">
                                     <span class="bullet bullet-dot"></span>
                                 </span>
-                                <span class="menu-title">{{ __('Dashboard') }}</span>
+                                <span class="menu-title">{{ __('auth._dashboard') }}</span>
                             </a>
                         </div>
                         <div class="menu-item">
@@ -58,7 +58,7 @@
                                 <span class="menu-bullet">
                                     <span class="bullet bullet-dot"></span>
                                 </span>
-                                <span class="menu-title">{{ __('Overview') }}</span>
+                                <span class="menu-title">{{ __('auth._overview') }}</span>
                             </a>
                         </div>
 
@@ -76,17 +76,35 @@
                                 <span class="path4"></span>
                             </i>
                         </span>
-                        <span class="menu-title" style="font-family:  {{ getMailOptions('font_family') }}; font-size: {{ getMailOptions('font_size') }}rem">{{__('App Settings')}}</span>
+                        <span class="menu-title" style="font-family:  {{ getMailOptions('font_family') }}; font-size: {{ getMailOptions('font_size') }}rem">{{__('auth.app_setting')}}</span>
                         <span class="menu-arrow"></span>
                     </span>
 
                     <div class="menu-sub menu-sub-accordion">
                         <div class="menu-item">
-                            <a class="menu-link active" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('settings.index') }}')">
+                            <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('settings.index') }}')">
                                 <span class="menu-bullet">
                                     <span class="bullet bullet-dot"></span>
                                 </span>
-                                <span class="menu-title">{{ __('General Settings') }}</span>
+                                <span class="menu-title">{{ __('auth.general_setting') }}</span>
+                            </a>
+                        </div>
+
+                        <div class="menu-item">
+                            <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('uom.index') }}')">
+                                <span class="menu-bullet">
+                                    <span class="bullet bullet-dot"></span>
+                                </span>
+                                <span class="menu-title">{{ __('auth._uom') }}</span>
+                            </a>
+                        </div>
+
+                        <div class="menu-item">
+                            <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('currency.index') }}')">
+                                <span class="menu-bullet">
+                                    <span class="bullet bullet-dot"></span>
+                                </span>
+                                <span class="menu-title">{{ __('auth._currency') }}</span>
                             </a>
                         </div>
 

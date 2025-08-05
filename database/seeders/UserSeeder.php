@@ -66,6 +66,13 @@ class UserSeeder extends Seeder
             'configure system',
             'manage roles',
             'manage permissions',
+
+            // Unit of measure Management
+            'create uom',
+            'view uom',
+            'edit uom',
+            'delete uom',
+            'update uom',
         ];
 
         // Create permissions
