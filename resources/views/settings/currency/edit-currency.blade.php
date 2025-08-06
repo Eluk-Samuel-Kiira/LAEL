@@ -3,7 +3,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header" id="kt_modal_add_currency">
-                <h2 class="fw-bold">{{__('Edit Currency')}} - {{ $currency->name }}</h2>
+                <h2 class="fw-bold">{{__('auth.edit_currency')}} - {{ $currency->name }}</h2>
                 <div class="btn btn-icon btn-sm btn-active-icon-primary" data-bs-dismiss="modal">
                     <i class="ki-duotone ki-cross fs-1">
                         <span class="path1"></span>
@@ -19,17 +19,44 @@
                         <div class="row g-9 mb-8">
                             <div class="d-flex flex-column mb-8 fv-row col-md-12">
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
-                                    <span class="required">Currency-(Symbol)</span>
+                                    <span class="required">{{__('auth._code')}}</span>
                                 </label>
-                                <input type="text" value="{{ $currency->name }}" class="form-control form-control-solid" name="currency_code" />
-                                <div id="currency_code{{ $currency->id }}"></div>
+                                <input type="text" value="{{ $currency->code }}" class="form-control form-control-solid" name="code" />
+                                <div id="code{{ $currency->id }}"></div>
+                            </div>
+                        </div>
+                        <div class="row g-9 mb-8">
+                            <div class="d-flex flex-column mb-8 fv-row col-md-12">
+                                <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                    <span class="required">{{__('auth._name')}}</span>
+                                </label>
+                                <input type="text" value="{{ $currency->name }}" class="form-control form-control-solid" name="name" />
+                                <div id="name{{ $currency->id }}"></div>
+                            </div>
+                        </div>
+                        <div class="row g-9 mb-8">
+                            <div class="d-flex flex-column mb-8 fv-row col-md-12">
+                                <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                    <span class="required">{{__('auth._symbol')}}</span>
+                                </label>
+                                <input type="text" value="{{ $currency->symbol }}" class="form-control form-control-solid" name="symbol" />
+                                <div id="symbol{{ $currency->id }}"></div>
+                            </div>
+                        </div>
+                        <div class="row g-9 mb-8">
+                            <div class="d-flex flex-column mb-8 fv-row col-md-12">
+                                <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                    <span class="required">{{__('auth._exchange_rate')}}</span>
+                                </label>
+                                <input type="text" value="{{ $currency->exchange_rate }}" class="form-control form-control-solid" name="exchange_rate" />
+                                <div id="exchange_rate{{ $currency->id }}"></div>
                             </div>
                         </div>
 
-                        <button type="reset" class="btn btn-light me-3" id="closeModalEditButton{{ $currency->id }}" data-bs-dismiss="modal">Discard</button>
+                        <button type="reset" class="btn btn-light me-3" id="closeModalEditButton{{ $currency->id }}" data-bs-dismiss="modal">{{__('auth._discard')}}</button>
                         <button onclick="editInstanceLoop({{$currency->id }})" id="editCurrencyButton{{ $currency->id }}" type="button" class="btn btn-primary" id>
-                            <span class="indicator-label">Update</span>
-                            <span class="indicator-progress">Please wait... 
+                            <span class="indicator-label">{{__('auth._update')}}</span>
+                            <span class="indicator-progress">{{__('auth.please_wait')}}
                             <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
                         </button>
                     </div>
@@ -58,6 +85,7 @@
         // Submit form data asynchronously
         LiveBlade.editLoopForms(data, updateUrl)
             .then(noErrorStatus => {
+                console.log(noErrorStatus)
                 if (noErrorStatus) {
                     var closeButton = document.getElementById('closeModalEditButton' + uniqueId);
                     if (closeButton) {

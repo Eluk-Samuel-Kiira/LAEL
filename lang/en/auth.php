@@ -130,13 +130,15 @@ return [
     '_currency_index' => 'Currency Index',
     '_currency_table' => 'Currency Table',
     'new_currency' => 'New Currency',
+    'edit_currency' => 'Edit Currency',
     'currecy_id' => 'Currency ID',
     '_code' => 'Code',
     '_name' => 'Name',
     '_symbol' => 'Symbol',
+    '_exchange_rate' => 'Exchange Rate',
     '_active' => 'Active',
     '_inactive' => 'Inactive',
-    'new_currency' => 'New Currency',
-    'default_currency' => 'This Currency Is Default And Cannot be Inactive!',
+    '_undeleletable' => 'This record can not be Deleted',
+    'default_currency' => 'This Currency Is Default Or Cannot be Inactive!',
 
 ];

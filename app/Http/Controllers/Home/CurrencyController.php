@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Home;
 use App\Http\Controllers\Controller;
 use App\Models\Currency;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class CurrencyController extends Controller
 {
@@ -41,7 +43,32 @@ class CurrencyController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'code' => 'required|alpha|size:3|unique:currencies,code',
+            'name' => 'required|string|unique:currencies,name',
+            'symbol' => 'required',
+            'exchange_rate' => 'required',
+        ]);
+
+        $currency = Currency::create([
+            'code' => $request->code,
+            'name' => $request->name,
+            'symbol' => $request->symbol,
+            'exchange_rate' => $request->exchange_rate,
+            'created_by' => Auth::user()->id
+        ]);
+
+
+        return response()->json([
+            'success' => true,
+            'reload' => true,
+            'componentId' => 'currencyIndexTable',
+            'refresh' => false,
+            'message' => __('auth._created'),
+            'redirect' => route('currency.index'),
+        ]);
+
+
     }
 
     /**
@@ -65,7 +92,42 @@ class CurrencyController extends Controller
      */
     public function update(Request $request, Currency $currency)
     {
-        //
+        $request->validate([
+            'code' => [
+                'required',
+                'alpha',
+                'size:3',
+                Rule::unique('currencies', 'name')->ignore($currency->id),
+            ],
+            'name' => 'required|string',
+            'symbol' => 'required',
+            'exchange_rate' => 'required',
+
+        ]);
+
+        if ($currency->code === 'USD') {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.default_currency'),
+            ]);
+        }
+
+        $currency->update([
+            'code' => $request->code,
+            'name' => $request->name,
+            'symbol' => $request->symbol,
+            'exchange_rate' => $request->exchange_rate,
+            'created_by' => Auth::user()->id
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'reload' => true,
+            'componentId' => 'currencyIndexTable',
+            'refresh' => false,
+            'message' => __('auth._updated'),
+            'redirect' => route('currency.index'),
+        ]);
     }
 
     /**
@@ -73,7 +135,24 @@ class CurrencyController extends Controller
      */
     public function destroy(Currency $currency)
     {
-        //
+        
+        if ($currency->isActive === 1 || $currency->name === 'USD') {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth._undeleletable'),
+            ]);
+        }
+
+        $currency->delete();
+        return response()->json([
+            'success' => true,
+            'reload' => true,
+            'componentId' => 'currencyIndexTable',
+            'refresh' => false,
+            'message' => __('auth._deleted'),
+            'redirect' => route('currency.index'),
+        ]);
+        
     }
 
     public function changeCurrencyStatus(Request $request, $id) 
