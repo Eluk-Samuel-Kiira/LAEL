@@ -141,4 +141,29 @@ return [
     '_undeleletable' => 'This record can not be Deleted',
     'default_currency' => 'This Currency Is Default Or Cannot be Inactive!',
 
+
+    
+    // Department
+    '_department' => 'Department',
+    '_department_index' => 'Department Index',
+    '_department_table' => 'Department Table',
+    '_department_new' => 'New Department',
+    '_id' => 'ID',
+    '_manager' => 'Manager',
+    '_tenant' => 'Tenant',
+    '_select' => 'Select',
+    '_edit_department' => 'Edit Department',
+
+
+    
+    
+    // Human Resource
+    '_users' => 'Users',
+    '_users_index' => 'Users Index',
+    '_users_table' => 'Employee Table',
+    'new_user' => 'New Employee',
+    '_back' => 'Back',
+    'human_resource' => 'Human Resource',
+    '_roles' => 'Roles',
+    '_permissions' => 'Permissions',
 ];

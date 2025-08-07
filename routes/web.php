@@ -6,6 +6,8 @@ use App\Http\Controllers\Home\SettingsController;
 use App\Http\Controllers\Home\UnitOfMeasureController;
 use App\Http\Controllers\Home\CurrencyController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Tenant\DepartmentController;
+use App\Http\Controllers\UserController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -40,6 +42,13 @@ Route::middleware('auth')->group(function () {
     Route::resource('currency', CurrencyController::class);
     Route::post('/currency-status/{id}', [CurrencyController::class, 'changeCurrencyStatus'])->name('currency.status');
 
+    // Department
+    Route::resource('department', DepartmentController::class);
+    Route::post('/department-status/{id}', [DepartmentController::class, 'changeDepartmentStatus'])->name('currency.status');
+
+
+    // Users/Employees
+    Route::resource('employee', UserController::class);
 
 
 });

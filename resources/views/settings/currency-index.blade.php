@@ -30,7 +30,7 @@
                 <i class="ki-duotone ki-filter fs-2">
                     <span class="path1"></span>
                     <span class="path2"></span>
-                </i>{{__('Filter')}}</button>
+                </i>{{__('auth._filter')}}</button>
                 <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
                     <div class="px-7 py-5">
                         <div class="fs-5 text-gray-900 fw-bold">{{__('auth._filter')}}</div>

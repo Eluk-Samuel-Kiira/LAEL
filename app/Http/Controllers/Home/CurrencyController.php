@@ -164,7 +164,7 @@ class CurrencyController extends Controller
 
 
         $currency = Currency::find($id);
-        if ($currency->code === 'USD' && $validated['status'] == 0) {
+        if ($currency->code === 'USD') {
             return response()->json([
                 'success' => false,
                 'message' => __('auth.default_currency'),

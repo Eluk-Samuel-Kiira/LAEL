@@ -10,5 +10,20 @@ class Department extends Model
 {
     /** @use HasFactory<\Database\Factories\DepartmentFactory> */
     use HasFactory;
-    protected $fillable = ['name', 'isActive', 'created_by'];
+    protected $fillable = ['name', 'isActive', 'created_by', 'manager_id', 'tenant_id'];
+
+    public function departmentCreater()
+    {
+        return $this->belongsTo(User::class, 'created_by', 'id');
+    }
+
+    public function departmentManager()
+    {
+        return $this->belongsTo(User::class, 'manager_id', 'id');
+    }
+
+    public function departmentTenant()
+    {
+        return $this->belongsTo(Tenant::class, 'tenant_id', 'id');
+    }
 }

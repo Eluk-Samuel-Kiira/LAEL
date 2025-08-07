@@ -73,6 +73,20 @@ class UserSeeder extends Seeder
             'edit uom',
             'delete uom',
             'update uom',
+            
+            // Department
+            'create department',
+            'view department',
+            'edit department',
+            'delete department',
+            'update department',
+
+            // Tenant mgt
+            'create tenant',
+            'view tenant',
+            'edit tenant',
+            'delete tenant',
+            'update tenant',
         ];
 
         // Create permissions
@@ -102,6 +116,7 @@ class UserSeeder extends Seeder
             'password' => bcrypt('1234567890')
         ]);
         $adminUser->assignRole('admin');
+        User::factory()->count(10)->create();
 
     }
 }
