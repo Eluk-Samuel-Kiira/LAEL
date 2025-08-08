@@ -8,6 +8,7 @@ use App\Http\Controllers\Home\CurrencyController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Tenant\DepartmentController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\RoleController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -49,7 +50,11 @@ Route::middleware('auth')->group(function () {
 
     // Users/Employees
     Route::resource('employee', UserController::class);
-
+    Route::get('/role-index', [RoleController::class, 'index'])->name('role.index');
+    Route::get('/permission-index', [RoleController::class, 'permissionIndex'])->name('permission.index');
+    Route::post('/role-new', [RoleController::class, 'storeRole'])->name('role.store');
+    Route::put('/role-update/{role}', [RoleController::class, 'updateRole'])->name('role.update');
+    Route::delete('/role-destroy/{id}', [RoleController::class, 'destroy'])->name('role.destroy');
 
 });
 

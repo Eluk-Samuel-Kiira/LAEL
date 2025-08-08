@@ -26,7 +26,7 @@
                             </div>
                         </div>
 
-                        <button type="reset" class="btn btn-light me-3" id="discardDeptButton" data-bs-dismiss="modal">Discard</button>
+                        <button type="reset" class="btn btn-light me-3" id="discardDeptButton" data-bs-dismiss="modal">{{__('auth._discard') }}</button>
                         <button id="submitUOMButton" type="submit" class="btn btn-primary" id>
                             <span class="indicator-label">{{__('auth.submit') }}</span>
                             <span class="indicator-progress">{{__('auth.please_wait') }}

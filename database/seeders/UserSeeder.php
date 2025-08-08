@@ -87,6 +87,15 @@ class UserSeeder extends Seeder
             'edit tenant',
             'delete tenant',
             'update tenant',
+
+            // Admin Management
+            'admin only',
+            'create role',
+            'edit role',
+            'delete role',
+            'update role',
+            'update permission',
+            'update settings',
         ];
 
         // Create permissions
