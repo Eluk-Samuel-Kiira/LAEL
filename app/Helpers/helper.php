@@ -57,6 +57,32 @@ if (!function_exists('getProfileImage')) {
     }
 }
 
+if (!function_exists('employeeProfileImage')) {
+    function employeeProfileImage($profile_image)
+    {
+        $defaultImage = asset('assets/media/avatars/300-6.jpg'); // Default image path
+
+        // Check if the user exists and has a profile image
+        if ($profile_image) {
+            // Use the stored relative path
+            $filename = $profile_image;
+
+            // Build the full path to the image using the public path
+            $path = public_path('storage/' . $filename); // Full path to the file
+
+            // Check if the file exists
+            if (file_exists($path)) {
+                // Return the URL to access the image
+                return asset('storage/' . $filename); // Return the image URL
+            }
+        }
+
+        // Return the default image URL if no profile image is found
+        return $defaultImage;
+    }
+}
+
+
 
 
 if (!function_exists('getLogoImage')) {

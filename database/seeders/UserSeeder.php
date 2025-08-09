@@ -56,11 +56,6 @@ class UserSeeder extends Seeder
             'edit customer',
             'delete customer',
 
-            // User Management
-            'create user',
-            'view user',
-            'edit user',
-            'delete user',
 
             // Admin Permissions
             'configure system',
@@ -87,6 +82,13 @@ class UserSeeder extends Seeder
             'edit tenant',
             'delete tenant',
             'update tenant',
+
+            // User Management
+            'create user',
+            'view user',
+            'edit user',
+            'delete user',
+            'update user',
 
             // Admin Management
             'admin only',

@@ -36,10 +36,64 @@ class RoleController extends Controller
 
     }
 
-    public function permissionIndex() 
+    
+
+    public function permissionIndex(Request $request) 
     {
-        return view('human-resource.permission-index');
+        $users = User::with('permissions')->latest()->get();
+        $permissions = Permission::all();
+
+        $bladeToReload = $request->query('bladeFileToReload');
+        switch ($bladeToReload) {
+            case 'reloadPermissionComponent':
+                return view('human-resource.permissions.permission-component', [
+                    'users' => $users,
+                    'permissions' => $permissions,
+                ]);
+            default:
+                return view('human-resource.permission-index', [
+                    'users' => $users,
+                    'permissions' => $permissions,
+                ]);
+        }
+
     }
+
+    public function updatePermission(Request $request, $user_id)
+    {
+        // Validate the input permissions
+        $validatedPermission = $request->validate([
+            'permissions' => 'nullable|array|max:2225',  
+            'permissions.*' => 'exists:permissions,id',  
+        ]);
+
+        try {
+            $user = User::findOrFail($user_id);
+
+            $permissions = Permission::whereIn('id', $validatedPermission['permissions'])->pluck('name');
+
+            // Attach the permissions directly to the user (not via roles)
+            $user->syncPermissions($permissions);
+
+            return response()->json([
+                'success' => true,
+                'message' => __('auth._updated'),
+                'reload' => true,
+                'componentId' => 'reloadPermissionComponent',
+                'refresh' => false,
+                'redirect' => route('permission.index'),
+
+            ]);
+            
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(), 
+            ]);
+        }
+    }
+
 
     public function storeRole(Request $request) 
     {
@@ -85,7 +139,7 @@ class RoleController extends Controller
 
             // Find the user role by ID and ensure it's not a restricted role
             $userRole = Role::where('id', $id)  // Use the provided ID parameter
-                ->whereNotIn('name', ['director'])
+                ->whereNotIn('name', ['admin'])
                 ->first();
             
             // If the role exists, sync the permissions
@@ -95,7 +149,7 @@ class RoleController extends Controller
             } else{
                 return response()->json([
                     'success' => false,
-                    'message' => __('Role Cannot Be Updated'), 
+                    'message' => __('auth.role_not_updated'), 
                 ]);
             }
         } catch (\Exception $e) {

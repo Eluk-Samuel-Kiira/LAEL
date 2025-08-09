@@ -50,11 +50,18 @@ Route::middleware('auth')->group(function () {
 
     // Users/Employees
     Route::resource('employee', UserController::class);
+    Route::post('/employee-status/{id}', [UserController::class, 'changeEmployeeStatus'])->name('employee.status');
+
+
+    // Roles n Permissions
     Route::get('/role-index', [RoleController::class, 'index'])->name('role.index');
     Route::get('/permission-index', [RoleController::class, 'permissionIndex'])->name('permission.index');
     Route::post('/role-new', [RoleController::class, 'storeRole'])->name('role.store');
     Route::put('/role-update/{role}', [RoleController::class, 'updateRole'])->name('role.update');
     Route::delete('/role-destroy/{id}', [RoleController::class, 'destroy'])->name('role.destroy');
+    Route::put('/update-permissions/{id}', [RoleController::class, 'updatePermission'])->name('permission.update');
+    Route::put('/revoke-permissions/{id}', [RoleController::class, 'revokePermission'])->name('permission.revoke');
+
 
 });
 

@@ -43,7 +43,7 @@
                     </div>
                 </div>
                 @can('create department')
-                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_add_department">
+                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_add_employee">
                     <i class="ki-duotone ki-plus fs-2"></i>{{__('auth.new_user')}}</button>
                 @endcan
 
@@ -56,20 +56,11 @@
         <div id="kt_app_content" class="app-content flex-column-fluid">
             <div id="kt_app_content_container" class="app-container container-xxl">
                 <div id="status"></div>
-                <div class="card">
-                    @include('human-resource.partial.user-componenet')
-                </div>
+                @include('human-resource.partial.user-componenet')
             </div>
         </div>
     </div>
-
-    <script>
-        function updateStatus(uniqueId, selectedStatus) {
-            // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
-            const updateRoute = '/department-status/' + uniqueId;
-            LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
-        }
-    </script>   
+ 
         
     @endsection
 </x-app-layout>
