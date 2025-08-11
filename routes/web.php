@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Tenant\DepartmentController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\Catalog\CategoryController;
+use App\Http\Controllers\Catalog\ProductCategoryController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -62,6 +64,12 @@ Route::middleware('auth')->group(function () {
     Route::put('/update-permissions/{id}', [RoleController::class, 'updatePermission'])->name('permission.update');
     Route::put('/revoke-permissions/{id}', [RoleController::class, 'revokePermission'])->name('permission.revoke');
 
+    // Inventory
+    Route::resource('category', CategoryController::class);
+    Route::post('/category-status/{id}', [CategoryController::class, 'changeCategoryStatus'])->name('category.status');
+
+    Route::resource('product-category', ProductCategoryController::class);
+    Route::post('/product-category-status/{id}', [ProductCategoryController::class, 'changeProductCategoryStatus'])->name('product.category.status');
 
 });
 

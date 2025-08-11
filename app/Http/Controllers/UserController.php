@@ -79,6 +79,8 @@ class UserController extends Controller
                     $randomPassword
                 ));
 
+                // \Log::info($user->email);
+
             }
 
             return response()->json([

@@ -54,8 +54,6 @@ class UnitOfMeasureController extends Controller
             'created_by' => Auth::user()->id
         ]);
 
-        if (isset($request->umo_page) && !empty($request->umo_page)) {
-
             return response()->json([
                 'success' => true,
                 'reload' => true,
@@ -64,9 +62,7 @@ class UnitOfMeasureController extends Controller
                 'message' => __('auth._created'),
                 'redirect' => route('uom.index'),
             ]);
-        }
 
-        return response()->json(['success' => true, 'uom' => $uom]);
     }
 
     /**

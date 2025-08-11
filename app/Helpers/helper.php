@@ -154,4 +154,19 @@ if (!function_exists('appDefaultName')) {
     }
 }
 
+if (!function_exists('productCategoryImage')) {
+    function productCategoryImage($categoryImagePath = '')
+    {
+        $defaultImage = asset('assets/media/stock/ecommerce/123.png');
+
+        if (!empty($categoryImagePath)) {
+            $fullPath = public_path('storage/' . ltrim($categoryImagePath, '/'));
+            if (file_exists($fullPath)) {
+                return asset('storage/' . ltrim($categoryImagePath, '/'));
+            }
+        }
+
+        return $defaultImage;
+    }
+}
 

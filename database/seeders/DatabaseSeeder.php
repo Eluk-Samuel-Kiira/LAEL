@@ -21,6 +21,8 @@ class DatabaseSeeder extends Seeder
             SettingSeeder::class,
             UnitOfMeasureSeeder::class,
             CurrencySeeder::class,
+            CategorySeeder::class,
+            ProductCategorySeeder::class,
         ]);
     }
 }

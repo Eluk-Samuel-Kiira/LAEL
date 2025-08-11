@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\View;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use App\Models\Setting;
+use App\Models\Category;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -25,6 +26,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $categories = Category::where('is_active', 1)->get();
         $departments = Department::where('isActive', 1)->get();
         $users = User::where('status', 'active')->get();
         $roles = Role::with('permissions')->latest()->get();
@@ -35,6 +37,7 @@ class AppServiceProvider extends ServiceProvider
             'roles' => $roles,
             'permissions' => $permissions,
             'departments' => $departments,
+            'categories' => $categories,
         ]);
 
         $app_mails = Setting::first();

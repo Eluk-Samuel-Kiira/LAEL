@@ -89,6 +89,13 @@ class UserSeeder extends Seeder
             'edit user',
             'delete user',
             'update user',
+            
+            // Category Management
+            'create category',
+            'view category',
+            'edit category',
+            'delete category',
+            'update category',
 
             // Admin Management
             'admin only',

@@ -43,12 +43,12 @@
                                 <span>{{ $employee->email }}</span>
                             </div>
                         </td>
-                        <td>{{ ucwords(str_replace('_', ' ', $employee->userRole->name)) ?? ''}}</td>
+                        <td>{{ ucwords(str_replace('_', ' ', $employee->userRole->name)) ?? 'None'}}</td>
                         <td>
                             <div class="badge badge-light fw-bold">{{ $employee->telephone_number }}</div>
                         </td>
                         <td>
-                            <div class="badge badge-light fw-bold">{{ $employee->userDepartment->name ?? ''}}</div>
+                            <div class="badge badge-light fw-bold">{{ $employee->userDepartment->name ?? 'None'}}</div>
                         </td>
                         <td>{{ $employee->job_title }}</td>
                         <td>{{ $employee->created_at->format('d M Y, h:i a') }}</td>
