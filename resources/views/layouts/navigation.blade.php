@@ -46,7 +46,7 @@
 
                     <div class="menu-sub menu-sub-accordion">
                         <div class="menu-item">
-                            <a class="menu-link active" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('dashboard') }}')">
+                            <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('dashboard') }}')">
                                 <span class="menu-bullet">
                                     <span class="bullet bullet-dot"></span>
                                 </span>
@@ -98,11 +98,11 @@
                             </a>
                         </div>
                         <div class="menu-item">
-                            <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('overview') }}')">
+                            <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('products.index') }}')">
                                 <span class="menu-bullet">
                                     <span class="bullet bullet-dot"></span>
                                 </span>
-                                <span class="menu-title">{{ __('pagination._suppliers') }}</span>
+                                <span class="menu-title">{{ __('pagination._products') }}</span>
                             </a>
                         </div>
 

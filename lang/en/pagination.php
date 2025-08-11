@@ -26,7 +26,6 @@ return [
     'edit_category' => 'Edit Category',
     'category_id' => 'Category ID',
     '_description' => 'Description',
-    '_products' => 'Products',
     '_inventory' => 'Inventory',
     'product_category' => 'Product Category',
     'product_category_index' => 'Product Category Index',
@@ -38,8 +37,24 @@ return [
     '_thumbnail' => 'Thumbnail',
     'category_thumbnail' => 'Set the category thumbnail image. Only *.png, *.jpg and *.jpeg image files are accepted',
     'general_product' => 'Create General Product Category',
-    '_suppliers' => 'Suppliers',
 
 
-    // 
+    // Products
+    'product_index' => 'Product Index',
+    '_products' => 'Products',
+    '_product' => 'Product',
+    'new_products' => 'New Product',
+    'products_table' => 'Products Table',
+    'product_id' => 'Product ID',
+    '_sku' => 'SKU',
+    'is_taxable' => 'Taxable',
+    '_type' => 'Type',
+    '_yes' => 'Yes',
+    '_no' => 'No',
+    '_view' => 'View',
+    '_physical' => 'Physical',
+    '_digital' => 'Digital',
+    '_service' => 'Service',
+    '_composite' => 'Composite',
+
 ];

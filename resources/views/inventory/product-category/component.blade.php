@@ -1,4 +1,4 @@
-<div class="card-body py-4" id="reloadCategoryComponent">
+<div class="card-body py-4" id="reloadProductCategoryComponent">
     <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_table_users">
         <thead>
             <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
@@ -47,11 +47,13 @@
                         </td>
                         <td>{{ $category->created_at->format('d M Y, h:i a') }}</td>
                         <td>
-                            <select name="status" class="form-select form-select-solid form-select-sm">
-                                @cannot('update category') disabled @endcannot>
-                                <option value="1" {{ $category->is_active == 1 ? 'selected' : '' }}><span>{{__('Active')}}</option>
-                                <option value="0" {{ $category->is_active == 0 ? 'selected' : '' }}>{{__('Inactive')}}</option>
-                            </select>
+                            @if($category->is_active == 1)
+                                {{ __('Active') }}
+                            @elseif($category->is_active == 0)
+                                {{ __('Inactive') }}
+                            @else
+                                {{ __('Unknown') }}
+                            @endif
                         </td>
                         <td class="d-flex align-items-center gap-2 flex-column flex-sm-row">
                             @can('edit category')
@@ -88,7 +90,7 @@
                                             <button type="button" id="closeDeleteModal{{$category->id}}" class="btn btn-light me-3" data-bs-dismiss="modal">{{ __('auth._discard') }}</button>
                                             <!-- Confirm Button -->
                                             <button type="button" id="deleteButton{{$category->id}}" class="btn btn-danger" 
-                                                data-item-url="{{ route('category.destroy', $category->id) }}" 
+                                                data-item-url="{{ route('product-category.destroy', $category->id) }}" 
                                                 data-item-id="{{ $category->id }}"
                                                 onclick="deleteItem(this)">
                                                 <span class="indicator-label">{{ __('auth._confirm') }}</span>
@@ -181,4 +183,4 @@
         setupTableSearch('searchInput', 'kt_table_users');
         
     });
-</script
+</script>

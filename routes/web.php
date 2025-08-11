@@ -10,6 +10,7 @@ use App\Http\Controllers\Tenant\DepartmentController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\Catalog\CategoryController;
+use App\Http\Controllers\Catalog\ProductController;
 use App\Http\Controllers\Catalog\ProductCategoryController;
 
 Route::get('/', function () {
@@ -71,6 +72,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('product-category', ProductCategoryController::class);
     Route::post('/product-category-status/{id}', [ProductCategoryController::class, 'changeProductCategoryStatus'])->name('product.category.status');
 
+    // Products
+    
+    Route::resource('products', ProductController::class);
+    Route::post('/product-status/{id}', [ProductController::class, 'changeProductStatus'])->name('product.status');
 });
 
 require __DIR__.'/auth.php';

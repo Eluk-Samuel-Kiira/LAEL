@@ -23,7 +23,7 @@ class ProductCategoryController extends Controller
         $bladeToReload = $request->query('bladeFileToReload');
         switch ($bladeToReload) {
             case 'reloadProductCategoryComponent':
-                return view('inventory.product-category.componenet', [
+                return view('inventory.product-category.component', [
                     'products_categories' => $products_categories,
                 ]);
             default:
@@ -106,19 +106,21 @@ class ProductCategoryController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, ProductCategory $category)
+    public function update(Request $request, $id)
     {
         try {
+            $category = ProductCategory::find($id);
+
             $validated = $request->validate([
                 'name' => [
-                'required',
-                'max:255',
+                    'required',
+                    'max:255',
                     Rule::unique('product_categories', 'name')->ignore($category->id),
                 ],
                 'parent_category_id' => 'required|integer',
                 'description' => 'nullable|string',
                 'is_active' => 'required|in:1,0',
-                'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+                'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:4048',
             ]);
 
             $validated['slug'] = Str::slug($validated['name']);
@@ -153,8 +155,25 @@ class ProductCategoryController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(ProductCategory $productCategory)
+    public function destroy($id)
     {
-        //
+        \Log::info($id);
+        $category = ProductCategory::find($id);
+        if ($category->is_active === 1) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.still_active'),
+            ]);
+        }
+
+        $category->delete();
+        return response()->json([
+            'success' => true,
+            'reload' => true,
+            'componentId' => 'reloadProductCategoryComponent',
+            'refresh' => false,
+            'message' => __('auth._deleted'),
+            'redirect' => route('product-category.index'),
+        ]);
     }
 }
