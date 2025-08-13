@@ -12,6 +12,8 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\Catalog\CategoryController;
 use App\Http\Controllers\Catalog\ProductController;
 use App\Http\Controllers\Catalog\ProductCategoryController;
+use App\Http\Controllers\Catalog\ProductVariantController;
+use App\Http\Controllers\Catalog\InventoryItemController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -76,6 +78,15 @@ Route::middleware('auth')->group(function () {
     
     Route::resource('products', ProductController::class);
     Route::post('/product-status/{id}', [ProductController::class, 'changeProductStatus'])->name('product.status');
+    Route::post('/product-tax-status/{id}', [ProductController::class, 'changeProductTaxStatus'])->name('product.taxable');
+    Route::resource('variants', ProductVariantController::class);
+    Route::post('/variant-status/{id}', [ProductVariantController::class, 'changeVariantStatus'])->name('variant.status');
+    Route::post('/product/upload-image', [ProductController::class, 'uploadProductImage'])->name('product.upload_image');
+
+    // Stores and Inventory
+    Route::resource('items', InventoryItemController::class);
+
+
 });
 
 require __DIR__.'/auth.php';

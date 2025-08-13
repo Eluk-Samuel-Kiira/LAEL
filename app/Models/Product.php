@@ -15,6 +15,7 @@ class Product extends Model
         'sku',
         'name',
         'description',
+        'image_url',
         'type',
         'is_taxable',
         'is_active',
@@ -27,9 +28,20 @@ class Product extends Model
         'is_active' => 'boolean',
     ];
 
+    public function getRouteKeyName()
+    {
+        return 'slug';
+    }
+
+
     public function category()
     {
         return $this->belongsTo(ProductCategory::class, 'category_id', 'id');
+    }
+
+    public function variants()
+    {
+        return $this->hasMany(ProductVariant::class, 'product_id', 'id');
     }
 
     public function tenant()

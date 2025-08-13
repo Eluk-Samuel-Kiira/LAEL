@@ -64,7 +64,7 @@
                                         <option value="{{ $category->id }}">{{ $category->name }}</option>
                                     @endforeach
                                 </select>
-                            <div id="category_id"></div>
+                                <div id="category_id"></div>
                             </div>
 
                             <div class="mb-10 fv-row col-md-6">

@@ -56,14 +56,22 @@
         <div id="kt_app_content" class="app-content flex-column-fluid">
             <div id="kt_app_content_container" class="app-container container-xxl">
                 <div id="status"></div>
-                @include('inventory.product.component')
+                <div class="card">
+                    @include('inventory.product.component')
+                </div>
             </div>
         </div>
     </div>
     <script>
         function updateStatus(uniqueId, selectedStatus) {
             // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
-            const updateRoute = '/category-status/' + uniqueId;
+            const updateRoute = '/product-status/' + uniqueId;
+            LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
+        }
+
+        function updateTaxStatus(uniqueId, selectedStatus) {
+            // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
+            const updateRoute = '/product-tax-status/' + uniqueId;
             LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
         }
     </script> 

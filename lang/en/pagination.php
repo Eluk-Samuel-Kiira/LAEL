@@ -17,7 +17,7 @@ return [
     'next' => 'Next &raquo;',
 
 
-    // Catalog and Inventory
+    //Store  and Inventory
     'store_catalog' => 'Store Catalog',
     '_category' => 'Category',
     '_category_index' => 'Category Index',
@@ -27,6 +27,7 @@ return [
     'category_id' => 'Category ID',
     '_description' => 'Description',
     '_inventory' => 'Inventory',
+    'store_inventory' => 'Store Inventory',
     'product_category' => 'Product Category',
     'product_category_index' => 'Product Category Index',
     'product_category_table' => 'Product Category Table',
@@ -37,11 +38,20 @@ return [
     '_thumbnail' => 'Thumbnail',
     'category_thumbnail' => 'Set the category thumbnail image. Only *.png, *.jpg and *.jpeg image files are accepted',
     'general_product' => 'Create General Product Category',
+    'inventory_items' => 'Inventory Items',
+    'quantity_on_hand' => 'Quantity Available',
+    'quantity_allocated' => 'Quantity Allocated',
+    'quantity_on_order' => 'Quantity Ordered',
+    'reorder_point' => 'Reordered Point',
+    'preferred_stock_level' => 'Expected Stock',
+    'batch_number' => 'Batch Number',
+    'expiry_date' => 'Expiry Date',
 
 
-    // Products
+    // Catalog &Products
     'product_index' => 'Product Index',
     '_products' => 'Products',
+    'product_catalog' => 'Product Catalog',
     '_product' => 'Product',
     'new_products' => 'New Product',
     'products_table' => 'Products Table',
@@ -56,5 +66,21 @@ return [
     '_digital' => 'Digital',
     '_service' => 'Service',
     '_composite' => 'Composite',
+    'taxable_now' => 'Product Is Now Taxable',
+    'not_taxable' => 'Product Not Taxable Now',
+    'product_variant' => 'Product Variant',
+    'product_index' => 'Product Index',
+    '_variants' => 'Variants',
+    '_variantions' => 'Variantions',
+    'variant_id' => 'Variant ID',
+    '_barcode' => 'Barcode',
+    '_price' => 'Price',
+    'cost_price' => 'Cost Price',
+    '_weight' => 'Weight',
+    'weight_unit' => 'Weight Unit/uom',
+    '_variations_of' => 'Product variations of ',
+    'variant_create' => 'Add Product Variant of ',
+    '_variant_name' => 'Variant Name ',
+    '_add_variant' => 'Add Variant',
 
 ];

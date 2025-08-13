@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('sku', 50);
             $table->string('name', 100);
             $table->string('slug')->unique();
+            $table->string('image_url', 255)->nullable();
             $table->text('description')->nullable();
             $table->enum('type', ['physical', 'digital', 'service', 'composite']);
             $table->boolean('is_taxable')->default(true);

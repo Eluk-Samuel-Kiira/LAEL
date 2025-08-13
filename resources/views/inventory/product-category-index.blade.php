@@ -55,7 +55,9 @@
         <div id="kt_app_content" class="app-content flex-column-fluid">
             <div id="kt_app_content_container" class="app-container container-xxl">
                 <div id="status"></div>
-                @include('inventory.product-category.component')
+                <div class="card">
+                    @include('inventory.product-category.component')
+                </div>
             </div>
         </div>
     </div>

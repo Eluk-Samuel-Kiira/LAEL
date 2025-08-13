@@ -170,3 +170,19 @@ if (!function_exists('productCategoryImage')) {
     }
 }
 
+if (!function_exists('productImage')) {
+    function productImage($productImagePath = '')
+    {
+        $defaultImage = asset('assets/media/stock/ecommerce/123.png');
+
+        if (!empty($productImagePath)) {
+            $fullPath = public_path('storage/' . ltrim($productImagePath, '/'));
+            if (file_exists($fullPath)) {
+                return asset('storage/' . ltrim($productImagePath, '/'));
+            }
+        }
+
+        return $defaultImage;
+    }
+}
+

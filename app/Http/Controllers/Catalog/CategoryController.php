@@ -91,7 +91,7 @@ class CategoryController extends Controller
             'name' => [
                 'required',
                 'max:255',
-                Rule::unique('unit_of_measures', 'name')->ignore($category->id),
+                Rule::unique('categories', 'name')->ignore($category->id),
             ],
         ]);
 

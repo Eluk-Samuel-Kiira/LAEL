@@ -37,6 +37,13 @@ class UserSeeder extends Seeder
             'delete product',
             'update product',
 
+            // Product Management
+            'create variant',
+            'view variant',
+            'edit variant',
+            'delete variant',
+            'update variant',
+
             // Sales Management
             'process sale',
             'view sales report',
@@ -96,6 +103,13 @@ class UserSeeder extends Seeder
             'edit category',
             'delete category',
             'update category',
+
+            // subcategory Management
+            'create subcategory',
+            'view subcategory',
+            'edit subcategory',
+            'delete subcategory',
+            'update subcategory',
 
             // Admin Management
             'admin only',

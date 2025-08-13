@@ -1,0 +1,36 @@
+<?php
+
+namespace Database\Factories;
+
+use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\User;
+use App\Models\ProductVariant;
+use App\Models\Department;
+
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\InventoryItems>
+ */
+class InventoryItemsFactory extends Factory
+{
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
+    public function definition(): array
+    {
+        return [
+            'quantity_on_hand' => $this->faker->randomElement([10, 22, 41, 3, 52, 45, 14, 35]),
+            'quantity_allocated' => $this->faker->randomElement([10, 22, 41, 3, 52, 45, 14, 35]),
+            'quantity_on_order' => $this->faker->randomElement([10, 22, 41, 3, 52, 45, 14, 35]),
+            'reorder_point' => $this->faker->randomElement([1, 2, 4, 3, 5]),
+            'preferred_stock_level' => $this->faker->randomElement([1, 2, 4, 3, 5]),
+            'batch_number' => strtoupper($this->faker->unique()->bothify('BTH-####')),
+            'expiry_date' => $this->faker->dateTimeBetween('-1 year', '+1 year')->format('Y-m-d'),
+            'variant_id' => ProductVariant::where('is_active', true)->inRandomOrder()->value('id'),
+            'department_id' => Department::where('isActive', 1)->inRandomOrder()->value('id'),
+            'tenant_id' => 1,
+            'created_by' => User::where('role_id', '1' )->where('status', 'active')->get()->random()->id,
+        ];
+    }
+}

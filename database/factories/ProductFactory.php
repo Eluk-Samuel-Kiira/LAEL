@@ -31,6 +31,7 @@ class ProductFactory extends Factory
             'name' => $this->faker->words(3, true),
             'created_by' => User::where('role_id', '1' )->where('status', 'active')->get()->random()->id,
             'slug' => Str::slug($name),
+            'image_url' => $this->faker->imageUrl(640, 480, 'products', true),
             'description' => $this->faker->sentence(),
             'type' => $this->faker->randomElement($types),
             'is_taxable' => $this->faker->boolean(80),

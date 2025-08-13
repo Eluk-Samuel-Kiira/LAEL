@@ -11,6 +11,7 @@ use Spatie\Permission\Models\Role;
 use App\Models\Setting;
 use App\Models\Category;
 use App\Models\ProductCategory;
+use App\Models\UnitOfMeasure;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -28,6 +29,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $sub_categories = ProductCategory::where('is_active', 1)->get();
+        $uoms = UnitOfMeasure::where('isActive', 1)->get();
         $categories = Category::where('is_active', 1)->get();
         $departments = Department::where('isActive', 1)->get();
         $users = User::where('status', 'active')->get();
@@ -41,6 +43,7 @@ class AppServiceProvider extends ServiceProvider
             'departments' => $departments,
             'categories' => $categories,
             'sub_categories' => $sub_categories,
+            'uoms' => $uoms,
         ]);
 
         $app_mails = Setting::first();

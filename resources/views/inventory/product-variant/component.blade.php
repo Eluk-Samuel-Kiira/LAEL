@@ -1,0 +1,346 @@
+<div class="row g-9 mb-8">
+    <div class="d-flex col-md-4">
+        <div class="card card-flush py-4">
+            <div class="card-header">
+                <div class="card-title">
+                    <h2>{{__('pagination._thumbnail')}}</h2>
+                </div>
+            </div>
+            <div class="card-body text-center pt-0">
+                <div class="image-input image-input-outline image-input-placeholder mb-3" data-kt-image-input="true">
+                    <div 
+                        class="image-input-wrapper w-150px h-150px" id="product-img-preview"
+                        style="background-image: url({{ productImage($product_variants->image_url) }})"
+                    ></div>
+
+                    <label class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow" 
+                        data-kt-image-input-action="change" 
+                        data-bs-toggle="tooltip" 
+                        title="{{__('auth._change')}}">
+                        <i class="ki-duotone ki-pencil fs-7">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>
+                        <input type="file" name="photo" accept=".png, .jpg, .jpeg" onchange="productPhoto(event, {{ $product_variants->id }})" />
+                    </label>
+
+                    <span class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow" 
+                        data-kt-image-input-action="cancel" 
+                        data-bs-toggle="tooltip" 
+                        title="{{__('auth._cancel')}}">
+                        <i class="ki-duotone ki-cross fs-2">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>
+                    </span>
+
+                    <span class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow" 
+                        data-kt-image-input-action="remove" 
+                        data-bs-toggle="tooltip" 
+                        title="{{__('auth._remove')}}">
+                        <i class="ki-duotone ki-cross fs-2">
+                            <span class="path1"></span>
+                            <span class="path2"></span>
+                        </i>
+                    </span>
+                </div>
+                <div class="text-muted fs-7">{{__('pagination.category_thumbnail')}}</div>
+            </div>
+        </div>
+    </div>    
+
+    <div class="card card-flush col-md-8">
+        <div class="card-header align-items-center py-5 gap-2 gap-md-5">
+            <div class="card-title">
+                <span class="page-heading d-flex text-gray-600">{{__('pagination._variations_of')}} {{ $product_variants->name }}</span>
+            </div>
+        </div>
+        <div class="card-body py-4" id="reloadVariantComponent">
+            <div class="table-responsive">
+                <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_table_users">
+                    <thead>
+                        <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
+                            <th class="w-10px pe-2">
+                                <div class="form-check form-check-sm form-check-custom form-check-solid me-3">
+                                    <input class="form-check-input" type="checkbox" data-kt-check="true" data-kt-check-target="#kt_table_users .form-check-input" value="1" />
+                                </div>
+                            </th>
+                            <th class="min-w-125px">{{__('pagination.variant_id')}}</th>
+                            <th class="min-w-125px">{{__('auth._name')}}</th> 
+                            <th class="min-w-125px">{{__('pagination._sku')}}</th> 
+                            <th class="min-w-125px">{{__('pagination._barcode')}}</th>
+                            <th class="min-w-125px">{{__('pagination._price')}}</th> 
+                            <th class="min-w-125px">{{__('pagination.cost_price')}}</th>
+                            <th class="min-w-125px">{{__('pagination._weight')}}</th> 
+                            <th class="min-w-125px">{{__('pagination.weight_unit')}}</th> 
+                            <th class="min-w-125px">{{__('auth._creater')}}</th> 
+                            <th class="min-w-125px">{{__('auth.created_at')}}</th>
+                            <th class="min-w-125px">{{__('auth._status')}}</th>
+                            <th class="min-w-100px">{{__('auth._actions')}}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-600 fw-semibold">
+                        @if (!empty($product_variants->variants) && $product_variants->variants->count() > 0)
+                            @foreach ($product_variants->variants as $product)
+                                <tr data-role="{{ strtolower($product->name) }}">
+                                    <td>
+                                        <div class="form-check form-check-sm form-check-custom form-check-solid">
+                                            <input class="form-check-input" type="checkbox" value="1" />
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="badge badge-light fw-bold">{{ $product->id }}</div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <a href="#" class="symbol symbol-50px">
+                                                <img src="{{ asset('assets/media/stock/ecommerce/123.png') }}" alt="" class="symbol-label">
+                                            </a>
+                                            <div class="ms-5">
+                                                <a href="#" class="text-gray-800 text-hover-primary fs-5 fw-bold" data-kt-ecommerce-product-filter="product_name">{{ $product->name }}</a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="badge badge-light fw-bold">{{ $product->sku }}</div>
+                                    </td>
+                                    <td>{{ $product->barcode }}</td>
+                                    <td>{{ $product->price }}</td>
+                                    <td>
+                                        <div class="badge badge-light fw-bold">{{ $product->cost_price }}</div>
+                                    </td>
+                                    <td>{{ $product->weight }}</td>
+                                    <td>
+                                        <div class="badge badge-light fw-bold">{{ $product->unitMeasure->name ?? __('pagination._none') }}</div>
+                                    </td>
+                                    <td>
+                                        <div class="badge badge-light fw-bold">{{ $product->variantCreater->name ?? __('pagination._none')}}</div>
+                                    </td>
+                                    <td>{{ $product->created_at->format('d M Y, h:i a') }}</td>
+                                    <td>
+                                        <select name="status" class="form-select form-select-solid form-select-sm" onchange="updateStatus({{ $product->id }}, this.value)"
+                                            @cannot('update product') disabled @endcannot>
+                                            <option value="1" {{ $product->is_active == 1 ? 'selected' : '' }}>{{__('auth._active')}}</option>
+                                            <option value="0" {{ $product->is_active == 0 ? 'selected' : '' }}>{{__('auth._inactive')}}</option>
+                                        </select>
+                                    </td>
+                                    <td class="d-flex align-items-center gap-2 flex-column flex-sm-row">
+                                        @can('edit product')
+                                            <button 
+                                                class="btn btn-sm btn-light btn-active-color-primary d-flex align-items-center px-3 py-2" 
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#editProduct{{$product->id}}">
+                                                <i class="bi bi-pencil-square me-1 fs-5"></i> <span>{{ __('auth._edit') }}</span>
+                                            </button>
+                                        @endcan
+                                        @can('delete product')
+                                            <button type="button" 
+                                                class="btn btn-sm btn-light btn-active-color-danger d-flex align-items-center px-3 py-2" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#deletecategoryModal{{$product->id}}">
+                                                <i class="bi bi-trash me-1 fs-5"></i> <span>{{ __('auth._delete') }}</span>
+                                            </button>
+                                        @endcan
+
+                                        <!-- Delete User Modal -->
+                                        <div class="modal fade" id="deletecategoryModal{{$product->id}}" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">{{ __('auth.confirm_deletion') }}</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <p>{{ __('auth.are_you_sure') }}</p>
+                                                        <p>{{ __('auth.action_cannot') }}</p>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <!-- Discard Button -->
+                                                        <button type="button" id="closeDeleteModal{{$product->id}}" class="btn btn-light me-3" data-bs-dismiss="modal">{{ __('auth._discard') }}</button>
+                                                        <!-- Confirm Button -->
+                                                        <button type="button" id="deleteButton{{$product->id}}" class="btn btn-danger" 
+                                                            data-item-url="{{ route('variants.destroy', $product->id) }}" 
+                                                            data-item-id="{{ $product->id }}"
+                                                            onclick="deleteItem(this)">
+                                                            <span class="indicator-label">{{ __('auth._confirm') }}</span>
+                                                            <span class="indicator-progress" style="display: none;">
+                                                                {{__('auth.please_wait') }}
+                                                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                                            </span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        @include('inventory.product-variant.edit')
+                                        
+                                    </td>
+                                </tr>
+                            @endforeach
+                        @endif
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </diiv>
+</div>
+
+
+<script>
+    function deleteItem(button) {
+        const itemId = button.getAttribute('data-item-id');
+        const deleteUrl = button.getAttribute('data-item-url');
+
+        const deleteButton = document.getElementById('deleteButton' + itemId);
+        LiveBlade.toggleButtonLoading(deleteButton, true);
+        
+        // Call the delete function to handle the deletion
+        LiveBlade.deleteItemInLoop(deleteUrl)
+            .then(noErrorStatus => {
+                console.log(noErrorStatus)
+                if (noErrorStatus) {
+                    var closeButton = document.getElementById('closeDeleteModal' + itemId);
+                    if (closeButton) {
+                        closeButton.click();
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('An unexpected error occurred:', error);
+                // Handle error gracefully
+            })
+            .finally(() => {
+                // End loading state using reusable function
+                LiveBlade.toggleButtonLoading(deleteButton, false);
+            });
+    }
+</script>
+
+<script>
+
+    function initializeComponentScripts() {
+        const tableId = '#kt_table_users';
+
+        // Destroy the existing DataTable instance if it exists
+        if ($.fn.DataTable.isDataTable(tableId)) {
+            $(tableId).DataTable().destroy();
+        }
+
+        // Reinitialize the DataTable
+        $(tableId).DataTable({
+            paging: true,
+            searching: true,
+            ordering: true,
+            responsive: false, // Disable responsive behavior
+            autoWidth: false, // Prevent automatic column resizing
+            language: {
+                emptyTable: "No data available",
+            },
+            columnDefs: [
+                // Specify widths for specific columns (optional)
+                { targets: 0, width: "10%" }, // Example for first column
+                { targets: 1, width: "15%" },
+            ],
+        });
+
+    }
+
+    
+    function setupTableSearch(inputId, tableId) {
+        LiveBlade.searchTableItems(inputId, tableId)
+    }
+    
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        setupTableSearch('searchInput', 'kt_table_users');
+        
+    });
+</script>
+
+<script>
+    function updateStatus(uniqueId, selectedStatus) {
+        // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
+        const updateRoute = '/variant-status/' + uniqueId;
+        LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
+    }
+</script>
+
+    <script>
+        
+        // Function to preview and upload the selected profile image with validation
+        function productPhoto(event, product_id) {
+            const image = document.getElementById('product-img-preview');
+            const file = event.target.files[0];
+            
+            // Validate file type (accept only images)
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+            const allowedError = '{{__('auth.allowed_files')}}'
+            if (!allowedTypes.includes(file.type)) {
+                alert(allowedError);
+                return;
+            }
+
+            // Validate file size (e.g., limit to 2MB)
+            const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+            const allowedSize = '{{__('auth.file_large')}}'
+            if (file.size > maxSize) {
+                alert(allowed_size);
+                return;
+            }
+
+            // If validation passes, show image preview and upload file
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    image.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+
+                // Automatically upload the file
+                uploadProfileImage(file, product_id);
+            }
+        }
+
+        // Function to upload the image via AJAX
+        function uploadProfileImage(file, product_id) {
+            const formData = new FormData();
+            formData.append('photo', file); 
+            formData.append('product_id', product_id); 
+
+            fetch('{{ route("product.upload_image") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: formData,
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to upload image');
+                }
+                return response.json();
+            })
+            .then(data => {
+                const message = '{{__('auth._uploaded')}}'
+                console.log(message, data);
+                // Optionally handle success or update image path here
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: message,
+                }).then(() => {
+                    // Refresh the page after success
+                    // location.reload();
+                });
+            })
+            .catch(error => {
+                const message = '{{__('An Error Occurred')}}'
+                console.error(message, error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops!',
+                    text: message,
+                });
+            });
+        }
+    </script>
