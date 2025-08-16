@@ -12,6 +12,7 @@ use App\Models\Setting;
 use App\Models\Category;
 use App\Models\ProductCategory;
 use App\Models\UnitOfMeasure;
+use App\Models\ProductVariant;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -28,6 +29,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $variants = ProductVariant::where('is_active', 1)
+            ->whereNotIn('id', function ($query) {
+                $query->select('variant_id')->from('inventory_items');
+            })
+            ->get();
+
         $sub_categories = ProductCategory::where('is_active', 1)->get();
         $uoms = UnitOfMeasure::where('isActive', 1)->get();
         $categories = Category::where('is_active', 1)->get();
@@ -44,6 +51,7 @@ class AppServiceProvider extends ServiceProvider
             'categories' => $categories,
             'sub_categories' => $sub_categories,
             'uoms' => $uoms,
+            'variants' => $variants,
         ]);
 
         $app_mails = Setting::first();

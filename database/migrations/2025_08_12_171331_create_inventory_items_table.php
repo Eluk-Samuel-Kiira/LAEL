@@ -17,11 +17,11 @@ return new class extends Migration
             $table->integer('quantity_allocated')->default(0);
             $table->integer('quantity_on_order')->default(0);
             $table->integer('reorder_point')->nullable();
-            $table->integer('preferred_stock_level')->nullable();
+            $table->integer('preferred_stock_level')->default(0);
             $table->string('batch_number', 50)->nullable();
             $table->date('expiry_date')->nullable();
 
-            $table->foreignId('variant_id')->constrained('product_variants')->cascadeOnDelete();
+            $table->foreignId('variant_id')->unique()->constrained('product_variants')->cascadeOnDelete();
             $table->foreignId('department_id')->constrained('departments')->cascadeOnDelete();
             $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
             $table->foreignId('tenant_id')->constrained('tenants')->cascadeOnDelete();

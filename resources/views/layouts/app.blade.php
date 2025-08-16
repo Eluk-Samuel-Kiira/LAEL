@@ -20,6 +20,41 @@
         <link href="{{ asset('assets/plugins/global/plugins.bundle.css') }}" rel="stylesheet" type="text/css" />
         <link href="{{ asset('assets/css/style.bundle.css') }}" rel="stylesheet" type="text/css" />
 
+				
+		<style>
+			.custom-select-container {
+				position: relative;
+			}
+			.custom-select-search {
+				width: 100%;
+				padding: 8px 12px;
+				border: 1px solid #ddd;
+				border-radius: 4px;
+			}
+			.custom-select-dropdown {
+				position: absolute;
+				top: 100%;
+				left: 0;
+				right: 0;
+				z-index: 1000;
+				background: white;
+				border: 1px solid #ddd;
+				border-radius: 4px;
+				box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+				max-height: 300px;
+				overflow-y: auto;
+			}
+			.custom-select-option {
+				padding: 8px 12px;
+				cursor: pointer;
+			}
+			.custom-select-option:hover {
+				background-color: #f5f5f5;
+			}
+			.custom-select-option.selected {
+				background-color: #e9ecef;
+			}
+		</style>
 
         <script>
             if (window.top != window.self) { window.top.location.replace(window.self.location.href); }
@@ -100,7 +135,74 @@
 				</div>
 			</div>
 		</div>
-        
+
+				
+		<script>
+			document.addEventListener('DOMContentLoaded', function() {
+				const originalSelect = document.getElementById('originalVariantSelect');
+				const searchInput = document.querySelector('.custom-select-search');
+				const dropdown = document.querySelector('.custom-select-dropdown');
+				const optionsContainer = document.querySelector('.custom-select-options');
+				
+				// Create a copy of original options
+				const options = Array.from(originalSelect.options).map(option => ({
+					value: option.value,
+					text: option.text
+				}));
+				
+				// Initialize dropdown
+				function renderOptions(filter = '') {
+					optionsContainer.innerHTML = '';
+					
+					const filteredOptions = options.filter(option => 
+						option.text.toLowerCase().includes(filter.toLowerCase())
+					);
+					
+					if (filteredOptions.length === 0) {
+						const noResults = document.createElement('div');
+						noResults.className = 'custom-select-option';
+						noResults.textContent = 'No variants found';
+						optionsContainer.appendChild(noResults);
+						return;
+					}
+					
+					filteredOptions.forEach(option => {
+						const optionElement = document.createElement('div');
+						optionElement.className = 'custom-select-option';
+						optionElement.textContent = option.text;
+						optionElement.dataset.value = option.value;
+						
+						optionElement.addEventListener('click', function() {
+							originalSelect.value = option.value;
+							searchInput.value = option.text;
+							dropdown.style.display = 'none';
+						});
+						
+						optionsContainer.appendChild(optionElement);
+					});
+				}
+				
+				// Event listeners
+				searchInput.addEventListener('focus', function() {
+					renderOptions();
+					dropdown.style.display = 'block';
+				});
+				
+				searchInput.addEventListener('input', function() {
+					renderOptions(this.value);
+				});
+				
+				document.addEventListener('click', function(e) {
+					if (!e.target.closest('.custom-select-container')) {
+						dropdown.style.display = 'none';
+					}
+				});
+				
+				// Initialize with first render
+				renderOptions();
+			});
+		</script>
+				
         
 		<script>var hostUrl = "{{ asset('assets/') }}";</script>
 		<script src="{{ asset('assets/plugins/global/plugins.bundle.js') }}"></script>

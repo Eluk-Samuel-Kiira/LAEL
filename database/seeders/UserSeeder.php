@@ -43,6 +43,7 @@ class UserSeeder extends Seeder
             'edit variant',
             'delete variant',
             'update variant',
+            
 
             // Sales Management
             'process sale',

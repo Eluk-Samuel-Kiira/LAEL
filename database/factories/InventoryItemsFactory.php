@@ -27,7 +27,12 @@ class InventoryItemsFactory extends Factory
             'preferred_stock_level' => $this->faker->randomElement([1, 2, 4, 3, 5]),
             'batch_number' => strtoupper($this->faker->unique()->bothify('BTH-####')),
             'expiry_date' => $this->faker->dateTimeBetween('-1 year', '+1 year')->format('Y-m-d'),
-            'variant_id' => ProductVariant::where('is_active', true)->inRandomOrder()->value('id'),
+            'variant_id' => ProductVariant::where('is_active', true)
+                ->inRandomOrder()
+                ->pluck('id')
+                ->unique()
+                ->random(),
+
             'department_id' => Department::where('isActive', 1)->inRandomOrder()->value('id'),
             'tenant_id' => 1,
             'created_by' => User::where('role_id', '1' )->where('status', 'active')->get()->random()->id,

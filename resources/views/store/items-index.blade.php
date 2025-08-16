@@ -42,6 +42,12 @@
                         <input type="text" id="searchInput" class="form-control" placeholder="{{__('auth._search')}} {{__('pagination._products')}}">
                     </div>
                 </div>  
+                @can('create inventory record')
+                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_add_inventory">
+                    <i class="ki-duotone ki-plus fs-2"></i>{{__('auth._create')}} {{__('pagination.inventory_item')}}</button>
+                @endcan
+
+                @include('store.inventory-items.create') 
             </div>
         </div>
     </div>

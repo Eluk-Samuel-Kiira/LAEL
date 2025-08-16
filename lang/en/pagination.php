@@ -39,13 +39,16 @@ return [
     'category_thumbnail' => 'Set the category thumbnail image. Only *.png, *.jpg and *.jpeg image files are accepted',
     'general_product' => 'Create General Product Category',
     'inventory_items' => 'Inventory Items',
+    'inventory_item' => 'Inventory Item',
+    'create_item' => 'Create Item In Inventory',
     'quantity_on_hand' => 'Quantity Available',
     'quantity_allocated' => 'Quantity Allocated',
     'quantity_on_order' => 'Quantity Ordered',
     'reorder_point' => 'Reordered Point',
-    'preferred_stock_level' => 'Expected Stock',
+    'preferred_stock_level' => 'Expected Stock Level',
     'batch_number' => 'Batch Number',
     'expiry_date' => 'Expiry Date',
+    'allocated_not_greater_than_at_hand' => 'Allocated quantity cannot be greater than quantity on hand.',
 
 
     // Catalog &Products

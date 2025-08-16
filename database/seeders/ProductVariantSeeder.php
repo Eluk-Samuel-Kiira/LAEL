@@ -22,7 +22,7 @@ class ProductVariantSeeder extends Seeder
         }
 
         foreach ($products as $product) {
-            ProductVariant::factory(3)->create([
+            ProductVariant::factory(4)->create([
                 'product_id' => $product->id,
             ]);
         }

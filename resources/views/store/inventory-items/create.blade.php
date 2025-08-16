@@ -1,0 +1,159 @@
+
+<div class="modal fade" id="kt_modal_add_inventory" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered mw-850px">
+        <div class="modal-content">
+            <div class="modal-header" id="kt_modal_add_inventory_header">
+                <h2 class="fw-bold">{{ __('pagination.create_item') }}</h2>
+                <div class="btn btn-icon btn-sm btn-active-icon-primary" data-bs-dismiss="modal">
+                    <i class="ki-duotone ki-cross fs-1">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>
+                </div>
+            </div>
+
+            <div class="modal-body px-5 my-7">
+                <form id="kt_modal_add_inventory_form" class="form">
+                    @csrf
+                        <div class="row g-9 mb-8">
+                            <!-- Variant -->
+                            <div class="col-md-6 fv-row">
+                                <label class="fs-6 fw-semibold mb-2 required">{{ __('pagination.product_variant') }}</label>
+                                
+                                <div class="position-relative">
+                                    <!-- Hidden original select -->
+                                    <select name="variant_id" id="originalVariantSelect" style="display: none;">
+                                        <option value=""></option>
+                                        @foreach ($variants as $variant)
+                                            <option value="{{ $variant->id }}">{{ $variant->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    
+                                    <!-- Custom dropdown container -->
+                                    <div class="custom-select-container">
+                                        <input type="text" class="form-control custom-select-search" placeholder="Search variants...">
+                                        
+                                        <div class="custom-select-dropdown" style="display: none;">
+                                            <div class="custom-select-options">
+                                                <!-- Options will be inserted here by JavaScript -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="variant_id"></div>
+                            </div>
+
+                            <!-- Quantity on hand -->
+                            <div class="col-md-6 fv-row">
+                                <label class="fs-6 fw-semibold mb-2 required">{{ __('pagination.quantity_on_hand') }}</label>
+                                <input type="number" class="form-control form-control-solid" name="quantity_on_hand" min="0" value="0" />
+                                <div id="quantity_on_hand"></div>
+                            </div>
+                        </div>
+                        
+
+                        <div class="row g-9 mb-8">
+                            <!-- Allocated -->
+                            <div class="col-md-6 fv-row">
+                                <label class="fs-6 fw-semibold mb-2">{{ __('pagination.quantity_allocated') }}</label>
+                                <input type="number" class="form-control form-control-solid" name="quantity_allocated" min="0" value="0" />
+                                <div id="quantity_allocated"></div>
+                            </div>
+                            <!-- Preferred Stock -->
+                            <div class="col-md-6 fv-row">
+                                <label class="fs-6 fw-semibold mb-2">{{ __('pagination.preferred_stock_level') }}</label>
+                                <input type="number" class="form-control form-control-solid" name="preferred_stock_level" min="0" value="0"/>
+                                <div id="preferred_stock_level"></div>
+                            </div>
+
+                        </div>
+
+                        <div class="row g-9 mb-8">
+                            <!-- Batch -->
+                            <div class="col-md-6 fv-row">
+                                <label class="fs-6 fw-semibold mb-2">{{ __('pagination.batch_number') }}</label>
+                                <input type="text" class="form-control form-control-solid" name="batch_number" maxlength="50" />
+                                <div id="batch_number"></div>
+                            </div>
+
+                            <!-- Expiry -->
+                            <div class="col-md-6 fv-row">
+                                <label class="fs-6 fw-semibold mb-2">{{ __('pagination.expiry_date') }}</label>
+                                <input type="date" class="form-control form-control-solid" name="expiry_date" />
+                                <div id="expiry_date"></div>
+                            </div>
+                        </div>
+
+                        
+                        <div class="row g-9 mb-8">
+                            <div class="d-flex flex-column mb-8 fv-row col-md-6">
+                                <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                    <span class="required">{{__('auth._department')}}</span>
+                                </label>
+                                <select name="department_id" class="form-select form-select" data-control="select2" data-close-on-select="false" data-placeholder="Select an option" data-allow-clear="true">
+                                    <option></option>
+                                    @foreach ($departments as $department)
+                                        <option value="{{ $department->id }}">{{ $department->name }}</option>
+                                    @endforeach
+                                </select>
+                                <div id="department_id"></div>
+                            </div> 
+                        </div>
+
+                        <button type="reset" id="discardDeptButton" class="btn btn-light me-3" data-bs-dismiss="modal">{{ __('auth._discard') }}</button>
+                        <button id="submitButton" type="submit" class="btn btn-primary">
+                            <span class="indicator-label">{{ __('auth.submit') }}</span>
+                            <span class="indicator-progress">{{ __('auth.please_wait') }}
+                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    const submitFormEntities = (formId, submitButtonId, url, method = 'POST') => {
+        document.getElementById(formId).addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Collect form data and add additional fields
+            const formData = Object.fromEntries(new FormData(this));
+            formData._method = method;
+            formData.routeName = url;
+
+            // Reference the submit button and reloading
+            const submitButton = document.getElementById(submitButtonId);
+            LiveBlade.toggleButtonLoading(submitButton, true);
+
+            // Submit form data asynchronously
+            LiveBlade.submitFormItems(formData)
+                .then(noErrors => {
+                    console.log(noErrors);
+                    
+                    if (noErrors) {
+                        // Close the modal if no errors
+                        const closeModal = () => {
+                            document.getElementById('discardDeptButton').click();
+                        };
+                        closeModal();
+                    }
+                })
+                .catch(error => {
+                    console.error('An unexpected error occurred:', error);
+                })
+                .finally(() => {
+                    LiveBlade.toggleButtonLoading(submitButton, false);
+                });
+
+                
+        });
+    };
+
+    submitFormEntities('kt_modal_add_inventory_form', 'submitButton', '{{ route('items.store') }}');
+</script>
+
+
