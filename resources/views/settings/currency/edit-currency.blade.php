@@ -54,7 +54,7 @@
                         </div>
 
                         <button type="reset" class="btn btn-light me-3" id="closeModalEditButton{{ $currency->id }}" data-bs-dismiss="modal">{{__('auth._discard')}}</button>
-                        <button onclick="editInstanceLoop({{$currency->id }})" id="editCurrencyButton{{ $currency->id }}" type="button" class="btn btn-primary" id>
+                        <button onclick="editInstanceLoopCurrency({{$currency->id }})" id="editCurrencyButton{{ $currency->id }}" type="button" class="btn btn-primary" id>
                             <span class="indicator-label">{{__('auth._update')}}</span>
                             <span class="indicator-progress">{{__('auth.please_wait')}}
                             <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
@@ -66,44 +66,7 @@
     </div>
 </div>  
 
-<script>
-    
-    function editInstanceLoop(uniqueId) {
-        const submitButton = document.getElementById('editCurrencyButton' + uniqueId);
-        LiveBlade.toggleButtonLoading(submitButton, true);
-
-        // Select the form and create FormData from it
-        var form = document.getElementById('kt_modal_edit_currency_form' + uniqueId);
-        var formData = new FormData(form);
-
-        var data = Object.fromEntries(formData.entries());
-        // console.log(data);
-
-        // Set up the URL dynamically
-        var updateUrl = '{{ route('currency.update', ['currency' => ':id']) }}'.replace(':id', uniqueId);
-
-        // Submit form data asynchronously
-        LiveBlade.editLoopForms(data, updateUrl)
-            .then(noErrorStatus => {
-                console.log(noErrorStatus)
-                if (noErrorStatus) {
-                    var closeButton = document.getElementById('closeModalEditButton' + uniqueId);
-                    if (closeButton) {
-                        closeButton.click();
-                    }
-                }
-                })
-                .catch(error => {
-                    console.error('An unexpected error occurred:', error);
-                    // Display user-friendly error feedback here, if needed
-                })
-                .finally(() => {
-                    // End loading state using reusable function
-                    LiveBlade.toggleButtonLoading(submitButton, false);
-                });
 
 
-    }
-</script>
 
 

@@ -71,15 +71,6 @@
 							--}}
 							<!--end::Logo image-->
 
-							<!--begin::Sidebar toggle-->
-							<!--begin::Minimized sidebar setup:
-                                if (isset($_COOKIE["sidebar_minimize_state"]) && $_COOKIE["sidebar_minimize_state"] === "on") { 
-                                    1. "src/js/layout/sidebar.js" adds "sidebar_minimize_state" cookie value to save the sidebar minimize state.
-                                    2. Set data-kt-app-sidebar-minimize="on" attribute for body tag.
-                                    3. Set data-kt-toggle-state="active" attribute to the toggle element with "kt_app_sidebar_toggle" id.
-                                    4. Add "active" class to to sidebar toggle element with "kt_app_sidebar_toggle" id.
-                                }
-                            -->
 							<div id="kt_app_sidebar_toggle" class="app-sidebar-toggle btn btn-icon btn-shadow btn-sm btn-color-muted btn-active-color-primary h-30px w-30px position-absolute top-50 start-100 translate-middle rotate" data-kt-toggle="true" data-kt-toggle-state="active" data-kt-toggle-target="body" data-kt-toggle-name="app-sidebar-minimize">
 								<i class="ki-duotone ki-black-left-line fs-3 rotate-180">
 									<span class="path1"></span>
@@ -89,6 +80,7 @@
 							<!--end::Sidebar toggle-->
 						</div>
 						<!--end::Logo-->
+
                         @include('layouts.navigation')
                     </div>
 					<div class="app-main flex-column flex-row-fluid" id="kt_app_main">
@@ -111,57 +103,6 @@
 				@endif
 			});
 		</script>
-
-		<script>
-			/**
-			 * Generalized form handler for update/edit modals.
-			 * 
-			 * @param {string|number} uniqueId - The unique ID for the form/modal.
-			 * @param {string} updateRouteTemplate - Laravel route template with `:id` placeholder.
-			 * @param {string} formPrefix - Form ID prefix (default: 'kt_modal_item_form').
-			 * @param {string} buttonPrefix - Button ID prefix (default: 'updateItemButton').
-			 * @param {string} closeBtnPrefix - Close button ID prefix (default: 'closeModalEditButton').
-			 */
-			async function handleEditForm(uniqueId, updateRouteTemplate, formPrefix = 'kt_modal_item_form', buttonPrefix = 'updateItemButton', closeBtnPrefix = 'closeModalEditButton') {
-				const submitButton = document.getElementById(buttonPrefix + uniqueId);
-
-				try {
-					// Start loading state
-					if (submitButton) LiveBlade.toggleButtonLoading(submitButton, true);
-
-					// Get the form
-					const form = document.getElementById(formPrefix + uniqueId);
-					if (!form) {
-						console.error(`Form not found: #${formPrefix}${uniqueId}`);
-						return false;
-					}
-
-					// Build FormData safely
-					const formData = new FormData(form);
-					const data = Object.fromEntries(formData.entries());
-
-					// Build update URL
-					const updateUrl = updateRouteTemplate.replace(':id', uniqueId);
-
-					// Submit form data via LiveBlade
-					const noErrorStatus = await LiveBlade.editLoopForms(data, updateUrl);
-
-					if (noErrorStatus) {
-						const closeButton = document.getElementById(closeBtnPrefix + uniqueId);
-						if (closeButton) closeButton.click();
-					}
-
-					return noErrorStatus;
-				} catch (error) {
-					console.error('An unexpected error occurred in handleEditForm:', error);
-					return false;
-				} finally {
-					// End loading state
-					if (submitButton) LiveBlade.toggleButtonLoading(submitButton, false);
-				}
-			}
-		</script>
-
 
         
 		<script>var hostUrl = "{{ asset('assets/') }}";</script>
@@ -193,9 +134,6 @@
 		<script src="{{ asset('assets/js/custom/apps/user-management/users/list/table.js') }}"></script>
 		<script src="{{ asset('assets/js/custom/apps/user-management/users/list/export-users.js') }}"></script>
 		<script src="{{ asset('assets/js/custom/apps/user-management/users/list/add.js') }}"></script>
-
-        // <!--CKEditor Build Bundles:: Only include the relevant bundles accordingly-->
-        <script src="{{ asset('assets/plugins/custom/ckeditor/ckeditor-classic.bundle.js') }}"></script>
         
 	</body>
 </html>

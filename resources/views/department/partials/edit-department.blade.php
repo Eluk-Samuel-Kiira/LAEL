@@ -56,46 +56,7 @@
     </div>
 </div>  
 
-<script>
-    
-    function editInstanceLoopDept(uniqueId) {
-        handleEditForm(uniqueId, '{{ route("department.update", ["department" => ":id"]) }}', 'kt_modal_edit_department_form', 'editDepartmentButton', 'closeModalEditButton');
-
-        const submitButton = document.getElementById('editDepartmentButton' + uniqueId);
-        LiveBlade.toggleButtonLoading(submitButton, true);
-
-        // Select the form and create FormData from it
-        var form = document.getElementById('kt_modal_edit_department_form' + uniqueId);
-        var formData = new FormData(form);
-
-        var data = Object.fromEntries(formData.entries());
-        // console.log(data);
-
-        // Set up the URL dynamically
-        var updateUrl = '{{ route('department.update', ['department' => ':id']) }}'.replace(':id', uniqueId);
-
-        // Submit form data asynchronously
-        LiveBlade.editLoopForms(data, updateUrl)
-            .then(noErrorStatus => {
-                console.log(noErrorStatus)
-                if (noErrorStatus) {
-                    var closeButton = document.getElementById('closeModalEditButton' + uniqueId);
-                    if (closeButton) {
-                        closeButton.click();
-                    }
-                }
-                })
-                .catch(error => {
-                    console.error('An unexpected error occurred:', error);
-                    // Display user-friendly error feedback here, if needed
-                })
-                .finally(() => {
-                    // End loading state using reusable function
-                    LiveBlade.toggleButtonLoading(submitButton, false);
-                });
 
 
-    }
-</script>
 
 

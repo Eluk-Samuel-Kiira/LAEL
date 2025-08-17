@@ -5,6 +5,7 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 
+
 <style>
     body {
         font-family: Arial, sans-serif;
@@ -192,4 +193,213 @@
 
     // Initial load
     renderAppPage(window.location.pathname);
+</script>
+
+<!-- Department -->
+<script>
+    
+
+    function submitFormEntities(formId, submitButtonId, url, method = 'POST', discardButtonId = 'discardButton') {
+        const form = document.getElementById(formId);
+        const submitButton = document.getElementById(submitButtonId);
+
+        if (!form || !submitButton) {
+            console.error('Form or button not found:', formId, submitButtonId);
+            return;
+        }
+
+        // Collect form data
+        const formData = Object.fromEntries(new FormData(form));
+        formData._method = method;
+        formData.routeName = url;
+
+        // Start loading
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Pass handling + data to reusable handler
+        handleFormSubmission(formData, submitButton, discardButtonId);
+    }
+
+    // Department
+    function editInstanceLoopDept(uniqueId) {
+        const submitButton = document.getElementById('editDepartmentButton' + uniqueId);
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        const form = document.getElementById('kt_modal_edit_department_form' + uniqueId);
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        // console.log(data)
+
+        // Set up the URL dynamically
+        var updateUrl = '{{ route('department.update', ['department' => ':id']) }}'.replace(':id', uniqueId);
+        handleEditResponse(data, updateUrl, uniqueId, submitButton);
+    }
+
+    
+</script>
+
+
+
+
+
+<script>
+    
+    // currecy
+    function editInstanceLoopCurrency(uniqueId) {
+        const submitButton = document.getElementById('editCurrencyButton' + uniqueId);
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        var form = document.getElementById('kt_modal_edit_currency_form' + uniqueId);
+        var formData = new FormData(form);
+
+        var data = Object.fromEntries(formData.entries());
+        // console.log(data);
+        var updateUrl = '{{ route('currency.update', ['currency' => ':id']) }}'.replace(':id', uniqueId);
+        handleEditResponse(data, updateUrl, uniqueId, submitButton);
+    }
+
+    function editInstanceLoopUOM(uniqueId) {
+        
+        const submitButton = document.getElementById('editUOMButton' + uniqueId);
+        LiveBlade.toggleButtonLoading(submitButton, true);
+        
+        var form = document.getElementById('kt_modal_edit_uom_form' + uniqueId);
+        var formData = new FormData(form);
+        var data = Object.fromEntries(formData.entries());
+        // console.log(data);
+
+        var updateUrl = '{{ route('uom.update', ['uom' => ':id']) }}'.replace(':id', uniqueId);
+        handleEditResponse(data, updateUrl, uniqueId, submitButton);
+    }
+
+
+
+</script>
+
+<!-- General Reusable Functions -->
+<script>
+    
+    // for general table searches
+    // Auto Table search
+    function searchTable(query, tableId) {
+        const table = document.getElementById(tableId);
+        if (!table) {
+            console.error('Table not found:', tableId);
+            return;
+        }
+
+        const rows = table.getElementsByTagName('tr');
+        query = query.toLowerCase();
+
+        for (let i = 1; i < rows.length; i++) { // skip header row
+            const cells = rows[i].getElementsByTagName('td');
+            let match = false;
+
+            for (let j = 0; j < cells.length; j++) {
+                if (cells[j].innerText.toLowerCase().includes(query)) {
+                    match = true;
+                    break;
+                }
+            }
+
+            rows[i].style.display = match ? '' : 'none';
+        }
+    }
+
+
+    // Reintialize the datatables after submission
+    function initializeComponentScripts() {
+        const tableId = '#kt_table_users';
+
+        // Destroy the existing DataTable instance if it exists
+        if ($.fn.DataTable.isDataTable(tableId)) {
+            $(tableId).DataTable().destroy();
+        }
+
+        // Reinitialize the DataTable
+        $(tableId).DataTable({
+            paging: true,
+            searching: true,
+            ordering: true,
+            responsive: false, // Disable responsive behavior
+            autoWidth: false, // Prevent automatic column resizing
+            language: {
+                emptyTable: "No data available",
+            },
+            columnDefs: [
+                // Specify widths for specific columns (optional)
+                { targets: 0, width: "10%" }, // Example for first column
+                { targets: 1, width: "15%" },
+            ],
+        });
+
+    }
+    
+
+    // General General form submitter
+    function handleFormSubmission(formData, submitButton, discardButtonId = 'discardButton') {
+        LiveBlade.submitFormItems(formData)
+            .then(noErrors => {
+                console.log(noErrors);
+
+                if (noErrors) {
+                    const closeModal = document.getElementById(discardButtonId);
+                    if (closeModal) closeModal.click();
+                }
+            })
+            .catch(error => {
+                console.error('An unexpected error occurred:', error);
+            })
+            .finally(() => {
+                LiveBlade.toggleButtonLoading(submitButton, false);
+            });
+    }
+
+
+    // General Update or Edit Function 
+    function handleEditResponse(data, updateUrl, uniqueId, submitButton) {
+        LiveBlade.editLoopForms(data, updateUrl)
+        .then(noErrorStatus => {
+            if (noErrorStatus) {
+                const closeButton = document.getElementById(`closeModalEditButton${uniqueId}`);
+                if (closeButton) closeButton.click();
+            }
+        })
+        .catch(error => {
+            console.error('An unexpected error occurred:', error);
+        })
+        .finally(() => {
+            LiveBlade.toggleButtonLoading(submitButton, false);
+        });
+    }
+
+
+    // General Delete function
+    function deleteItem(button) {
+        const itemId = button.getAttribute('data-item-id');
+        const deleteUrl = button.getAttribute('data-item-url');
+
+        const deleteButton = document.getElementById('deleteButton' + itemId);
+        LiveBlade.toggleButtonLoading(deleteButton, true);
+        
+        // Call the delete function to handle the deletion
+        LiveBlade.deleteItemInLoop(deleteUrl)
+            .then(noErrorStatus => {
+                console.log(noErrorStatus)
+                if (noErrorStatus) {
+                    var closeButton = document.getElementById('closeDeleteModal' + itemId);
+                    if (closeButton) {
+                        closeButton.click();
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('An unexpected error occurred:', error);
+                // Handle error gracefully
+            })
+            .finally(() => {
+                // End loading state using reusable function
+                LiveBlade.toggleButtonLoading(deleteButton, false);
+            });
+    }
 </script>
