@@ -43,7 +43,7 @@
                     </div>
                 </div>
                 @can('create department')
-                    <a data-link href="{{ route('product-category.create') }}"  class="btn btn-sm btn-primary">
+                    <a data-link href="{{ route('product-category.create') }}" class="btn btn-sm btn-primary">
                         <i class="ki-duotone ki-plus fs-2"></i>{{ __('pagination.product_category_new') }}
                     </a>
                 @endcan    

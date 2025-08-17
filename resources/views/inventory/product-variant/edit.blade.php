@@ -15,6 +15,15 @@
                 <form id="kt_modal_product_form{{ $product->id }}" class="form">
                     @csrf
                     @method('PUT')
+                    <div class="d-flex justify-content-center">
+                        <div class="image-input image-input-outline image-input-placeholder mb-3" data-kt-image-input="true">
+                            <div 
+                                class="image-input-wrapper w-200px h-200px"
+                                style="background-image: url({{ productVariantImage($product->image_url) }})"
+                            ></div>
+                        </div>
+                    </div>
+
                     <input type="hidden" value="{{ $product_variants->id }}" class="form-control form-control-solid" name="product_id" />
                     <div class="text-center pt-10">
                         <div class="row g-9 mb-8">

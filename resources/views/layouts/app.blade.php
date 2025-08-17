@@ -20,42 +20,6 @@
         <link href="{{ asset('assets/plugins/global/plugins.bundle.css') }}" rel="stylesheet" type="text/css" />
         <link href="{{ asset('assets/css/style.bundle.css') }}" rel="stylesheet" type="text/css" />
 
-				
-		<style>
-			.custom-select-container {
-				position: relative;
-			}
-			.custom-select-search {
-				width: 100%;
-				padding: 8px 12px;
-				border: 1px solid #ddd;
-				border-radius: 4px;
-			}
-			.custom-select-dropdown {
-				position: absolute;
-				top: 100%;
-				left: 0;
-				right: 0;
-				z-index: 1000;
-				background: white;
-				border: 1px solid #ddd;
-				border-radius: 4px;
-				box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-				max-height: 300px;
-				overflow-y: auto;
-			}
-			.custom-select-option {
-				padding: 8px 12px;
-				cursor: pointer;
-			}
-			.custom-select-option:hover {
-				background-color: #f5f5f5;
-			}
-			.custom-select-option.selected {
-				background-color: #e9ecef;
-			}
-		</style>
-
         <script>
             if (window.top != window.self) { window.top.location.replace(window.self.location.href); }
         </script>
@@ -107,15 +71,6 @@
 							--}}
 							<!--end::Logo image-->
 
-							<!--begin::Sidebar toggle-->
-							<!--begin::Minimized sidebar setup:
-                                if (isset($_COOKIE["sidebar_minimize_state"]) && $_COOKIE["sidebar_minimize_state"] === "on") { 
-                                    1. "src/js/layout/sidebar.js" adds "sidebar_minimize_state" cookie value to save the sidebar minimize state.
-                                    2. Set data-kt-app-sidebar-minimize="on" attribute for body tag.
-                                    3. Set data-kt-toggle-state="active" attribute to the toggle element with "kt_app_sidebar_toggle" id.
-                                    4. Add "active" class to to sidebar toggle element with "kt_app_sidebar_toggle" id.
-                                }
-                            -->
 							<div id="kt_app_sidebar_toggle" class="app-sidebar-toggle btn btn-icon btn-shadow btn-sm btn-color-muted btn-active-color-primary h-30px w-30px position-absolute top-50 start-100 translate-middle rotate" data-kt-toggle="true" data-kt-toggle-state="active" data-kt-toggle-target="body" data-kt-toggle-name="app-sidebar-minimize">
 								<i class="ki-duotone ki-black-left-line fs-3 rotate-180">
 									<span class="path1"></span>
@@ -125,6 +80,7 @@
 							<!--end::Sidebar toggle-->
 						</div>
 						<!--end::Logo-->
+
                         @include('layouts.navigation')
                     </div>
 					<div class="app-main flex-column flex-row-fluid" id="kt_app_main">
@@ -136,73 +92,18 @@
 			</div>
 		</div>
 
-				
 		<script>
-			document.addEventListener('DOMContentLoaded', function() {
-				const originalSelect = document.getElementById('originalVariantSelect');
-				const searchInput = document.querySelector('.custom-select-search');
-				const dropdown = document.querySelector('.custom-select-dropdown');
-				const optionsContainer = document.querySelector('.custom-select-options');
-				
-				// Create a copy of original options
-				const options = Array.from(originalSelect.options).map(option => ({
-					value: option.value,
-					text: option.text
-				}));
-				
-				// Initialize dropdown
-				function renderOptions(filter = '') {
-					optionsContainer.innerHTML = '';
-					
-					const filteredOptions = options.filter(option => 
-						option.text.toLowerCase().includes(filter.toLowerCase())
-					);
-					
-					if (filteredOptions.length === 0) {
-						const noResults = document.createElement('div');
-						noResults.className = 'custom-select-option';
-						noResults.textContent = 'No variants found';
-						optionsContainer.appendChild(noResults);
-						return;
-					}
-					
-					filteredOptions.forEach(option => {
-						const optionElement = document.createElement('div');
-						optionElement.className = 'custom-select-option';
-						optionElement.textContent = option.text;
-						optionElement.dataset.value = option.value;
-						
-						optionElement.addEventListener('click', function() {
-							originalSelect.value = option.value;
-							searchInput.value = option.text;
-							dropdown.style.display = 'none';
-						});
-						
-						optionsContainer.appendChild(optionElement);
-					});
-				}
-				
-				// Event listeners
-				searchInput.addEventListener('focus', function() {
-					renderOptions();
-					dropdown.style.display = 'block';
-				});
-				
-				searchInput.addEventListener('input', function() {
-					renderOptions(this.value);
-				});
-				
-				document.addEventListener('click', function(e) {
-					if (!e.target.closest('.custom-select-container')) {
-						dropdown.style.display = 'none';
-					}
-				});
-				
-				// Initialize with first render
-				renderOptions();
+			document.addEventListener("DOMContentLoaded", function() {
+				@if(session('toast'))
+					var toastType = "{{ session('toast.type') }}";
+					var toastMessage = "{{ session('toast.message') }}";
+
+					// Trigger Metronic/Toastr toast
+					toastr[toastType](toastMessage); // success, info, warning, error
+				@endif
 			});
 		</script>
-				
+
         
 		<script>var hostUrl = "{{ asset('assets/') }}";</script>
 		<script src="{{ asset('assets/plugins/global/plugins.bundle.js') }}"></script>
@@ -233,9 +134,6 @@
 		<script src="{{ asset('assets/js/custom/apps/user-management/users/list/table.js') }}"></script>
 		<script src="{{ asset('assets/js/custom/apps/user-management/users/list/export-users.js') }}"></script>
 		<script src="{{ asset('assets/js/custom/apps/user-management/users/list/add.js') }}"></script>
-
-        // <!--CKEditor Build Bundles:: Only include the relevant bundles accordingly-->
-        <script src="{{ asset('assets/plugins/custom/ckeditor/ckeditor-classic.bundle.js') }}"></script>
         
 	</body>
 </html>

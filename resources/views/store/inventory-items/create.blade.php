@@ -19,30 +19,15 @@
                             <!-- Variant -->
                             <div class="col-md-6 fv-row">
                                 <label class="fs-6 fw-semibold mb-2 required">{{ __('pagination.product_variant') }}</label>
-                                
-                                <div class="position-relative">
-                                    <!-- Hidden original select -->
-                                    <select name="variant_id" id="originalVariantSelect" style="display: none;">
-                                        <option value=""></option>
-                                        @foreach ($variants as $variant)
-                                            <option value="{{ $variant->id }}">{{ $variant->name }}</option>
-                                        @endforeach
-                                    </select>
-                                    
-                                    <!-- Custom dropdown container -->
-                                    <div class="custom-select-container">
-                                        <input type="text" class="form-control custom-select-search" placeholder="Search variants...">
-                                        
-                                        <div class="custom-select-dropdown" style="display: none;">
-                                            <div class="custom-select-options">
-                                                <!-- Options will be inserted here by JavaScript -->
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                                <select name="variant_id" class="form-select" data-control="select2" data-placeholder="{{__('auth._select')}}">
+                                    <option></option>
+                                    @foreach ($variants as $variant)
+                                        <option value="{{ $variant->id }}">{{ $variant->name }}</option>
+                                    @endforeach
+                                </select>
                                 <div id="variant_id"></div>
                             </div>
-
+                            
                             <!-- Quantity on hand -->
                             <div class="col-md-6 fv-row">
                                 <label class="fs-6 fw-semibold mb-2 required">{{ __('pagination.quantity_on_hand') }}</label>

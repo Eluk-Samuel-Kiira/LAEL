@@ -186,3 +186,19 @@ if (!function_exists('productImage')) {
     }
 }
 
+if (!function_exists('productVariantImage')) {
+    function productVariantImage($variantImagePath = '')
+    {
+        $defaultImage = asset('assets/media/stock/ecommerce/2.png');
+
+        if (!empty($variantImagePath)) {
+            $fullPath = public_path('storage/' . ltrim($variantImagePath, '/'));
+            if (file_exists($fullPath)) {
+                return asset('storage/' . ltrim($variantImagePath, '/'));
+            }
+        }
+
+        return $defaultImage;
+    }
+}
+

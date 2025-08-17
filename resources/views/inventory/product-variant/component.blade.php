@@ -93,9 +93,12 @@
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <a href="#" class="symbol symbol-50px">
-                                                <img src="{{ asset('assets/media/stock/ecommerce/123.png') }}" alt="" class="symbol-label">
+                                            <a href="javascript:void(0)" class="symbol symbol-50px" onclick="triggerFileInput(this, {{ $product->id }})">
+                                                <img src="{{ productVariantImage($product->image_url) }}" alt="" class="symbol-label" id="variantImagePreview_{{ $product->id  }}">
                                             </a>
+                                            <!-- Hidden file input -->
+                                            <input type="file" id="variantImageInput_{{ $product->id ?? 0 }}" accept="image/*" style="display: none;" onchange="handleImageChange(event, {{ $product->id }})">
+
                                             <div class="ms-5">
                                                 <a href="#" class="text-gray-800 text-hover-primary fs-5 fw-bold" data-kt-ecommerce-product-filter="product_name">{{ $product->name }}</a>
                                             </div>
@@ -119,12 +122,12 @@
                                     <td>{{ $product->created_at->format('d M Y, h:i a') }}</td>
                                     <td>
                                         <select name="status" class="form-select form-select-solid form-select-sm" onchange="updateStatus({{ $product->id }}, this.value)"
-                                            @cannot('update product') disabled @endcannot>
+                                            @cannot('update variant') disabled @endcannot>
                                             <option value="1" {{ $product->is_active == 1 ? 'selected' : '' }}>{{__('auth._active')}}</option>
                                             <option value="0" {{ $product->is_active == 0 ? 'selected' : '' }}>{{__('auth._inactive')}}</option>
                                         </select>
                                     </td>
-                                    <td class="d-flex align-items-center gap-2 flex-column flex-sm-row">
+                                    <td class="d-flex align-items-center gap-2 flex-column">
                                         @can('edit product')
                                             <button 
                                                 class="btn btn-sm btn-light btn-active-color-primary d-flex align-items-center px-3 py-2" 
@@ -184,6 +187,76 @@
         </div>
     </diiv>
 </div>
+
+<script>
+    // Trigger hidden file input when image is clicked
+    function triggerFileInput(el, id) {
+        document.getElementById(`variantImageInput_${id}`).click();
+    }
+
+    // Handle file selection
+    function handleImageChange(event, id) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // Update the image preview
+        const imgPreview = document.getElementById(`variantImagePreview_${id}`);
+        imgPreview.src = URL.createObjectURL(file);
+
+        // Call custom JS function with file and ID
+        onVariantImageSelected(file, id);
+    }
+
+    // Your custom JS function
+    function onVariantImageSelected(file, id) {
+        // console.log('Selected file:', file.name, 'for variant ID:', id);
+
+        // Create FormData and append file + variant ID
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append('variant_id', id);
+
+        fetch('{{ route("variant.upload_image") }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: formData,
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to upload image');
+            }
+            return response.json();
+        })
+        .then(data => {
+            const message = '{{ __('auth._uploaded') }}';
+            console.log(message, data);
+
+            // Optionally update the image preview (if backend returns the uploaded path)
+            const imgPreview = document.getElementById(`variantImagePreview_${id}`);
+            if (data.image_url) {
+                imgPreview.src = data.image_url;
+            }
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: message,
+            });
+        })
+        .catch(error => {
+            const message = '{{ __('An Error Occurred') }}';
+            console.error(message, error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops!',
+                text: message,
+            });
+        });
+    }
+
+</script>
 
 
 <script>
@@ -265,82 +338,82 @@
     }
 </script>
 
-    <script>
+<script>
+    
+    // Function to preview and upload the selected profile image with validation
+    function productPhoto(event, product_id) {
+        const image = document.getElementById('product-img-preview');
+        const file = event.target.files[0];
         
-        // Function to preview and upload the selected profile image with validation
-        function productPhoto(event, product_id) {
-            const image = document.getElementById('product-img-preview');
-            const file = event.target.files[0];
-            
-            // Validate file type (accept only images)
-            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-            const allowedError = '{{__('auth.allowed_files')}}'
-            if (!allowedTypes.includes(file.type)) {
-                alert(allowedError);
-                return;
-            }
-
-            // Validate file size (e.g., limit to 2MB)
-            const maxSize = 5 * 1024 * 1024; // 5MB in bytes
-            const allowedSize = '{{__('auth.file_large')}}'
-            if (file.size > maxSize) {
-                alert(allowed_size);
-                return;
-            }
-
-            // If validation passes, show image preview and upload file
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    image.src = e.target.result;
-                }
-                reader.readAsDataURL(file);
-
-                // Automatically upload the file
-                uploadProfileImage(file, product_id);
-            }
+        // Validate file type (accept only images)
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        const allowedError = '{{__('auth.allowed_files')}}'
+        if (!allowedTypes.includes(file.type)) {
+            alert(allowedError);
+            return;
         }
 
-        // Function to upload the image via AJAX
-        function uploadProfileImage(file, product_id) {
-            const formData = new FormData();
-            formData.append('photo', file); 
-            formData.append('product_id', product_id); 
+        // Validate file size (e.g., limit to 2MB)
+        const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+        const allowedSize = '{{__('auth.file_large')}}'
+        if (file.size > maxSize) {
+            alert(allowed_size);
+            return;
+        }
 
-            fetch('{{ route("product.upload_image") }}', {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: formData,
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to upload image');
-                }
-                return response.json();
-            })
-            .then(data => {
-                const message = '{{__('auth._uploaded')}}'
-                console.log(message, data);
-                // Optionally handle success or update image path here
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success!',
-                    text: message,
-                }).then(() => {
-                    // Refresh the page after success
-                    // location.reload();
-                });
-            })
-            .catch(error => {
-                const message = '{{__('An Error Occurred')}}'
-                console.error(message, error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops!',
-                    text: message,
-                });
+        // If validation passes, show image preview and upload file
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                image.src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+
+            // Automatically upload the file
+            uploadProductImage(file, product_id);
+        }
+    }
+
+    // Function to upload the image via AJAX
+    function uploadProductImage(file, product_id) {
+        const formData = new FormData();
+        formData.append('photo', file); 
+        formData.append('product_id', product_id); 
+
+        fetch('{{ route("product.upload_image") }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: formData,
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to upload image');
+            }
+            return response.json();
+        })
+        .then(data => {
+            const message = '{{__('auth._uploaded')}}'
+            console.log(message, data);
+            // Optionally handle success or update image path here
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: message,
+            }).then(() => {
+                // Refresh the page after success
+                // location.reload();
             });
-        }
-    </script>
+        })
+        .catch(error => {
+            const message = '{{__('An Error Occurred')}}'
+            console.error(message, error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops!',
+                text: message,
+            });
+        });
+    }
+</script>

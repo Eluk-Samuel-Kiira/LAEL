@@ -72,6 +72,7 @@ return [
     'taxable_now' => 'Product Is Now Taxable',
     'not_taxable' => 'Product Not Taxable Now',
     'product_variant' => 'Product Variant',
+    'product_variant_new' => 'New Product Variant',
     'product_index' => 'Product Index',
     '_variants' => 'Variants',
     '_variantions' => 'Variantions',
