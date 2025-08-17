@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
             $table->foreignId('tenant_id')->constrained('tenants')->cascadeOnDelete();
 
-            $table->string('sku', 50);
+            $table->string('sku', 50)->unique();
             $table->string('name', 100);
             $table->string('slug')->unique();
             $table->string('image_url', 255)->nullable();

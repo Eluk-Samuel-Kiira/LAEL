@@ -44,7 +44,7 @@
                         </div>
 
                         <button type="reset" class="btn btn-light me-3" id="closeModalEditButton{{ $department->id }}" data-bs-dismiss="modal">{{__('auth._discard')}}</button>
-                        <button onclick="editInstanceLoop({{$department->id }})" id="editDepartmentButton{{ $department->id }}" type="button" class="btn btn-primary" id>
+                        <button onclick="editInstanceLoopDept({{$department->id }})" id="editDepartmentButton{{ $department->id }}" type="button" class="btn btn-primary" id>
                             <span class="indicator-label">{{__('auth._update')}}</span>
                             <span class="indicator-progress">{{__('auth.please_wait')}}
                             <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
@@ -58,7 +58,9 @@
 
 <script>
     
-    function editInstanceLoop(uniqueId) {
+    function editInstanceLoopDept(uniqueId) {
+        handleEditForm(uniqueId, '{{ route("department.update", ["department" => ":id"]) }}', 'kt_modal_edit_department_form', 'editDepartmentButton', 'closeModalEditButton');
+
         const submitButton = document.getElementById('editDepartmentButton' + uniqueId);
         LiveBlade.toggleButtonLoading(submitButton, true);
 

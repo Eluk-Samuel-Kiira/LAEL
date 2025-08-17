@@ -82,6 +82,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('variants', ProductVariantController::class);
     Route::post('/variant-status/{id}', [ProductVariantController::class, 'changeVariantStatus'])->name('variant.status');
     Route::post('/product/upload-image', [ProductController::class, 'uploadProductImage'])->name('product.upload_image');
+    Route::post('/variant/upload-image', [ProductVariantController::class, 'uploadVariantImage'])->name('variant.upload_image');
 
     // Stores and Inventory
     Route::resource('items', InventoryItemController::class);

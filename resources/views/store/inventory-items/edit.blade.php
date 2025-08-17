@@ -58,7 +58,7 @@
                         </div>                
 
                         <button type="button" id="closeModalEditButton{{$item->id}}" class="btn btn-light me-3" data-bs-dismiss="modal">{{ __('auth._discard') }}</button>
-                        <button onclick="editInstanceLoop({{$item->id }})" id="updateButton{{ $item->id }}" type="button" class="btn btn-primary" id>
+                        <button onclick="editInstanceLoop({{$item->id }})" id="updateItemButton{{ $item->id }}" type="button" class="btn btn-primary" id>
                             <span class="indicator-label">{{__('auth._update')}}</span>
                             <span class="indicator-progress">{{__('auth.please_wait') }}
                             <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
@@ -73,7 +73,7 @@
 <script>
     
     function editInstanceLoop(uniqueId) {
-        const submitButton = document.getElementById('updateButton' + uniqueId);
+        const submitButton = document.getElementById('updateItemButton' + uniqueId);
         LiveBlade.toggleButtonLoading(submitButton, true);
 
         // Select the form and create FormData from it

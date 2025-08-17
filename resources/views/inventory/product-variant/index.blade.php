@@ -43,11 +43,10 @@
                     </div>
                 </div>
                 @can('create variant')
-                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_add_product">
-                    <i class="ki-duotone ki-plus fs-2"></i>{{__('pagination.new_products')}}</button>
+                    <a href="{{ route('variants.show', $product_variants->id) }}" class="btn btn-sm btn-primary">
+                        <i class="ki-duotone ki-plus fs-2"></i>{{__('pagination.product_variant_new')}}
+                    </a>
                 @endcan
-
-                @include('inventory.product-variant.create')
   
             </div>
         </div>
