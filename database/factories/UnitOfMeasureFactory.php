@@ -19,6 +19,7 @@ class UnitOfMeasureFactory extends Factory
     {
         return [
             'name' => $this->faker->word, 
+            'symbol' => $this->faker->randomElement(['g', 'l', 'kg', 'ml']),
             'created_by' => User::where('role_id', '1' )->where('status', 'active')->get()->random()->id,
             'isActive' => $this->faker->randomElement([0, 1]), // Randomly assigns 0 or 1
         ];

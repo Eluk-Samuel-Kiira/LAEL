@@ -44,13 +44,15 @@ class UnitOfMeasureController extends Controller
      */
     public function store(Request $request)
     {
-        
+        // \Log::info($request);
         $request->validate([
             'name' => 'required|string|max:255|unique:unit_of_measures,name',
+            'symbol' => 'required',
         ]);
 
         $uom = UnitOfMeasure::create([
             'name' => $request->name,
+            'symbol' => $request->symbol,
             'created_by' => Auth::user()->id
         ]);
 
@@ -84,9 +86,10 @@ class UnitOfMeasureController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, UnitOfMeasure $unitOfMeasure)
+    public function update(Request $request, $id)
     {
-        $uOM = $unitOfMeasure;
+        $uOM = UnitOfMeasure::find($id);
+        \Log::info($uOM);
         
         $request->validate([
             'name' => [
@@ -94,6 +97,7 @@ class UnitOfMeasureController extends Controller
                 'max:255',
                 Rule::unique('unit_of_measures', 'name')->ignore($uOM->id),
             ],
+            'symbol' => 'required',
         ]);
 
         // \Log::info($uOM);
@@ -101,6 +105,7 @@ class UnitOfMeasureController extends Controller
 
         $uOM->update([
             'name' => $request->name,
+            'symbol' => $request->symbol,
             'created_by' => Auth::user()->id
         ]);
 
@@ -117,8 +122,9 @@ class UnitOfMeasureController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(UnitOfMeasure $unitOfMeasure)
+    public function destroy($id)
     {
+        $unitOfMeasure = UnitOfMeasure::find($id);
         if ($unitOfMeasure->isActive === 1) {
             return response()->json([
                 'success' => false,

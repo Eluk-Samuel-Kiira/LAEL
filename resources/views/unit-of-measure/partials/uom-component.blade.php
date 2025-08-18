@@ -9,6 +9,7 @@
                 </th>
                 <th class="min-w-125px">{{__('auth._uom_id')}}</th>
                 <th class="min-w-125px">{{__('auth._uom')}}</th>
+                <th class="min-w-125px">{{__('auth._symbol')}}</th>
                 <th class="min-w-125px">{{__('auth._creater')}}</th>  
                 <th class="min-w-125px">{{__('auth.created_at')}}</th>
                 <th class="min-w-125px">{{__('auth._status')}}</th>
@@ -28,12 +29,13 @@
                             <div class="badge badge-light fw-bold">{{__('ID-')}}{{ $uom->id }}</div>
                         </td>
                         <td>{{ $uom->name }}</td>
+                        <td class="fw-bold text-primary ms-3">{{ $uom->symbol }}</td>
                         <td>
                             <div class="badge badge-light fw-bold">{{ $uom->UOMCreater->name ?? 'None' }}</div>
                         </td>
                         <td>{{ $uom->created_at->format('d M Y, h:i a') }}</td>
                         <td>
-                            <select name="status" class="form-select form-select-solid form-select-sm" onchange="updateStatus({{ $uom->id }}, this.value)"
+                            <select name="status" class="form-select form-select-solid form-select-sm" onchange="updateStatusUOM({{ $uom->id }}, this.value)"
                             @cannot('update uom') disabled @endcannot>
                                 <option value="1" {{ $uom->isActive == 1 ? 'selected' : '' }}><span>{{__('Active')}}</option>
                                 <option value="0" {{ $uom->isActive == 0 ? 'selected' : '' }}>{{__('Inactive')}}</option>
@@ -97,76 +99,3 @@
     </table>
 </div>
 
-
-<script>
-    function deleteItem(button) {
-        const itemId = button.getAttribute('data-item-id');
-        const deleteUrl = button.getAttribute('data-item-url');
-
-        const deleteButton = document.getElementById('deleteButton' + itemId);
-        LiveBlade.toggleButtonLoading(deleteButton, true);
-        
-        // Call the delete function to handle the deletion
-        LiveBlade.deleteItemInLoop(deleteUrl)
-            .then(noErrorStatus => {
-                console.log(noErrorStatus)
-                if (noErrorStatus) {
-                    var closeButton = document.getElementById('closeDeleteModal' + itemId);
-                    if (closeButton) {
-                        closeButton.click();
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('An unexpected error occurred:', error);
-                // Handle error gracefully
-            })
-            .finally(() => {
-                // End loading state using reusable function
-                LiveBlade.toggleButtonLoading(deleteButton, false);
-            });
-    }
-</script>
-
-
-
-<script>
-
-    function initializeComponentScripts() {
-        const tableId = '#kt_table_users';
-
-        // Destroy the existing DataTable instance if it exists
-        if ($.fn.DataTable.isDataTable(tableId)) {
-            $(tableId).DataTable().destroy();
-        }
-
-        // Reinitialize the DataTable
-        $(tableId).DataTable({
-            paging: true,
-            searching: true,
-            ordering: true,
-            responsive: false, // Disable responsive behavior
-            autoWidth: false, // Prevent automatic column resizing
-            language: {
-                emptyTable: "No data available",
-            },
-            columnDefs: [
-                // Specify widths for specific columns (optional)
-                { targets: 0, width: "10%" }, // Example for first column
-                { targets: 1, width: "15%" },
-            ],
-        });
-
-    }
-
-    
-    function setupTableSearch(inputId, tableId) {
-        LiveBlade.searchTableItems(inputId, tableId)
-    }
-    
-    
-    document.addEventListener('DOMContentLoaded', function() {
-        setupTableSearch('searchInput', 'kt_table_users');
-        
-    });
-</script>

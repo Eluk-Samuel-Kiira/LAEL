@@ -52,6 +52,8 @@
     }
 </style>
 
+
+<!-- Page Navigator functions -->
 <script>
     // Function to show the loader
     function showLoaderApp() {
@@ -195,11 +197,32 @@
     renderAppPage(window.location.pathname);
 </script>
 
-<!-- Department -->
-<script>
-    
 
-    function submitFormEntities(formId, submitButtonId, url, method = 'POST', discardButtonId = 'discardButton') {
+
+
+<!-- Currency -->
+<script>
+
+    function updateStatusCurrency(uniqueId, selectedStatus) {
+        // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
+        const updateRoute = '/currency-status/' + uniqueId;
+        LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
+    }
+
+    function editInstanceLoopCurrency(uniqueId) {
+        const submitButton = document.getElementById('editCurrencyButton' + uniqueId);
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        var form = document.getElementById('kt_modal_edit_currency_form' + uniqueId);
+        var formData = new FormData(form);
+
+        var data = Object.fromEntries(formData.entries());
+        // console.log(data);
+        var updateUrl = '{{ route('currency.update', ['currency' => ':id']) }}'.replace(':id', uniqueId);
+        handleEditResponse(data, updateUrl, uniqueId, submitButton);
+    }
+
+    function submitCurrencyForm(formId, submitButtonId, url, method = 'POST', discardButtonId = 'discardButton') {
         const form = document.getElementById(formId);
         const submitButton = document.getElementById(submitButtonId);
 
@@ -220,42 +243,57 @@
         handleFormSubmission(formData, submitButton, discardButtonId);
     }
 
-    // Department
-    function editInstanceLoopDept(uniqueId) {
-        const submitButton = document.getElementById('editDepartmentButton' + uniqueId);
-        LiveBlade.toggleButtonLoading(submitButton, true);
-
-        const form = document.getElementById('kt_modal_edit_department_form' + uniqueId);
-        const formData = new FormData(form);
-        const data = Object.fromEntries(formData.entries());
-        // console.log(data)
-
-        // Set up the URL dynamically
-        var updateUrl = '{{ route('department.update', ['department' => ':id']) }}'.replace(':id', uniqueId);
-        handleEditResponse(data, updateUrl, uniqueId, submitButton);
-    }
-
-    
 </script>
 
 
-
-
-
+<!-- Settings -->
 <script>
-    
-    // currecy
-    function editInstanceLoopCurrency(uniqueId) {
-        const submitButton = document.getElementById('editCurrencyButton' + uniqueId);
+
+    function submitSettingFormEntities(formId, submitButtonId, url, method = 'POST', discardButtonId = '') {
+        const form = document.getElementById(formId);
+        const submitButton = document.getElementById(submitButtonId);
+
+        // Collect form data
+        const formData = Object.fromEntries(new FormData(form));
+        formData._method = method;
+        formData.routeName = url;
+        console.log(formData);
+
+        // Start loading
         LiveBlade.toggleButtonLoading(submitButton, true);
 
-        var form = document.getElementById('kt_modal_edit_currency_form' + uniqueId);
-        var formData = new FormData(form);
+        // Pass handling + data to reusable handler
+        handleFormSubmission(formData, submitButton, discardButtonId);
+    }
 
-        var data = Object.fromEntries(formData.entries());
-        // console.log(data);
-        var updateUrl = '{{ route('currency.update', ['currency' => ':id']) }}'.replace(':id', uniqueId);
-        handleEditResponse(data, updateUrl, uniqueId, submitButton);
+
+    function changeLocale(locale) {
+        window.location.href = "/change-locale/" + locale;
+    }
+</script>
+
+
+<!-- Unit Of Measure -->
+<script> 
+    function submitFormUOM(formId, submitButtonId, url, method = 'POST', discardButtonId = 'discardButton') {
+        const form = document.getElementById(formId);
+        const submitButton = document.getElementById(submitButtonId);
+
+        if (!form || !submitButton) {
+            console.error('Form or button not found:', formId, submitButtonId);
+            return;
+        }
+
+        // Collect form data
+        const formData = Object.fromEntries(new FormData(form));
+        formData._method = method;
+        formData.routeName = url;
+
+        // Start loading
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Pass handling + data to reusable handler
+        handleFormSubmission(formData, submitButton, discardButtonId);
     }
 
     function editInstanceLoopUOM(uniqueId) {
@@ -273,8 +311,62 @@
     }
 
 
+    function updateStatusUOM(uniqueId, selectedStatus) {
+        // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
+        const updateRoute = '/uom-status/' + uniqueId;
+        LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
+    }
 
 </script>
+
+
+
+<!-- Department -->
+<script>
+    
+    function submitFormDept(formId, submitButtonId, url, method = 'POST', discardButtonId = 'discardButton') {
+        const form = document.getElementById(formId);
+        const submitButton = document.getElementById(submitButtonId);
+
+        if (!form || !submitButton) {
+            console.error('Form or button not found:', formId, submitButtonId);
+            return;
+        }
+
+        // Collect form data
+        const formData = Object.fromEntries(new FormData(form));
+        formData._method = method;
+        formData.routeName = url;
+
+        // Start loading
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Pass handling + data to reusable handler
+        handleFormSubmission(formData, submitButton, discardButtonId);
+    }
+
+    function editInstanceLoopDept(uniqueId) {
+        const submitButton = document.getElementById('editDepartmentButton' + uniqueId);
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        const form = document.getElementById('kt_modal_edit_department_form' + uniqueId);
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        // console.log(data)
+
+        // Set up the URL dynamically
+        var updateUrl = '{{ route('department.update', ['department' => ':id']) }}'.replace(':id', uniqueId);
+        handleEditResponse(data, updateUrl, uniqueId, submitButton);
+    }
+
+    function updateStatusDept(uniqueId, selectedStatus) {
+        // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
+        const updateRoute = '/department-status/' + uniqueId;
+        LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
+    }
+
+</script>
+
 
 <!-- General Reusable Functions -->
 <script>

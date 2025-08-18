@@ -51,15 +51,7 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <script>
-        function updateStatus(uniqueId, selectedStatus) {
-            // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
-            const updateRoute = '/department-status/' + uniqueId;
-            LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
-        }
-    </script>   
+    </div>  
         
     @endsection
 </x-app-layout>

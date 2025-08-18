@@ -40,10 +40,14 @@
             </div>
         </div>
         <div class="card-footer d-flex justify-content-end py-6 px-9">
-            <button id="submitupdateTheme" type="submit" class="btn btn-primary">
-                <span class="indicator-label">{{__('auth.submit') }}</span>
-                <span class="indicator-progress" style="display: none;">
-                    {{__('auth.please_wait') }}
+            <button 
+                id="submitupdateTheme" 
+                type="button" 
+                class="btn btn-primary"
+                onclick="submitSettingFormEntities('updateAppThemes', 'submitupdateTheme', '{{ route('setting.update') }}', 'PUT', '');">
+                
+                <span class="indicator-label">{{__('auth._update')}}</span>
+                <span class="indicator-progress">{{__('auth.please_wait')}}
                     <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
                 </span>
             </button>

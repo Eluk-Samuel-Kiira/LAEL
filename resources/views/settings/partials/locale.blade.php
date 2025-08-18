@@ -15,8 +15,3 @@
         </div>
     </div>
 </div>
-<script>
-    function changeLocale(locale) {
-        window.location.href = "/change-locale/" + locale;
-    }
-</script>

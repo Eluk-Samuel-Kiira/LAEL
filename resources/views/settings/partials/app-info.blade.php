@@ -46,8 +46,10 @@
                     <div class="row">
                         <div class="col-lg-12 fv-row">
                             <select name="currency" class="form-control" id="currency">
-                                <option value="{{ $app_info->currency }}" {{ $app_info->currency == 'USD' ? 'selected' : '' }}>USD - $</option>
-                                <option value="{{ $app_info->currency }}" {{ $app_info->currency == 'UGX' ? 'selected' : '' }}>UGX - /=</option>
+                                <option></option>
+                                @foreach ($currencies as $currency)
+                                    <option value="{{ $currency->code }}" {{ $app_info->currency == $currency->code ? 'selected' : '' }}>{{ $currency->code }} - {{ $currency->symbol }}</option>
+                                @endforeach 
                             </select>
                             <div id="currency"></div>
                         </div>
@@ -57,14 +59,19 @@
         </div>
 
         <div class="card-footer d-flex justify-content-end py-6 px-9">
-            <button id="submitAppInfo" type="submit" class="btn btn-primary">
-                <span class="indicator-label">{{__('auth.submit') }}</span>
-                <span class="indicator-progress" style="display: none;">
-                    {{__('auth.please_wait') }}
+            <button 
+                id="submitAppInfo" 
+                type="button" 
+                class="btn btn-primary"
+                onclick="submitSettingFormEntities('updateAppInfoForm', 'submitAppInfo', '{{ route('setting.update') }}', 'PUT', '');">
+                
+                <span class="indicator-label">{{__('auth._update')}}</span>
+                <span class="indicator-progress">{{__('auth.please_wait')}}
                     <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
                 </span>
             </button>
         </div>
+        
     </form>
 
 </section>

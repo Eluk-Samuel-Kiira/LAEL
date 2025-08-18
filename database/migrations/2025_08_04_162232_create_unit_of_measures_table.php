@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('unit_of_measures', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('symbol')->nullable();
             $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
             $table->boolean('isActive')->default(1);
             $table->timestamps();
