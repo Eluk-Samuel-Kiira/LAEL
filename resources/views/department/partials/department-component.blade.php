@@ -43,7 +43,7 @@
                         --}}
                         <td>{{ $department->created_at->format('d M Y, h:i a') }}</td>
                         <td>
-                            <select name="status" class="form-select form-select-solid form-select-sm" onchange="updateStatus({{ $department->id }}, this.value)"
+                            <select name="status" class="form-select form-select-solid form-select-sm" onchange="updateStatusDept({{ $department->id }}, this.value)"
                             @cannot('update department') disabled @endcannot>
                                 <option value="1" {{ $department->isActive == 1 ? 'selected' : '' }}><span>{{__('Active')}}</option>
                                 <option value="0" {{ $department->isActive == 0 ? 'selected' : '' }}>{{__('Inactive')}}</option>

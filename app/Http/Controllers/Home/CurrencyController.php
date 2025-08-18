@@ -97,7 +97,7 @@ class CurrencyController extends Controller
                 'required',
                 'alpha',
                 'size:3',
-                Rule::unique('currencies', 'name')->ignore($currency->id),
+                Rule::unique('currencies', 'code')->ignore($currency->id),
             ],
             'name' => 'required|string',
             'symbol' => 'required',

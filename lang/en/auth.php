@@ -135,7 +135,7 @@ return [
     '_code' => 'Code',
     '_name' => 'Name',
     '_symbol' => 'Symbol',
-    '_exchange_rate' => 'Exchange Rate',
+    '_exchange_rate' => 'Exchange Rate (USD $)',
     '_active' => 'Active',
     '_inactive' => 'Inactive',
     '_undeleletable' => 'This record can not be Deleted',

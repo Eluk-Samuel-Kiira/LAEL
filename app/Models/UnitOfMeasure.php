@@ -10,7 +10,7 @@ class UnitOfMeasure extends Model
     
     use HasFactory;
 
-    protected $fillable = ['name', 'isActive', 'created_by'];
+    protected $fillable = ['name', 'isActive', 'symbol', 'created_by'];
 
     
     public function UOMCreater()

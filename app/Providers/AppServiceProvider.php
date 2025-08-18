@@ -13,6 +13,7 @@ use App\Models\Category;
 use App\Models\ProductCategory;
 use App\Models\UnitOfMeasure;
 use App\Models\ProductVariant;
+use App\Models\Currency;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -37,6 +38,7 @@ class AppServiceProvider extends ServiceProvider
 
         $sub_categories = ProductCategory::where('is_active', 1)->get();
         $uoms = UnitOfMeasure::where('isActive', 1)->get();
+        $currencies = Currency::where('isActive', 1)->get();
         $categories = Category::where('is_active', 1)->get();
         $departments = Department::where('isActive', 1)->get();
         $users = User::where('status', 'active')->get();
@@ -52,6 +54,7 @@ class AppServiceProvider extends ServiceProvider
             'sub_categories' => $sub_categories,
             'uoms' => $uoms,
             'variants' => $variants,
+            'currencies' => $currencies,
         ]);
 
         $app_mails = Setting::first();

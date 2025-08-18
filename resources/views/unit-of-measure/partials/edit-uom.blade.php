@@ -25,6 +25,15 @@
                                 <div id="name{{ $uom->id }}"></div>
                             </div>
                         </div>
+                        <div class="row g-9 mb-8">
+                            <div class="d-flex flex-column mb-8 fv-row col-md-12">
+                                <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                    <span class="required">{{__('auth._symbol')}}</span>
+                                </label>
+                                <input type="text" value="{{ $uom->symbol }}" class="form-control form-control-solid" name="symbol" />
+                                <div id="symbol{{ $uom->id }}"></div>
+                            </div>
+                        </div>
 
                         <button type="reset" class="btn btn-light me-3" id="closeModalEditButton{{ $uom->id }}" data-bs-dismiss="modal">
                         <button type="button" id="closeDeleteModal{{$uom->id}}" class="btn btn-light me-3" data-bs-dismiss="modal">{{ __('auth._discard') }}</button>

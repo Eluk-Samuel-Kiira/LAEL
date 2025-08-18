@@ -39,7 +39,7 @@
                         </td>
                         <td>{{ $currency->created_at->format('d M Y, h:i a') }}</td>
                         <td>
-                            <select name="status" class="form-select form-select-solid form-select-sm" onchange="updateStatus({{ $currency->id }}, this.value)">
+                            <select name="status" class="form-select form-select-solid form-select-sm" onchange="updateStatusCurrency({{ $currency->id }}, this.value)">
                                 <option value="1" {{ $currency->isActive == 1 ? 'selected' : '' }}><span>{{__('auth._active')}}</option>
                                 <option value="0" {{ $currency->isActive == 0 ? 'selected' : '' }}>{{__('auth._inactive')}}</option>
                             </select>
@@ -99,84 +99,3 @@
         </tbody>
     </table>
 </div>
-
-<script>
-    function updateStatus(uniqueId, selectedStatus) {
-        // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
-        const updateRoute = '/currency-status/' + uniqueId;
-        LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
-    }
-</script>  
-
-<script>
-    function deleteItem(button) {
-        const itemId = button.getAttribute('data-item-id');
-        const deleteUrl = button.getAttribute('data-item-url');
-
-        const deleteButton = document.getElementById('deleteButton' + itemId);
-        LiveBlade.toggleButtonLoading(deleteButton, true);
-        
-        // Call the delete function to handle the deletion
-        LiveBlade.deleteItemInLoop(deleteUrl)
-            .then(noErrorStatus => {
-                console.log(noErrorStatus)
-                if (noErrorStatus) {
-                    var closeButton = document.getElementById('closeDeleteModal' + itemId);
-                    if (closeButton) {
-                        closeButton.click();
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('An unexpected error occurred:', error);
-                // Handle error gracefully
-            })
-            .finally(() => {
-                // End loading state using reusable function
-                LiveBlade.toggleButtonLoading(deleteButton, false);
-            });
-    }
-</script>
-
-
-
-<script>
-
-    function initializeComponentScripts() {
-        const tableId = '#kt_table_users';
-
-        // Destroy the existing DataTable instance if it exists
-        if ($.fn.DataTable.isDataTable(tableId)) {
-            $(tableId).DataTable().destroy();
-        }
-
-        // Reinitialize the DataTable
-        $(tableId).DataTable({
-            paging: true,
-            searching: true,
-            ordering: true,
-            responsive: false, // Disable responsive behavior
-            autoWidth: false, // Prevent automatic column resizing
-            language: {
-                emptyTable: "No data available",
-            },
-            columnDefs: [
-                // Specify widths for specific columns (optional)
-                { targets: 0, width: "10%" }, // Example for first column
-                { targets: 1, width: "15%" },
-            ],
-        });
-
-    }
-
-    
-    function setupTableSearch(inputId, tableId) {
-        LiveBlade.searchTableItems(inputId, tableId)
-    }
-    
-    
-    document.addEventListener('DOMContentLoaded', function() {
-        setupTableSearch('searchInput', 'kt_table_users');
-        
-    });
-</script>

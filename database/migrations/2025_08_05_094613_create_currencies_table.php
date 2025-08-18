@@ -12,9 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('currencies', function (Blueprint $table) {
-            $table->id();$table->string('code', 10); // e.g. USD, EUR
-            $table->string('name');     // e.g. US Dollar
-            $table->string('symbol');   // e.g. $
+            $table->id();
+            $table->string('code', 10); // e.g. USD, EUR
+            $table->string('name')->nullable();     // e.g. US Dollar
+            $table->string('symbol')->nullable();   // e.g. $
             $table->decimal('exchange_rate', 15, 6)->default(1.000000); // to base currency
             $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
             $table->boolean('isActive')->default(1);
