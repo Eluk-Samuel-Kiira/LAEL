@@ -41,7 +41,7 @@
                             id="submitUOMButton" 
                             type="button" 
                             class="btn btn-primary"
-                            onclick="submitFormUOM('kt_modal_add_uom_form', 'submitUOMButton', '{{ route('uom.store') }}')">
+                            onclick="submitFormUOM('kt_modal_add_uom_form', 'submitUOMButton', '{{ route('uom.store') }}', 'POST', 'discardButton')">
                             
                             <span class="indicator-label">{{__('auth._update')}}</span>
                             <span class="indicator-progress">{{__('auth.please_wait')}}

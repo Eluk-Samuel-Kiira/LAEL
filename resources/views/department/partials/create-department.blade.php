@@ -44,7 +44,7 @@
                             id="submitCurrencyButton" 
                             type="button" 
                             class="btn btn-primary"
-                            onclick="submitFormDept('kt_modal_add_currency_form', 'submitCurrencyButton', '{{ route('department.store') }}')">
+                            onclick="submitFormDept('kt_modal_add_currency_form', 'submitCurrencyButton', '{{ route('department.store') }}', 'POST', 'discardButton')">
                             
                             <span class="indicator-label">{{__('auth._update')}}</span>
                             <span class="indicator-progress">{{__('auth.please_wait')}}

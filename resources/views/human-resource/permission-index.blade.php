@@ -52,19 +52,6 @@
         </div>
     </div>
 
-
     
-    <script>
-        // Reusable function to filter cards based on search input
-        function setupCardSearch(inputId, cardSelector, attributeName, titleSelector) {
-            LiveBlade.searchCardItems(inputId, cardSelector, attributeName, titleSelector)
-        }
-
-        // Set up the event listener after the DOM is fully loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            setupCardSearch('permissionSearchBar', '.permission-card', 'data-perm', '.card-title h2'); // Call the function with parameters
-        });
-
-    </script>
     @endsection
 </x-app-layout>

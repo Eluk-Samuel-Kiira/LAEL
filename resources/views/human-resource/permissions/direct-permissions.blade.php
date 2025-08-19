@@ -56,8 +56,8 @@
                         </div>
                     </div>
                     <div class="text-center pt-15">
-                        <button type="reset" class="btn btn-light me-3" id="closeModalButton{{ $user->id }}" data-bs-dismiss="modal">{{ __('auth._discard') }}</button>
-                        <button type="button" onclick="editInstanceLoop({{ $user->id }})" class="btn btn-primary" id="submitButton{{ $user->id }}">
+                        <button type="reset" class="btn btn-light me-3" id="closeModalEditButton{{ $user->id }}" data-bs-dismiss="modal">{{ __('auth._discard') }}</button>
+                        <button type="button" onclick="editInstanceLoopPermissions({{ $user->id }})" class="btn btn-primary" id="submitButton{{ $user->id }}">
                             <span class="indicator-label">{{ __('auth._update') }}</span>
                             <span class="indicator-progress" style="display: none;">
                                 {{__('auth.please_wait') }}
@@ -73,9 +73,30 @@
 
 
 
+
 <script>
+    function getCheckedValues(uniqueId) {
+        // Fetch all checked checkboxes and map to their values, confirming it's an array
+        const checkedValues = Array.from(document.querySelectorAll(`#direct_permissions_form${uniqueId} .permission-checkbox:checked`))
+                                .map(cb => cb.value);
+        return checkedValues;
+    }
+
+
+</script>
+<script>
+    
+    
+    function getCheckedValues(uniqueId) {
+        // Fetch all checked checkboxes and map to their values, confirming it's an array
+        const checkedValues = Array.from(document.querySelectorAll(`#direct_permissions_form${uniqueId} .permission-checkbox:checked`))
+                                .map(cb => cb.value);
+        return checkedValues;
+    }
+
+    
     // Function to initialize each modal
-    function initializeModal(userId) {
+    function initializeModalPermission(userId) {
         const selectAllCheckbox = document.getElementById(`kt_roles_select_all${userId}`);
         const permissionCheckboxes = document.querySelectorAll(`#direct_permissions_form${userId} .permission-checkbox`);
 
@@ -107,113 +128,10 @@
         
         // Initialize modal when it's opened
         modal.addEventListener('shown.bs.modal', function () {
-            initializeModal(userId);
+            initializeModalPermission(userId);
         });
     }
-</script>
 
-
-<script>
-    function getCheckedValues(uniqueId) {
-        // Fetch all checked checkboxes and map to their values, confirming it's an array
-        const checkedValues = Array.from(document.querySelectorAll(`#direct_permissions_form${uniqueId} .permission-checkbox:checked`))
-                                .map(cb => cb.value);
-        return checkedValues;
-    }
-
-    function editInstanceLoop(uniqueId) {
-        const submitButton = document.getElementById('submitButton' + uniqueId);
-        LiveBlade.toggleButtonLoading(submitButton, true);
-
-        // Select the form and create FormData from it
-        var form = document.getElementById('direct_permissions_form' + uniqueId);
-        var formData = new FormData(form);
-
-        // Get the checked permission values as an array
-        var permissions = getCheckedValues(uniqueId);
-        permissions.forEach(permissionId => formData.append('permissions[]', permissionId));
-        var data = Object.fromEntries(formData.entries());
-
-        // Confirm permissions as an array in final data object
-        data.permissions = permissions;
-
-        // Set up the URL dynamically
-        var updateUrl = @json(route('permission.update', ['id' => ':id'])).replace(':id', uniqueId);
-        // console.log(updateUrl)
-
-        // Submit form data asynchronously
-        LiveBlade.editLoopForms(data, updateUrl)
-            .then(noErrorStatus => {
-                if (noErrorStatus) {
-                    var closeButton = document.getElementById('closeModalButton' + uniqueId);
-                    if (closeButton) {
-                        closeButton.click();
-                    }
-                }
-                })
-                .catch(error => {
-                    console.error('An unexpected error occurred:', error);
-                    // Display user-friendly error feedback here, if needed
-                })
-                .finally(() => {
-                    // End loading state using reusable function
-                    LiveBlade.toggleButtonLoading(submitButton, false);
-                });
-
-
-    }
-
-</script>
-
-<script>
-    function getCheckedValues(uniqueId) {
-        // Fetch all checked checkboxes and map to their values, confirming it's an array
-        const checkedValues = Array.from(document.querySelectorAll(`#direct_permissions_form${uniqueId} .permission-checkbox:checked`))
-                                .map(cb => cb.value);
-        return checkedValues;
-    }
-
-    function editInstanceLoop(uniqueId) {
-        const submitButton = document.getElementById('submitButton' + uniqueId);
-        LiveBlade.toggleButtonLoading(submitButton, true);
-
-        // Select the form and create FormData from it
-        var form = document.getElementById('direct_permissions_form' + uniqueId);
-        var formData = new FormData(form);
-
-        // Get the checked permission values as an array
-        var permissions = getCheckedValues(uniqueId);
-        permissions.forEach(permissionId => formData.append('permissions[]', permissionId));
-        var data = Object.fromEntries(formData.entries());
-
-        // Confirm permissions as an array in final data object
-        data.permissions = permissions;
-
-        // Set up the URL dynamically
-        var updateUrl = @json(route('permission.update', ['id' => ':id'])).replace(':id', uniqueId);
-        // console.log(updateUrl)
-
-        // Submit form data asynchronously
-        LiveBlade.editLoopForms(data, updateUrl)
-            .then(noErrorStatus => {
-                if (noErrorStatus) {
-                    var closeButton = document.getElementById('closeModalButton' + uniqueId);
-                    if (closeButton) {
-                        closeButton.click();
-                    }
-                }
-                })
-                .catch(error => {
-                    console.error('An unexpected error occurred:', error);
-                    // Display user-friendly error feedback here, if needed
-                })
-                .finally(() => {
-                    // End loading state using reusable function
-                    LiveBlade.toggleButtonLoading(submitButton, false);
-                });
-
-
-    }
 
 </script>
 

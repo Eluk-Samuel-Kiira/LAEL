@@ -196,8 +196,289 @@
     // Initial load
     renderAppPage(window.location.pathname);
 </script>
+ 
 
 
+
+
+
+<script>
+    
+    function editInstanceLoopPermissions(uniqueId) {
+        const submitButton = document.getElementById('submitButton' + uniqueId);
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Select the form and create FormData from it
+        var form = document.getElementById('direct_permissions_form' + uniqueId);
+        var formData = new FormData(form);
+
+        // Get the checked permission values as an array
+        var permissions = getCheckedValues(uniqueId);
+        permissions.forEach(permissionId => formData.append('permissions[]', permissionId));
+        var data = Object.fromEntries(formData.entries());
+
+        // Confirm permissions as an array in final data object
+        data.permissions = permissions;
+
+        // Set up the URL dynamically
+        var updateUrl = @json(route('permission.update', ['id' => ':id'])).replace(':id', uniqueId);
+        // console.log(updateUrl)
+
+        // Submit form data asynchronously
+        
+        handleEditResponse(data, updateUrl, uniqueId, submitButton);
+
+    }
+</script>
+
+
+
+<!-- Roles -->
+<script>
+
+   
+    function submitRoleForm(formId, submitButtonId, url, method = 'POST', discardButtonId = 'discardButton') {
+        const form = document.getElementById(formId);
+        const submitButton = document.getElementById(submitButtonId);
+
+        // Collect selected permissions
+        let permissions = [];
+        document.querySelectorAll('.permission-checkbox:checked').forEach((checkbox) => {
+            permissions.push(checkbox.value);
+        });
+
+        const formDataObj = Object.fromEntries(new FormData(form).entries());
+
+        // Add extra fields
+        formDataObj._method = method;
+        formDataObj.routeName = url;
+        formDataObj.permissions = permissions;
+
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        handleFormSubmission(formDataObj, submitButton, discardButtonId);
+    }
+
+    function filterRole () {
+        const roleFilter = document.getElementById('roleFilter');
+        const roleCards = document.querySelectorAll('.role-card');
+
+        // Listen for changes to the dropdown
+        roleFilter.addEventListener('change', function () {
+            const selectedRole = roleFilter.value.toLowerCase(); // Get the selected role value and convert it to lowercase
+
+            // Loop through all the cards and filter them based on the selected role
+            roleCards.forEach(card => {
+                const cardRole = card.getAttribute('data-role').toLowerCase(); // Get the role from the card’s data attribute
+
+                // If the selected role is empty, show all cards. Otherwise, filter based on the selected role
+                if (selectedRole === "" || cardRole.includes(selectedRole)) {
+                    card.style.display = 'block'; // Show matching card
+                } else {
+                    card.style.display = 'none'; // Hide non-matching card
+                }
+            });
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        filterRole();
+    });
+   
+    
+    function showAllPermissions(roleId) {
+        const modalId = `#permissionsModal${roleId}`;
+        const modal = new bootstrap.Modal(document.querySelector(modalId));
+        modal.show();
+    }
+
+    
+    function editInstanceLoopRole(uniqueId) {
+        const submitButton = document.getElementById('submitButton' + uniqueId);
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Select the form and create FormData from it
+        var form = document.getElementById('edit_role_form' + uniqueId);
+        var formData = new FormData(form);
+
+        // Get the checked permission values as an array
+        var permissions = getCheckedValues(uniqueId);
+        permissions.forEach(permissionId => formData.append('permissions[]', permissionId));
+        var data = Object.fromEntries(formData.entries());
+
+        // Confirm permissions as an array in final data object
+        data.permissions = permissions;
+
+        // Set up the URL dynamically
+        var updateUrl = '{{ route('role.update', ['role' => ':id']) }}'.replace(':id', uniqueId);
+
+        // Submit form data asynchronously
+        handleEditResponse(data, updateUrl, uniqueId, submitButton);
+
+
+    }
+
+
+    // Reusable function to filter cards based on search input
+    function setupCardSearch(inputId, cardSelector, attributeName, titleSelector) {
+        LiveBlade.searchCardItems(inputId, cardSelector, attributeName, titleSelector)
+    }
+
+    // Set up the event listener after the DOM is fully loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        setupCardSearch('roleSearchBar', '.role-card', 'data-role', '.card-title h2'); // Call the function with parameters
+    });
+
+    // Function to initialize each modal
+    function initializeModal(roleId) {
+        const selectAllCheckbox = document.getElementById(`kt_roles_select_all${roleId}`);
+        const permissionCheckboxes = document.querySelectorAll(`#edit_role_form${roleId} .permission-checkbox`);
+
+        // Function to update "Select All" checkbox based on individual checkboxes' state
+        function updateSelectAllCheckbox() {
+            const allChecked = Array.from(permissionCheckboxes).every(checkbox => checkbox.checked);
+            selectAllCheckbox.checked = allChecked;
+        }
+
+        // Handle "Select All" checkbox click event to toggle all permissions
+        selectAllCheckbox.addEventListener('change', function () {
+            const isChecked = selectAllCheckbox.checked;
+            permissionCheckboxes.forEach(checkbox => {
+                checkbox.checked = isChecked;
+            });
+        });
+
+        // Handle individual permission checkbox change event
+        permissionCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateSelectAllCheckbox);
+        });
+
+        // Initial update of "Select All" checkbox on modal load
+        updateSelectAllCheckbox();
+    }
+
+    // Initialize all modals only once when the modal is triggered by the "Edit" button
+    function initializeModalOnClick(roleId) {
+        const modal = document.getElementById(`edit_role${roleId}`);
+        
+        // Initialize modal when it's opened
+        modal.addEventListener('shown.bs.modal', function () {
+            initializeModal(roleId);  // Call the modal initialization function
+        });
+    }
+
+
+
+    function getCheckedValues(uniqueId) {
+        // Fetch all checked checkboxes and map to their values, confirming it's an array
+        const checkedValues = Array.from(document.querySelectorAll(`#edit_role_form${uniqueId} .permission-checkbox:checked`))
+                                .map(cb => cb.value);
+        return checkedValues;
+    }
+
+
+</script>
+
+
+<!-- Human Resource -->
+ 
+ <script>
+
+    function submitEmployeeForm(formId, submitButtonId, url, method = 'POST', discardButtonId = 'discardButton') {
+        const form = document.getElementById(formId);
+        const submitButton = document.getElementById(submitButtonId);
+
+        if (!form || !submitButton) {
+            console.error('Form or button not found:', formId, submitButtonId);
+            return;
+        }
+
+        // Collect form data
+        const formData = Object.fromEntries(new FormData(form));
+        formData._method = method;
+        formData.routeName = url;
+
+        // Start loading
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Pass handling + data to reusable handler
+        handleFormSubmission(formData, submitButton, discardButtonId);
+    }
+
+    function editEmployeeInstanceLoop(uniqueId) {
+        const submitButton = document.getElementById('submitEmplButton' + uniqueId);
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        var form = document.getElementById('edit_user_form' + uniqueId);
+        var formData = new FormData(form);
+
+        var data = Object.fromEntries(formData.entries());
+        // console.log(data);
+        var updateUrl = '{{ route('employee.update', ['employee' => ':id']) }}'.replace(':id', uniqueId);
+
+        handleEditResponse(data, updateUrl, uniqueId, submitButton);
+    }
+
+
+    function updateEmployeeStatus(uniqueId, selectedStatus) {
+        // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
+        const updateRoute = '/employee-status/' + uniqueId;
+        LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
+    }
+
+ </script>
+
+
+<!-- User Profile  -->
+<script>
+    // ✅ Ensure function is in global scope
+    function previewAndUploadProfileImage(event) {
+        const image = document.getElementById('profile-img-preview');
+        const file = event.target.files[0];
+
+        if (!file) return;
+
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        const allowedError = '{{ __('auth.allowed_files') }}';
+        if (!allowedTypes.includes(file.type)) {
+            alert(allowedError);
+            return;
+        }
+
+        const maxSize = 5 * 1024 * 1024;
+        const sizeError = '{{ __('auth.file_large') }}';
+        if (file.size > maxSize) {
+            alert(sizeError);
+            return;
+        }
+
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            image.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+
+        const formData = new FormData();
+        formData.append('profile_image', file);
+
+        uploadFile(formData, "{{ route('profile.upload_image') }}");
+    }
+    
+    function uploadFile(formData, uploadUrl) {
+        const type = formData.get("type") || "profile_image";
+        const file = formData.get("profile_image") || formData.get("file");
+
+        if (!uploadUrl) {
+            console.error("Upload URL required");
+            return;
+        }
+
+        LiveBlade.uploadImage(file, uploadUrl, type);
+    }
+
+
+</script>
 
 
 <!-- Currency -->
@@ -249,6 +530,60 @@
 <!-- Settings -->
 <script>
 
+    
+    function previewAndUploadLogoOrFavicon(event) {
+        const input = event.target; // Get the file input element
+        const fileType = input.dataset.type; // Get the data-type (logo or favicon)
+        const previewSelector = `[data-preview="${fileType}-preview"]`; // Match the correct preview container
+
+        if (input.files && input.files[0]) {
+            const file = input.files[0]; // Get the selected file
+            const reader = new FileReader(); // Create a FileReader object
+
+            reader.onload = function (e) {
+                // Find the preview container based on the data-type
+                const previewElement = document.querySelector(previewSelector);
+                if (previewElement) {
+                    // Set the background image
+                    previewElement.style.backgroundImage = `url(${e.target.result})`;
+                }
+            };
+
+            const formData = new FormData();
+            formData.append("file", file); // Append the file
+            formData.append("type", fileType); // Append the file type (logo or favicon)
+
+            // Call the function to upload the file to the server
+            uploadLogoOrFavicon(formData);
+
+            // Read the file as a Data URL
+            reader.readAsDataURL(file);
+
+        }
+    }
+
+    function uploadLogoOrFavicon(formData) {
+        const type = formData.get("type"); // Extract the type (logo or favicon)
+        const file = formData.get("file"); // Extract the file itself
+
+        // Determine the URL based on the type (logo or favicon)
+        let uploadUrl = "";
+        if (type === "logo_image") {
+            uploadUrl = '{{ route("logo.upload") }}'; // Set URL for logo upload
+        } else if (type === "favicon_image") {
+            uploadUrl = '{{ route("favicon.upload") }}'; // Set URL for favicon upload
+        } else {
+            alert("Invalid file type");
+            return; // Exit if the type is invalid
+        }
+
+        // console.log("Uploading to:", uploadUrl);
+        // console.log("File Type:", type);
+
+        // Pass the file to LiveBlade.uploadImage
+        LiveBlade.uploadImage(file, uploadUrl, type);
+    }
+
     function submitSettingFormEntities(formId, submitButtonId, url, method = 'POST', discardButtonId = '') {
         const form = document.getElementById(formId);
         const submitButton = document.getElementById(submitButtonId);
@@ -257,7 +592,7 @@
         const formData = Object.fromEntries(new FormData(form));
         formData._method = method;
         formData.routeName = url;
-        console.log(formData);
+        // console.log(formData);
 
         // Start loading
         LiveBlade.toggleButtonLoading(submitButton, true);
@@ -318,7 +653,6 @@
     }
 
 </script>
-
 
 
 <!-- Department -->
@@ -425,6 +759,12 @@
             ],
         });
 
+        
+        @if ( @json_decode(request()->routeIs('role.*')) )
+            // filterRole();
+        @endif
+        // Just for global access as an inner function
+        window.showAllPermissions = showAllPermissions;
     }
     
 

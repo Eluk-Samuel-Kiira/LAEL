@@ -32,7 +32,7 @@
                         <td>{{ $currency->code }}</td>
                         <td>{{ $currency->name }}</td>
                         <td>
-                            <div class="badge badge-light fw-bold">{{ $currency->symbol }}</div>
+                            <div class="fw-bold text-primary ms-3">{{ $currency->symbol }}</div>
                         </td>
                         <td>
                             <div class="badge badge-light fw-bold">{{ $currency->currencyCreater->name ?? 'None' }}</div>
