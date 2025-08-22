@@ -145,9 +145,10 @@
 
                     // Insert the fetched content into the page
                     pageContent.innerHTML = ktAppMain.innerHTML;
-                } else {
-                    console.error('Error: #kt_app_main not found in the fetched content.');
-                }
+                } 
+                // else {
+                //     console.error('Error: #kt_app_main not found in the fetched content.');
+                // }
 
                 // Hide the loader after a small delay (optional)
                 setTimeout(hideLoader, 300);
@@ -196,8 +197,346 @@
     // Initial load
     renderAppPage(window.location.pathname);
 </script>
+ 
 
 
+
+<!-- Inventory Mgt -->
+<script>
+
+    function editItemInstanceLoop(uniqueId) {
+        const submitButton = document.getElementById('updateItemButton' + uniqueId);
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Select the form and create FormData from it
+        var form = document.getElementById('kt_modal_item_form' + uniqueId);
+        var formData = new FormData(form);
+
+        var data = Object.fromEntries(formData.entries());
+        // console.log(data);
+
+        // Set up the URL dynamically
+        var updateUrl = '{{ route('items.update', ['item' => ':id']) }}'.replace(':id', uniqueId);
+
+        // console.log(updateUrl);
+        handleEditResponse(data, updateUrl, uniqueId, submitButton);
+    }
+
+    function submitItemForm(formId, submitButtonId, url, method = 'POST', discardButtonId = 'discardButton') {
+        const form = document.getElementById(formId);
+        const submitButton = document.getElementById(submitButtonId);
+
+        if (!form || !submitButton) {
+            console.error('Form or button not found:', formId, submitButtonId);
+            return;
+        }
+
+        // Collect form data
+        const formData = Object.fromEntries(new FormData(form));
+        formData._method = method;
+        formData.routeName = url;
+
+        // Start loading
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Pass handling + data to reusable handler
+        handleFormSubmission(formData, submitButton, discardButtonId);
+    }
+
+
+
+    document.addEventListener("change", function (e) {
+        if (e.target.id === "departmentFilter" || e.target.id === "locationFilter") {
+            const departmentFilter = document.getElementById("departmentFilter");
+            const locationFilter = document.getElementById("locationFilter");
+            const rows = document.querySelectorAll("#kt_table_users tbody tr");
+
+            const selectedDepartment = departmentFilter ? departmentFilter.value : "";
+            const selectedLocation = locationFilter ? locationFilter.value : "";
+
+            rows.forEach(row => {
+                const rowDepartment = row.getAttribute("data-department");
+                const rowLocation = row.getAttribute("data-location");
+
+                let showRow = true;
+
+                if (selectedDepartment && rowDepartment !== selectedDepartment) {
+                    showRow = false;
+                }
+                if (selectedLocation && rowLocation !== selectedLocation) {
+                    showRow = false;
+                }
+
+                row.style.display = showRow ? "" : "none";
+            });
+        }
+    });
+
+</script>
+
+
+<!-- Product Catalog -->
+<script>
+
+    function editProductVariantInstanceLoop(uniqueId) {
+        const submitButton = document.getElementById('editUOMButton' + uniqueId);
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Select the form and create FormData from it
+        var form = document.getElementById('kt_modal_product_form' + uniqueId);
+        var formData = new FormData(form);
+
+        var data = Object.fromEntries(formData.entries());
+        // console.log(data);
+
+        // Set up the URL dynamically
+        var updateUrl = '{{ route('variants.update', ['variant' => ':id']) }}'.replace(':id', uniqueId);
+        
+        // Submit form data asynchronously
+        handleEditResponse(data, updateUrl, uniqueId, submitButton);
+
+    }
+    
+    function updateVariantStatus(uniqueId, selectedStatus) {
+        // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
+        const updateRoute = '/variant-status/' + uniqueId;
+        LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
+    }
+    
+    function editProductInstanceLoop(uniqueId) {
+        
+        const submitButton = document.getElementById('editProductButton' + uniqueId);
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Select the form and create FormData from it
+        var form = document.getElementById('kt_modal_product_form' + uniqueId);
+        var formData = new FormData(form);
+
+        var data = Object.fromEntries(formData.entries());
+        // console.log(data);
+
+        // Set up the URL dynamically
+        var updateUrl = '{{ route('products.update', ['product' => ':id']) }}'.replace(':id', uniqueId);
+        
+        // Submit form data asynchronously
+        handleEditResponse(data, updateUrl, uniqueId, submitButton);
+
+    }
+
+    function updateProductStatus(uniqueId, selectedStatus) {
+        // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
+        const updateRoute = '/product-status/' + uniqueId;
+        LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
+    }
+
+    function updateTaxStatus(uniqueId, selectedStatus) {
+        // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
+        const updateRoute = '/product-tax-status/' + uniqueId;
+        LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
+    }
+    
+    function submitCategoryForm(formId, submitButtonId, url, method = 'POST', discardButtonId = 'discardButton') {
+        const form = document.getElementById(formId);
+        const submitButton = document.getElementById(submitButtonId);
+
+        if (!form || !submitButton) {
+            console.error('Form or button not found:', formId, submitButtonId);
+            return;
+        }
+
+        // Collect form data
+        const formData = Object.fromEntries(new FormData(form));
+        formData._method = method;
+        formData.routeName = url;
+
+        // Start loading
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Pass handling + data to reusable handler
+        handleFormSubmission(formData, submitButton, discardButtonId);
+    }
+
+    function editCategoryInstanceLoop(uniqueId) {
+        const submitButton = document.getElementById('editUOMButton' + uniqueId);
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Select the form and create FormData from it
+        var form = document.getElementById('kt_modal_edit_uom_form' + uniqueId);
+        var formData = new FormData(form);
+
+        var data = Object.fromEntries(formData.entries());
+        // console.log(data);
+
+        // Set up the URL dynamically
+        var updateUrl = '{{ route('category.update', ['category' => ':id']) }}'.replace(':id', uniqueId);
+        
+        // Submit form data asynchronously
+        handleEditResponse(data, updateUrl, uniqueId, submitButton);
+
+    }
+    
+    function updateCategoryStatus(uniqueId, selectedStatus) {
+        // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
+        const updateRoute = '/category-status/' + uniqueId;
+        LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
+    }
+</script>
+
+
+
+<!-- Roles -->
+<script>
+    function submitRoleForm(formId, submitButtonId, url, method = 'POST', discardButtonId = 'discardButton') {
+        const form = document.getElementById(formId);
+        const submitButton = document.getElementById(submitButtonId);
+
+        // Collect selected permissions
+        let permissions = [];
+        document.querySelectorAll('.permission-checkbox:checked').forEach((checkbox) => {
+            permissions.push(checkbox.value);
+        });
+
+        const formDataObj = Object.fromEntries(new FormData(form).entries());
+
+        // Add extra fields
+        formDataObj._method = method;
+        formDataObj.routeName = url;
+        formDataObj.permissions = permissions;
+
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        handleFormSubmission(formDataObj, submitButton, discardButtonId);
+    }
+
+
+    function editInstanceLoopRole(uniqueId) {
+        const submitButton = document.getElementById('submitButton' + uniqueId);
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Select the form and create FormData from it
+        var form = document.getElementById('edit_role_form' + uniqueId);
+        var formData = new FormData(form);
+
+        // Get the checked permission values as an array
+        var permissions = getCheckedValues(uniqueId);
+        permissions.forEach(permissionId => formData.append('permissions[]', permissionId));
+        var data = Object.fromEntries(formData.entries());
+
+        // Confirm permissions as an array in final data object
+        data.permissions = permissions;
+
+        // Set up the URL dynamically
+        var updateUrl = '{{ route('role.update', ['role' => ':id']) }}'.replace(':id', uniqueId);
+
+        // Submit form data asynchronously
+        handleEditResponse(data, updateUrl, uniqueId, submitButton);
+
+
+    }
+
+
+</script>
+
+
+<!-- Human Resource -->
+ 
+ <script>
+
+    function submitEmployeeForm(formId, submitButtonId, url, method = 'POST', discardButtonId = 'discardButton') {
+        const form = document.getElementById(formId);
+        const submitButton = document.getElementById(submitButtonId);
+
+        if (!form || !submitButton) {
+            console.error('Form or button not found:', formId, submitButtonId);
+            return;
+        }
+
+        // Collect form data
+        const formData = Object.fromEntries(new FormData(form));
+        formData._method = method;
+        formData.routeName = url;
+
+        // Start loading
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Pass handling + data to reusable handler
+        handleFormSubmission(formData, submitButton, discardButtonId);
+    }
+
+    function editEmployeeInstanceLoop(uniqueId) {
+        const submitButton = document.getElementById('submitEmplButton' + uniqueId);
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        var form = document.getElementById('edit_user_form' + uniqueId);
+        var formData = new FormData(form);
+
+        var data = Object.fromEntries(formData.entries());
+        // console.log(data);
+        var updateUrl = '{{ route('employee.update', ['employee' => ':id']) }}'.replace(':id', uniqueId);
+
+        handleEditResponse(data, updateUrl, uniqueId, submitButton);
+    }
+
+
+    function updateEmployeeStatus(uniqueId, selectedStatus) {
+        // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
+        const updateRoute = '/employee-status/' + uniqueId;
+        LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
+    }
+
+ </script>
+
+
+<!-- User Profile  -->
+<script>
+    // ✅ Ensure function is in global scope
+    function previewAndUploadProfileImage(event) {
+        const image = document.getElementById('profile-img-preview');
+        const file = event.target.files[0];
+
+        if (!file) return;
+
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        const allowedError = '{{ __('auth.allowed_files') }}';
+        if (!allowedTypes.includes(file.type)) {
+            alert(allowedError);
+            return;
+        }
+
+        const maxSize = 5 * 1024 * 1024;
+        const sizeError = '{{ __('auth.file_large') }}';
+        if (file.size > maxSize) {
+            alert(sizeError);
+            return;
+        }
+
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            image.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+
+        const formData = new FormData();
+        formData.append('profile_image', file);
+
+        uploadFile(formData, "{{ route('profile.upload_image') }}");
+    }
+    
+    function uploadFile(formData, uploadUrl) {
+        const type = formData.get("type") || "profile_image";
+        const file = formData.get("profile_image") || formData.get("file");
+
+        if (!uploadUrl) {
+            console.error("Upload URL required");
+            return;
+        }
+
+        LiveBlade.uploadImage(file, uploadUrl, type);
+    }
+
+
+</script>
 
 
 <!-- Currency -->
@@ -246,8 +585,114 @@
 </script>
 
 
+<!-- Location -->
+<script>
+
+    function updatePrimaryStatus(uniqueId, selectedStatus) {
+        // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
+        const updateRoute = '/location-primary/' + uniqueId;
+        LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
+    }
+
+    function updateLocationStatus(uniqueId, selectedStatus) {
+        // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
+        const updateRoute = '/location-status/' + uniqueId;
+        LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
+    }
+
+    function editInstanceLoopLocation(uniqueId) {
+        const submitButton = document.getElementById('editLocationButton' + uniqueId);
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        var form = document.getElementById('kt_modal_edit_location_form' + uniqueId);
+        var formData = new FormData(form);
+
+        var data = Object.fromEntries(formData.entries());
+        // console.log(data);
+        var updateUrl = '{{ route('locations.update', ['location' => ':id']) }}'.replace(':id', uniqueId);
+        handleEditResponse(data, updateUrl, uniqueId, submitButton);
+    }
+
+    function submitLocationForm(formId, submitButtonId, url, method = 'POST', discardButtonId = 'discardButton') {
+        const form = document.getElementById(formId);
+        const submitButton = document.getElementById(submitButtonId);
+
+        if (!form || !submitButton) {
+            console.error('Form or button not found:', formId, submitButtonId);
+            return;
+        }
+
+        // Collect form data
+        const formData = Object.fromEntries(new FormData(form));
+        formData._method = method;
+        formData.routeName = url;
+
+        // Start loading
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Pass handling + data to reusable handler
+        handleFormSubmission(formData, submitButton, discardButtonId);
+    }
+
+</script>
+
+
 <!-- Settings -->
 <script>
+
+    
+    function previewAndUploadLogoOrFavicon(event) {
+        const input = event.target; // Get the file input element
+        const fileType = input.dataset.type; // Get the data-type (logo or favicon)
+        const previewSelector = `[data-preview="${fileType}-preview"]`; // Match the correct preview container
+
+        if (input.files && input.files[0]) {
+            const file = input.files[0]; // Get the selected file
+            const reader = new FileReader(); // Create a FileReader object
+
+            reader.onload = function (e) {
+                // Find the preview container based on the data-type
+                const previewElement = document.querySelector(previewSelector);
+                if (previewElement) {
+                    // Set the background image
+                    previewElement.style.backgroundImage = `url(${e.target.result})`;
+                }
+            };
+
+            const formData = new FormData();
+            formData.append("file", file); // Append the file
+            formData.append("type", fileType); // Append the file type (logo or favicon)
+
+            // Call the function to upload the file to the server
+            uploadLogoOrFavicon(formData);
+
+            // Read the file as a Data URL
+            reader.readAsDataURL(file);
+
+        }
+    }
+
+    function uploadLogoOrFavicon(formData) {
+        const type = formData.get("type"); // Extract the type (logo or favicon)
+        const file = formData.get("file"); // Extract the file itself
+
+        // Determine the URL based on the type (logo or favicon)
+        let uploadUrl = "";
+        if (type === "logo_image") {
+            uploadUrl = '{{ route("logo.upload") }}'; // Set URL for logo upload
+        } else if (type === "favicon_image") {
+            uploadUrl = '{{ route("favicon.upload") }}'; // Set URL for favicon upload
+        } else {
+            alert("Invalid file type");
+            return; // Exit if the type is invalid
+        }
+
+        // console.log("Uploading to:", uploadUrl);
+        // console.log("File Type:", type);
+
+        // Pass the file to LiveBlade.uploadImage
+        LiveBlade.uploadImage(file, uploadUrl, type);
+    }
 
     function submitSettingFormEntities(formId, submitButtonId, url, method = 'POST', discardButtonId = '') {
         const form = document.getElementById(formId);
@@ -257,7 +702,7 @@
         const formData = Object.fromEntries(new FormData(form));
         formData._method = method;
         formData.routeName = url;
-        console.log(formData);
+        // console.log(formData);
 
         // Start loading
         LiveBlade.toggleButtonLoading(submitButton, true);
@@ -318,7 +763,6 @@
     }
 
 </script>
-
 
 
 <!-- Department -->
@@ -425,6 +869,13 @@
             ],
         });
 
+        
+        @if ( @json_decode(request()->routeIs('role.*')) )
+            // filterRole();
+        @endif
+        @if ( @json_decode(request()->routeIs('permission.*')) )
+            window.showAllPermissions = showAllPermissions;
+        @endif
     }
     
 

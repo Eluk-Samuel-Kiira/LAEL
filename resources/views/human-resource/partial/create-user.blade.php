@@ -88,10 +88,17 @@
                             </div> 
                         </div>
                         <button type="reset" class="btn btn-light me-3" id="discardButton" data-bs-dismiss="modal">{{__('auth._discard')}}</button>
-                        <button id="submitButton" type="submit" class="btn btn-primary" id>
-                            <span class="indicator-label">{{__('auth.submit')}}</span>
+                        
+                        <button 
+                            id="submitEmplButton" 
+                            type="button" 
+                            class="btn btn-primary"
+                            onclick="submitEmployeeForm('kt_modal_add_user_form', 'submitEmplButton', '{{ route('employee.store') }}', 'POST', 'discardButton')">
+                            
+                            <span class="indicator-label">{{__('auth.sumbit')}}</span>
                             <span class="indicator-progress">{{__('auth.please_wait')}}
-                            <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                            </span>
                         </button>
                     </div>
                 </form>

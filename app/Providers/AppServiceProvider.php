@@ -14,6 +14,7 @@ use App\Models\ProductCategory;
 use App\Models\UnitOfMeasure;
 use App\Models\ProductVariant;
 use App\Models\Currency;
+use App\Models\Location;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -36,6 +37,7 @@ class AppServiceProvider extends ServiceProvider
             })
             ->get();
 
+        $locations = Location::where('is_active', 1)->get();
         $sub_categories = ProductCategory::where('is_active', 1)->get();
         $uoms = UnitOfMeasure::where('isActive', 1)->get();
         $currencies = Currency::where('isActive', 1)->get();
@@ -55,6 +57,7 @@ class AppServiceProvider extends ServiceProvider
             'uoms' => $uoms,
             'variants' => $variants,
             'currencies' => $currencies,
+            'locations' => $locations,
         ]);
 
         $app_mails = Setting::first();

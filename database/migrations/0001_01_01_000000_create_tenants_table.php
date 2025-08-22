@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('tenants', function (Blueprint $table) {
             $table->id(); // SERIAL PRIMARY KEY
             $table->string('name', 100);
-            $table->string('subdomain', 50)->unique(); // e.g. 'acme.pointofsale.com'
+            $table->string('subdomain', 225)->unique(); // e.g. 'acme.pointofsale.com'
             $table->enum('status', ['active', 'suspended', 'trial'])->default('trial');
             $table->timestampTz('created_at')->useCurrent(); // created_at with time zone
         });

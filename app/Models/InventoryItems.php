@@ -19,6 +19,7 @@ class InventoryItems extends Model
         'batch_number',
         'expiry_date',
         'variant_id',
+        'location_id',
         'department_id',
         'created_by',
         'tenant_id',
@@ -42,5 +43,10 @@ class InventoryItems extends Model
     public function itemCreater()
     {
         return $this->belongsTo(User::class, 'created_by', 'id');
+    }
+
+    public function itemLocation()
+    {
+        return $this->belongsTo(Location::class, 'location_id', 'id');
     }
 }

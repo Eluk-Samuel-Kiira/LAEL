@@ -25,38 +25,25 @@
                     <li class="breadcrumb-item text-muted">{{__('auth.role_table')}}</li>
                 </ul>
             </div>
-            <div class="d-flex align-items-center gap-2 gap-lg-3">
-                <button type="button" class="btn btn-sm btn-light-primary me-3" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
-                <i class="ki-duotone ki-filter fs-2">
-                    <span class="path1"></span>
-                    <span class="path2"></span>
-                </i>{{__('auth._filter')}}</button>
-                <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
-                    <div class="px-7 py-5">
-                        <div class="fs-5 text-gray-900 fw-bold">{{__('auth._filter')}}</div>
-                    </div>
-                    <div class="separator border-gray-200"></div>
-                    
-                    <!-- Search Bar -->
-                    <div class="px-7 py-5">
-                        <input type="text" id="roleSearchBar" class="form-control" placeholder="{{__('auth._search')}} {{__('auth._roles')}}">
-                    </div>
+            <div class="d-flex align-items-center gap-3">
+                <!-- Search Bar -->
+                <input type="text" id="searchInput" class="form-control w-auto" 
+                    placeholder="{{ __('auth._search') }} {{ __('auth._role') }}"
+                    id="roleSearchBar">
 
-                    <div class="px-7 py-5" data-kt-user-table-filter="form">
-                        <div class="mb-10">
-                            <label class="form-label fs-6 fw-semibold">{{__('auth._role')}}:</label>
-                            <select class="form-select form-select-solid fw-bold" id="roleFilter">
-                                <option value="">{{__('auth.reset_role')}}</option>
-                                @foreach ($roles as $role)
-                                    <option value="{{ $role->name }}">{{ ucwords(str_replace('_', ' ', $role->name)) }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                </div>
+                <!-- Role Filter -->
+                <select class="form-select form-select-solid fw-bold w-auto" id="roleFilter">
+                    <option value="">{{ __('auth.reset_role') }}</option>
+                    @foreach ($roles as $role)
+                        <option value="{{ $role->name }}">{{ ucwords(str_replace('_', ' ', $role->name)) }}</option>
+                    @endforeach
+                </select>
+
+                <!-- New Role Button -->
                 @can('create role')
                     <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_add_role">
-                    <i class="ki-duotone ki-plus fs-2"></i>{{__('auth.new_role')}}</button>
+                        <i class="ki-duotone ki-plus fs-2"></i> {{ __('auth.new_role') }}
+                    </button>
                 @endcan
 
                 @include('human-resource.role.create-role')    
@@ -73,26 +60,7 @@
         </div>
     </div>
 
-    <script>
-        function updateStatus(uniqueId, selectedStatus) {
-            // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
-            const updateRoute = '/department-status/' + uniqueId;
-            LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
-        }
-    </script>   
 
-    <script>
-        // Reusable function to filter cards based on search input
-        function setupCardSearch(inputId, cardSelector, attributeName, titleSelector) {
-            LiveBlade.searchCardItems(inputId, cardSelector, attributeName, titleSelector)
-        }
-
-        // Set up the event listener after the DOM is fully loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            setupCardSearch('roleSearchBar', '.role-card', 'data-role', '.card-title h2'); // Call the function with parameters
-        });
-
-    </script>
         
     @endsection
 </x-app-layout>

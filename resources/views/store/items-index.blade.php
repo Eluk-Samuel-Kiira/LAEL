@@ -26,22 +26,29 @@
                 </ul>
             </div>
             <div class="d-flex align-items-center gap-2 gap-lg-3">
-                <button type="button" class="btn btn-sm btn-light-primary me-3" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
-                <i class="ki-duotone ki-filter fs-2">
-                    <span class="path1"></span>
-                    <span class="path2"></span>
-                </i>{{__('auth._filter')}}</button>
-                <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
-                    <div class="px-7 py-5">
-                        <div class="fs-5 text-gray-900 fw-bold">{{__('auth._filter')}}</div>
-                    </div>
-                    <div class="separator border-gray-200"></div>
-                    
-                    <!-- Search Bar -->
-                    <div class="px-7 py-5">
-                        <input type="text" id="searchInput" class="form-control" placeholder="{{__('auth._search')}} {{__('pagination._products')}}">
-                    </div>
-                </div>  
+                <!-- Search Bar -->
+                <div class="px-7 py-5">
+                    <input type="text" id="searchInput" class="form-control" placeholder="{{__('auth._search')}} {{__('pagination._products')}}"
+                        onkeyup="searchTable(this.value, 'kt_table_users')">
+                </div>
+
+                <!-- Location Filter -->
+                <select class="form-select form-select-solid fw-bold w-auto" id="locationFilter">
+                    <option value="">{{ __('pagination._location') }}</option>
+                    @foreach ($locations as $location)
+                        <option value="{{ $location->id }}">{{ ucwords(str_replace('_', ' ', $location->name)) }}</option>
+                    @endforeach
+                </select>
+
+                <!-- Department Filter -->
+                <select class="form-select form-select-solid fw-bold w-auto" id="departmentFilter">
+                    <option value="">{{ __('auth._department') }}</option>
+                    @foreach ($departments as $department)
+                        <option value="{{ $department->id }}">{{ ucwords($department->name) }}</option>
+                    @endforeach
+                </select>
+
+
                 @can('create inventory record')
                     <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_add_inventory">
                     <i class="ki-duotone ki-plus fs-2"></i>{{__('auth._create')}} {{__('pagination.inventory_item')}}</button>

@@ -40,7 +40,7 @@
                                                     <div class="col-md-4">
                                                         <label class="form-check form-check-sm form-check-custom form-check-solid">
                                                             <input class="form-check-input permission-checkbox" type="checkbox" 
-                                                            value="{{ $permission->id }}" id="permission{{ $permission->id }}" name="permissions[]" />
+                                                                value="{{ $permission->id }}" id="permission{{ $permission->id }}" name="permissions[]" />
                                                             <span class="form-check-label">{{ $permission->name }}</span>
                                                         </label><br>
                                                     </div>
@@ -55,13 +55,19 @@
                     </div>
                     <div class="text-center pt-15">
                         <button id="discardButton" type="reset" class="btn btn-light me-3" data-bs-dismiss="modal">{{__('auth._discard') }}</button>
-                        <button id="submitButton" type="submit" class="btn btn-primary">
-                            <span class="indicator-label">{{__('auth.submit') }}</span>
-                            <span class="indicator-progress" style="display: none;">
-                                {{__('auth.please_wait') }}
+                        
+                        <button 
+                            id="submitRoleButton" 
+                            type="button" 
+                            class="btn btn-primary"
+                            onclick="submitRoleForm('kt_modal_add_role_form', 'submitRoleButton', '{{ route('role.store') }}', 'POST', 'discardButton')">
+                            
+                            <span class="indicator-label">{{__('auth.submit')}}</span>
+                            <span class="indicator-progress">{{__('auth.please_wait')}}
                                 <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
                             </span>
                         </button>
+
                     </div>
                 </form>
             </div>
@@ -70,6 +76,7 @@
 </div>
 
 <script>
+    
     // Master checkbox logic
     document.getElementById('kt_roles_select_all').addEventListener('change', function () {
         const isChecked = this.checked;
@@ -80,54 +87,7 @@
 </script>
 
 
-<script>
-    const submitFormEntities = (formId, submitButtonId, url, method = 'POST') => {
-        document.getElementById(formId).addEventListener('submit', function(e) {
-            e.preventDefault();
 
-            // Collect selected permissions
-            let permissions = [];
-            document.querySelectorAll('.permission-checkbox:checked').forEach((checkbox) => {
-                permissions.push(checkbox.value);
-            });
 
-            // Collect form data and add additional fields
-            const formData = Object.fromEntries(new FormData(this));
-            formData._method = method;
-            formData.routeName = url;
-            formData.permissions = permissions;
 
-            // console.log(formData);
 
-            // Reference the submit button and reloading
-            const submitButton = document.getElementById(submitButtonId);
-            LiveBlade.toggleButtonLoading(submitButton, true);
-
-            // Submit form data asynchronously
-            LiveBlade.submitFormItems(formData)
-                .then(noErrors => {
-                    console.log(noErrors);
-                    
-                    if (noErrors) {
-                        // Close the modal if no errors
-                        const closeModal = () => {
-                            document.getElementById('discardButton').click();
-                        };
-                        closeModal();
-                    }
-                })
-                .catch(error => {
-                    console.error('An unexpected error occurred:', error);
-                    // Display user-friendly error feedback here, if needed
-                })
-                .finally(() => {
-                    // End loading state using reusable function
-                    LiveBlade.toggleButtonLoading(submitButton, false);
-                });
-
-                
-        });
-    };
-
-    submitFormEntities('kt_modal_add_role_form', 'submitButton', '{{ route('role.store') }}');
-</script>

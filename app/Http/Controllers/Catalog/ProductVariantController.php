@@ -98,10 +98,10 @@ class ProductVariantController extends Controller
             'name' => [
                 'required',
                 'max:100',
-                Rule::unique('product_variants', 'name')->ignore($product->id),
+                Rule::unique('product_variants', 'name')->ignore($id),
             ],
             'product_id' => 'required|exists:products,id',
-            'sku' => 'required|string|max:50|unique:products,sku,NULL,id,tenant_id,',
+            'sku' => 'required|string|max:50|unique:products,sku',
             'barcode' => 'required|string',
             'price' => 'required|',
             'cost_price' => 'required|string',

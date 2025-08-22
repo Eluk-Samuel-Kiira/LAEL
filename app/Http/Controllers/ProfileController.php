@@ -139,7 +139,7 @@ class ProfileController extends Controller
             // Respond with success if it's an AJAX request
             return response()->json([
                 'success' => true,
-                'message' => __('auth._uploaded '),
+                'message' => __('auth._uploaded'),
             ]);
         }
 

@@ -142,8 +142,12 @@ class ProductCategoryController extends Controller
             // Update the category record
             $category->update($validated);
 
-            return redirect()->route('product-category.index')
-                            ->with('success', __('auth._updated'));
+            session()->flash('toast', [
+                'type' => 'success',
+                'message' => __('auth._updated'),
+            ]);
+
+            return redirect()->route('product-category.index');
 
         } catch (ValidationException $e) {
             return redirect()->back()

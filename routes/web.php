@@ -14,12 +14,20 @@ use App\Http\Controllers\Catalog\ProductController;
 use App\Http\Controllers\Catalog\ProductCategoryController;
 use App\Http\Controllers\Catalog\ProductVariantController;
 use App\Http\Controllers\Catalog\InventoryItemController;
+use App\Http\Controllers\Home\LocationController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+    Route::get('/', function () {
+        return view('welcome');
+    });
 
+    // Error Pages
+    Route::get('/error-404', function () {
+        return response()->view('layouts.error-404', [], 404); 
+    });
 
+    Route::get('/error-500', function () {
+        return response()->view('layouts.error-500', [], 500); 
+    });
 
 Route::get('/dashboard', [DashboardController::class, 'index'] )->middleware(['auth', 'verified'])->name('dashboard');
 Route::get('/overview', [DashboardController::class, 'overview'] )->middleware(['auth', 'verified'])->name('overview');
@@ -86,6 +94,12 @@ Route::middleware('auth')->group(function () {
 
     // Stores and Inventory
     Route::resource('items', InventoryItemController::class);
+
+    
+    // Location
+    Route::resource('locations', LocationController::class);
+    Route::post('/location-primary/{id}', [LocationController::class, 'updatePrimaryStatus']);
+    Route::post('/location-status/{id}', [LocationController::class, 'updateLocationStatus']);
 
 
 });

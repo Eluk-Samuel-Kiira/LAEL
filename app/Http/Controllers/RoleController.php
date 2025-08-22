@@ -144,6 +144,9 @@ class RoleController extends Controller
             
             // If the role exists, sync the permissions
             if ($userRole) {
+                $userRole->update([
+                    'name' => $validatedPermission['name']
+                ]);
                 $permissions = Permission::whereIn('id', $validatedPermission['permissions'])->pluck('name');
                 $userRole->syncPermissions($permissions);
             } else{

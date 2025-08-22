@@ -56,8 +56,8 @@
                         </div>
                     </div>
                     <div class="text-center pt-15">
-                        <button type="reset" class="btn btn-light me-3" id="closeModalButton{{ $role->id }}" data-bs-dismiss="modal">{{__('auth._discard') }}</button>
-                        <button type="button" onclick="editInstanceLoop({{ $role->id }})" class="btn btn-primary" id="submitButton{{ $role->id }}">
+                        <button type="reset" class="btn btn-light me-3" id="closeModalEditButton{{ $role->id }}" data-bs-dismiss="modal">{{__('auth._discard') }}</button>
+                        <button type="button" onclick="editInstanceLoopRole({{ $role->id }})" class="btn btn-primary" id="submitButton{{ $role->id }}">
                             <span class="indicator-label">{{__('auth.submit') }}</span>
                             <span class="indicator-progress" style="display: none;">
                                 {{__('auth.please_wait') }}
@@ -72,95 +72,4 @@
 </div>
 
 
-<script>
-    // Function to initialize each modal
-    function initializeModal(roleId) {
-        const selectAllCheckbox = document.getElementById(`kt_roles_select_all${roleId}`);
-        const permissionCheckboxes = document.querySelectorAll(`#edit_role_form${roleId} .permission-checkbox`);
 
-        // Function to update "Select All" checkbox based on individual checkboxes' state
-        function updateSelectAllCheckbox() {
-            const allChecked = Array.from(permissionCheckboxes).every(checkbox => checkbox.checked);
-            selectAllCheckbox.checked = allChecked;
-        }
-
-        // Handle "Select All" checkbox click event to toggle all permissions
-        selectAllCheckbox.addEventListener('change', function () {
-            const isChecked = selectAllCheckbox.checked;
-            permissionCheckboxes.forEach(checkbox => {
-                checkbox.checked = isChecked;
-            });
-        });
-
-        // Handle individual permission checkbox change event
-        permissionCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', updateSelectAllCheckbox);
-        });
-
-        // Initial update of "Select All" checkbox on modal load
-        updateSelectAllCheckbox();
-    }
-
-    // Initialize all modals only once when the modal is triggered by the "Edit" button
-    function initializeModalOnClick(roleId) {
-        const modal = document.getElementById(`edit_role${roleId}`);
-        
-        // Initialize modal when it's opened
-        modal.addEventListener('shown.bs.modal', function () {
-            initializeModal(roleId);  // Call the modal initialization function
-        });
-    }
-
-</script>
-
-
-<script>
-    function getCheckedValues(uniqueId) {
-        // Fetch all checked checkboxes and map to their values, confirming it's an array
-        const checkedValues = Array.from(document.querySelectorAll(`#edit_role_form${uniqueId} .permission-checkbox:checked`))
-                                .map(cb => cb.value);
-        return checkedValues;
-    }
-
-    function editInstanceLoop(uniqueId) {
-        const submitButton = document.getElementById('submitButton' + uniqueId);
-        LiveBlade.toggleButtonLoading(submitButton, true);
-
-        // Select the form and create FormData from it
-        var form = document.getElementById('edit_role_form' + uniqueId);
-        var formData = new FormData(form);
-
-        // Get the checked permission values as an array
-        var permissions = getCheckedValues(uniqueId);
-        permissions.forEach(permissionId => formData.append('permissions[]', permissionId));
-        var data = Object.fromEntries(formData.entries());
-
-        // Confirm permissions as an array in final data object
-        data.permissions = permissions;
-
-        // Set up the URL dynamically
-        var updateUrl = '{{ route('role.update', ['role' => ':id']) }}'.replace(':id', uniqueId);
-
-        // Submit form data asynchronously
-        LiveBlade.editLoopForms(data, updateUrl)
-            .then(noErrorStatus => {
-                if (noErrorStatus) {
-                    var closeButton = document.getElementById('closeModalButton' + uniqueId);
-                    if (closeButton) {
-                        closeButton.click();
-                    }
-                }
-                })
-                .catch(error => {
-                    console.error('An unexpected error occurred:', error);
-                    // Display user-friendly error feedback here, if needed
-                })
-                .finally(() => {
-                    // End loading state using reusable function
-                    LiveBlade.toggleButtonLoading(submitButton, false);
-                });
-
-
-    }
-
-</script>

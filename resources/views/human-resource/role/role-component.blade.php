@@ -92,15 +92,111 @@
     @endforeach
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    setupRoleCardSearch('searchInput', 'roleFilter', '.role-card', '.card-title h2');
+});
+
+function setupRoleCardSearch(searchInputId, filterSelectId, cardSelector, titleSelector) {
+    const searchInput = document.getElementById(searchInputId);
+    const filterSelect = document.getElementById(filterSelectId);
+    const cards = document.querySelectorAll(cardSelector);
+
+    function filterCards() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedRole = filterSelect.value.toLowerCase();
+
+        cards.forEach(card => {
+            const titleElement = card.querySelector(titleSelector);
+            const titleText = titleElement ? titleElement.textContent.toLowerCase() : '';
+            const dataRole = card.getAttribute('data-role')?.toLowerCase() || '';
+            
+            // Also check the permissions listed inside the card
+            const permissionsText = Array.from(card.querySelectorAll('.card-body .d-flex'))
+                                        .map(el => el.textContent.toLowerCase())
+                                        .join(' ');
+
+            const matchesSearch = searchTerm === '' || 
+                                  titleText.includes(searchTerm) || 
+                                  dataRole.includes(searchTerm) || 
+                                  permissionsText.includes(searchTerm);
+
+            const matchesFilter = selectedRole === '' || dataRole === selectedRole;
+
+            if (matchesSearch && matchesFilter) {
+                card.style.display = ''; // show
+            } else {
+                card.style.display = 'none'; // hide
+            }
+        });
+    }
+
+    searchInput.addEventListener('input', filterCards);
+    filterSelect.addEventListener('change', filterCards);
+}
+</script>
+
+
 
 <script>
-    // Wrap all Js Fuctions here for the sake of reinitialization after reloading the page
-    function initializeComponentScripts() {
-        filterRole();
+    
+    // // Reusable function to filter cards based on search input
+    // function setupCardSearch(inputId, cardSelector, attributeName, titleSelector) {
+    //     LiveBlade.searchCardItems(inputId, cardSelector, attributeName, titleSelector)
+    // }
 
-        // Just for global access as an inner function
-        window.showAllPermissions = showAllPermissions;
+    // // Set up the event listener after the DOM is fully loaded
+    // document.addEventListener('DOMContentLoaded', function() {
+    //     setupCardSearch('roleSearchBar', '.role-card', 'data-role', '.card-title h2'); // Call the function with parameters
+    // });
+
+    // Function to initialize each modal
+    function initializeModal(roleId) {
+        const selectAllCheckbox = document.getElementById(`kt_roles_select_all${roleId}`);
+        const permissionCheckboxes = document.querySelectorAll(`#edit_role_form${roleId} .permission-checkbox`);
+
+        // Function to update "Select All" checkbox based on individual checkboxes' state
+        function updateSelectAllCheckbox() {
+            const allChecked = Array.from(permissionCheckboxes).every(checkbox => checkbox.checked);
+            selectAllCheckbox.checked = allChecked;
+        }
+
+        // Handle "Select All" checkbox click event to toggle all permissions
+        selectAllCheckbox.addEventListener('change', function () {
+            const isChecked = selectAllCheckbox.checked;
+            permissionCheckboxes.forEach(checkbox => {
+                checkbox.checked = isChecked;
+            });
+        });
+
+        // Handle individual permission checkbox change event
+        permissionCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateSelectAllCheckbox);
+        });
+
+        // Initial update of "Select All" checkbox on modal load
+        updateSelectAllCheckbox();
     }
+
+    // Initialize all modals only once when the modal is triggered by the "Edit" button
+    function initializeModalOnClick(roleId) {
+        const modal = document.getElementById(`edit_role${roleId}`);
+        
+        // Initialize modal when it's opened
+        modal.addEventListener('shown.bs.modal', function () {
+            initializeModal(roleId);  // Call the modal initialization function
+        });
+    }
+
+
+
+    function getCheckedValues(uniqueId) {
+        // Fetch all checked checkboxes and map to their values, confirming it's an array
+        const checkedValues = Array.from(document.querySelectorAll(`#edit_role_form${uniqueId} .permission-checkbox:checked`))
+                                .map(cb => cb.value);
+        return checkedValues;
+    }
+
     
     function filterRole () {
         const roleFilter = document.getElementById('roleFilter');
@@ -127,14 +223,7 @@
     document.addEventListener('DOMContentLoaded', function () {
         filterRole();
     });
-
-    document.addEventListener('DOMContentLoaded', function () {
-        LiveBlade.setupTableFilter('#roleFilter', '#role-card', 'data-role');
-    });
    
-
-
-
     
     function showAllPermissions(roleId) {
         const modalId = `#permissionsModal${roleId}`;
