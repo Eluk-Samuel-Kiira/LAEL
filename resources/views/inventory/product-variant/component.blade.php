@@ -76,7 +76,7 @@
                             <th class="min-w-125px">{{__('auth._creater')}}</th> 
                             <th class="min-w-125px">{{__('auth.created_at')}}</th>
                             <th class="min-w-125px">{{__('auth._status')}}</th>
-                            <th class="min-w-100px">{{__('auth._actions')}}</th>
+                            <th class="min-w-100px text-end">{{__('auth._actions')}}</th>
                         </tr>
                     </thead>
                     <tbody class="text-gray-600 fw-semibold">
@@ -121,29 +121,31 @@
                                     </td>
                                     <td>{{ $product->created_at->format('d M Y, h:i a') }}</td>
                                     <td>
-                                        <select name="status" class="form-select form-select-solid form-select-sm" onchange="updateStatus({{ $product->id }}, this.value)"
+                                        <select name="status" class="form-select form-select-solid form-select-sm" onchange="updateVariantStatus({{ $product->id }}, this.value)"
                                             @cannot('update variant') disabled @endcannot>
                                             <option value="1" {{ $product->is_active == 1 ? 'selected' : '' }}>{{__('auth._active')}}</option>
                                             <option value="0" {{ $product->is_active == 0 ? 'selected' : '' }}>{{__('auth._inactive')}}</option>
                                         </select>
                                     </td>
-                                    <td class="d-flex align-items-center gap-2 flex-column">
-                                        @can('edit product')
-                                            <button 
-                                                class="btn btn-sm btn-light btn-active-color-primary d-flex align-items-center px-3 py-2" 
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#editProduct{{$product->id}}">
-                                                <i class="bi bi-pencil-square me-1 fs-5"></i> <span>{{ __('auth._edit') }}</span>
-                                            </button>
-                                        @endcan
-                                        @can('delete product')
-                                            <button type="button" 
-                                                class="btn btn-sm btn-light btn-active-color-danger d-flex align-items-center px-3 py-2" 
-                                                data-bs-toggle="modal" 
-                                                data-bs-target="#deletecategoryModal{{$product->id}}">
-                                                <i class="bi bi-trash me-1 fs-5"></i> <span>{{ __('auth._delete') }}</span>
-                                            </button>
-                                        @endcan
+                                    <td>
+                                        <div class="d-flex gap-2">
+                                            @can('edit product')
+                                                <button 
+                                                    class="btn btn-sm btn-light btn-active-color-primary d-flex align-items-center px-3 py-2" 
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#editProduct{{$product->id}}">
+                                                    <i class="bi bi-pencil-square me-1 fs-5"></i> <span>{{ __('auth._edit') }}</span>
+                                                </button>
+                                            @endcan
+                                            @can('delete product')
+                                                <button type="button" 
+                                                    class="btn btn-sm btn-light btn-active-color-danger d-flex align-items-center px-3 py-2" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#deletecategoryModal{{$product->id}}">
+                                                    <i class="bi bi-trash me-1 fs-5"></i> <span>{{ __('auth._delete') }}</span>
+                                                </button>
+                                            @endcan 
+                                        </div>
 
                                         <!-- Delete User Modal -->
                                         <div class="modal fade" id="deletecategoryModal{{$product->id}}" tabindex="-1" aria-hidden="true">
@@ -259,84 +261,6 @@
 </script>
 
 
-<script>
-    function deleteItem(button) {
-        const itemId = button.getAttribute('data-item-id');
-        const deleteUrl = button.getAttribute('data-item-url');
-
-        const deleteButton = document.getElementById('deleteButton' + itemId);
-        LiveBlade.toggleButtonLoading(deleteButton, true);
-        
-        // Call the delete function to handle the deletion
-        LiveBlade.deleteItemInLoop(deleteUrl)
-            .then(noErrorStatus => {
-                console.log(noErrorStatus)
-                if (noErrorStatus) {
-                    var closeButton = document.getElementById('closeDeleteModal' + itemId);
-                    if (closeButton) {
-                        closeButton.click();
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('An unexpected error occurred:', error);
-                // Handle error gracefully
-            })
-            .finally(() => {
-                // End loading state using reusable function
-                LiveBlade.toggleButtonLoading(deleteButton, false);
-            });
-    }
-</script>
-
-<script>
-
-    function initializeComponentScripts() {
-        const tableId = '#kt_table_users';
-
-        // Destroy the existing DataTable instance if it exists
-        if ($.fn.DataTable.isDataTable(tableId)) {
-            $(tableId).DataTable().destroy();
-        }
-
-        // Reinitialize the DataTable
-        $(tableId).DataTable({
-            paging: true,
-            searching: true,
-            ordering: true,
-            responsive: false, // Disable responsive behavior
-            autoWidth: false, // Prevent automatic column resizing
-            language: {
-                emptyTable: "No data available",
-            },
-            columnDefs: [
-                // Specify widths for specific columns (optional)
-                { targets: 0, width: "10%" }, // Example for first column
-                { targets: 1, width: "15%" },
-            ],
-        });
-
-    }
-
-    
-    function setupTableSearch(inputId, tableId) {
-        LiveBlade.searchTableItems(inputId, tableId)
-    }
-    
-    
-    document.addEventListener('DOMContentLoaded', function() {
-        setupTableSearch('searchInput', 'kt_table_users');
-        
-    });
-</script>
-
-<script>
-    function updateStatus(uniqueId, selectedStatus) {
-        // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
-        const updateRoute = '/variant-status/' + uniqueId;
-        LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
-    }
-</script>
 
 <script>
     

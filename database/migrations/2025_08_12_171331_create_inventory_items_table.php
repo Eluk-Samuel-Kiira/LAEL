@@ -23,6 +23,7 @@ return new class extends Migration
 
             $table->foreignId('variant_id')->unique()->constrained('product_variants')->cascadeOnDelete();
             $table->foreignId('department_id')->constrained('departments')->cascadeOnDelete();
+            $table->foreignId('location_id')->constrained('locations')->cascadeOnDelete();
             $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
             $table->foreignId('tenant_id')->constrained('tenants')->cascadeOnDelete();
             $table->timestampsTz();

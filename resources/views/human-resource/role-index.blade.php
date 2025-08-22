@@ -29,7 +29,7 @@
                 <!-- Search Bar -->
                 <input type="text" id="searchInput" class="form-control w-auto" 
                     placeholder="{{ __('auth._search') }} {{ __('auth._role') }}"
-                    onkeyup="searchTable(this.value, 'kt_table_users')">
+                    id="roleSearchBar">
 
                 <!-- Role Filter -->
                 <select class="form-select form-select-solid fw-bold w-auto" id="roleFilter">
@@ -59,6 +59,7 @@
             </div>
         </div>
     </div>
+
 
         
     @endsection

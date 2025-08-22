@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\User;
 use App\Models\ProductVariant;
 use App\Models\Department;
+use App\Models\Location;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\InventoryItems>
@@ -34,6 +35,7 @@ class InventoryItemsFactory extends Factory
                 ->random(),
 
             'department_id' => Department::where('isActive', 1)->inRandomOrder()->value('id'),
+            'location_id' => Location::where('is_active', 1)->inRandomOrder()->value('id'),
             'tenant_id' => 1,
             'created_by' => User::where('role_id', '1' )->where('status', 'active')->get()->random()->id,
         ];

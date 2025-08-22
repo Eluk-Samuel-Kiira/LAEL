@@ -29,16 +29,23 @@
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
                                     <span class="required">{{__('pagination._description')}}</span>
                                 </label>
-                                <textarea class="form-control form-control-solid" name="description">Parent Category</textarea>
+                                <textarea class="form-control form-control-solid" name="description">{{__('pagination._description')}}</textarea>
                                 <div id="description"></div>
                             </div>
                         </div>
 
-                        <button type="reset" class="btn btn-light me-3" id="discardDeptButton" data-bs-dismiss="modal">{{__('auth._discard') }}</button>
-                        <button id="submitUOMButton" type="submit" class="btn btn-primary" id>
-                            <span class="indicator-label">{{__('auth.submit') }}</span>
-                            <span class="indicator-progress">{{__('auth.please_wait') }}
-                            <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                        <button type="reset" class="btn btn-light me-3" id="discardCategoryButton" data-bs-dismiss="modal">{{__('auth._discard') }}</button>
+                        
+                        <button 
+                            id="submitCategoryButton" 
+                            type="button" 
+                            class="btn btn-primary"
+                            onclick="submitCategoryForm('kt_modal_add_category_form', 'submitCategoryButton', '{{ route('category.store') }}', 'POST', 'discardCategoryButton')">
+                            
+                            <span class="indicator-label">{{__('auth.submit')}}</span>
+                            <span class="indicator-progress">{{__('auth.please_wait')}}
+                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                            </span>
                         </button>
                     </div>
                 </form>
@@ -47,45 +54,4 @@
     </div>
 </div>  
 
-
-<script>
-    const submitFormEntities = (formId, submitButtonId, url, method = 'POST') => {
-        document.getElementById(formId).addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            // Collect form data and add additional fields
-            const formData = Object.fromEntries(new FormData(this));
-            formData._method = method;
-            formData.routeName = url;
-
-            // Reference the submit button and reloading
-            const submitButton = document.getElementById(submitButtonId);
-            LiveBlade.toggleButtonLoading(submitButton, true);
-
-            // Submit form data asynchronously
-            LiveBlade.submitFormItems(formData)
-                .then(noErrors => {
-                    console.log(noErrors);
-                    
-                    if (noErrors) {
-                        // Close the modal if no errors
-                        const closeModal = () => {
-                            document.getElementById('discardDeptButton').click();
-                        };
-                        closeModal();
-                    }
-                })
-                .catch(error => {
-                    console.error('An unexpected error occurred:', error);
-                })
-                .finally(() => {
-                    LiveBlade.toggleButtonLoading(submitButton, false);
-                });
-
-                
-        });
-    };
-
-    submitFormEntities('kt_modal_add_category_form', 'submitUOMButton', '{{ route('category.store') }}');
-</script>
 

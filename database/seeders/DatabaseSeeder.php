@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             TenantSeeder::class,
             UserSeeder::class, 
+            LocationSeeder::class,
             DepartmentSeeder::class,
             SettingSeeder::class,
             UnitOfMeasureSeeder::class,
@@ -28,6 +29,11 @@ class DatabaseSeeder extends Seeder
             InventoryItemSeeder::class,
             InventoryTransactionSeeder::class,
             InventoryAdjustmentsSeeder::class,
+            CustomerGroupSeeder::class,
+            CustomerSeeder::class,
+            OrderSeeder::class,
+            OrderTaxSeeder::class,
+            OrderPaymentSeeder::class,
         ]);
     }
 }

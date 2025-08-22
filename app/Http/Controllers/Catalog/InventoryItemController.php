@@ -18,7 +18,16 @@ class InventoryItemController extends Controller
      */
     public function index(Request $request)
     {
-        $items = InventoryItems::with('variant','itemCreater')->orderBy('department_id', 'asc')->latest()->get();
+        
+        // Retrieve only those items that have its variants is active
+        $items = InventoryItems::with(['variant', 'itemCreater', 'itemLocation'])
+            ->whereHas('variant', function ($query) {
+            $query->where('is_active', 1);
+        })
+        ->orderBy('department_id', 'asc')
+        ->latest()
+        ->get();
+
 
         $bladeToReload = $request->query('bladeFileToReload');
         switch ($bladeToReload) {
@@ -50,7 +59,8 @@ class InventoryItemController extends Controller
             'quantity_on_hand' => 'required|integer|min:0',
             'quantity_allocated' => 'required|integer|min:0|lte:quantity_on_hand',
             'preferred_stock_level' => 'required|integer|min:0',
-            'department_id' => 'required|integer',
+            'department_id' => 'required|integer|exists:departments,id',
+            'location_id' => 'required|integer|exists:locations,id',
             'batch_number' => 'nullable|string|max:50',
             'expiry_date' => 'nullable|date|after_or_equal:today',
             
@@ -108,6 +118,7 @@ class InventoryItemController extends Controller
         $item = InventoryItems::find($id);
         $validated = $request->validate([
             'department_id'       => ['required','exists:departments,id'],
+            'location_id'         => ['required','integer','exists:locations,id'],
             'expiry_date'         => ['nullable','date','after_or_equal:today'],
             'quantity_on_hand'    => ['required','integer','min:0'],
             'quantity_allocated'  => ['required','integer','min:0','lte:quantity_on_hand'],

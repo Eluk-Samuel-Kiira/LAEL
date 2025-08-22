@@ -26,22 +26,12 @@
                 </ul>
             </div>
             <div class="d-flex align-items-center gap-2 gap-lg-3">
-                <button type="button" class="btn btn-sm btn-light-primary me-3" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
-                <i class="ki-duotone ki-filter fs-2">
-                    <span class="path1"></span>
-                    <span class="path2"></span>
-                </i>{{__('auth._filter')}}</button>
-                <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
-                    <div class="px-7 py-5">
-                        <div class="fs-5 text-gray-900 fw-bold">{{__('auth._filter')}}</div>
-                    </div>
-                    <div class="separator border-gray-200"></div>
-                    
-                    <!-- Search Bar -->
-                    <div class="px-7 py-5">
-                        <input type="text" id="searchInput" class="form-control" placeholder="{{__('auth._search')}} {{__('pagination._products')}}">
-                    </div>
+                <!-- Search Bar -->
+                <div class="px-7 py-5">
+                    <input type="text" id="searchInput" class="form-control" placeholder="{{__('auth._search')}} {{__('pagination._products')}}"
+                        onkeyup="searchTable(this.value, 'kt_table_users')">
                 </div>
+                
                 @can('create variant')
                     <a href="{{ route('variants.show', $product_variants->id) }}" class="btn btn-sm btn-primary">
                         <i class="ki-duotone ki-plus fs-2"></i>{{__('pagination.product_variant_new')}}

@@ -104,6 +104,13 @@ class UserSeeder extends Seeder
             'edit category',
             'delete category',
             'update category',
+            
+            // Location Management
+            'create location',
+            'view location',
+            'edit location',
+            'delete location',
+            'update location',
 
             // subcategory Management
             'create subcategory',

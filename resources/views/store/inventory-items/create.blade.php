@@ -75,7 +75,7 @@
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
                                     <span class="required">{{__('auth._department')}}</span>
                                 </label>
-                                <select name="department_id" class="form-select form-select" data-control="select2" data-close-on-select="false" data-placeholder="Select an option" data-allow-clear="true">
+                                <select name="department_id" class="form-select form-select" data-control="select2" data-close-on-select="false" data-placeholder="{{__('auth._select')}}" data-allow-clear="true">
                                     <option></option>
                                     @foreach ($departments as $department)
                                         <option value="{{ $department->id }}">{{ $department->name }}</option>
@@ -83,12 +83,30 @@
                                 </select>
                                 <div id="department_id"></div>
                             </div> 
+                            <div class="d-flex flex-column mb-8 fv-row col-md-6">
+                                <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                    <span class="required">{{__('pagination._location')}}</span>
+                                </label>
+                                <select name="location_id" class="form-select form-select" data-control="select2" data-close-on-select="false" data-placeholder="{{__('auth._select')}}" data-allow-clear="true">
+                                    <option></option>
+                                    @foreach ($locations as $location)
+                                        <option value="{{ $location->id }}">{{ $location->name }}</option>
+                                    @endforeach
+                                </select>
+                                <div id="location_id"></div>
+                            </div> 
                         </div>
 
-                        <button type="reset" id="discardDeptButton" class="btn btn-light me-3" data-bs-dismiss="modal">{{ __('auth._discard') }}</button>
-                        <button id="submitButton" type="submit" class="btn btn-primary">
-                            <span class="indicator-label">{{ __('auth.submit') }}</span>
-                            <span class="indicator-progress">{{ __('auth.please_wait') }}
+                        <button type="reset" id="discardButton" class="btn btn-light me-3" data-bs-dismiss="modal">{{ __('auth._discard') }}</button>
+                        
+                        <button 
+                            id="submitButton" 
+                            type="button" 
+                            class="btn btn-primary"
+                            onclick="submitItemForm('kt_modal_add_inventory_form', 'submitButton', '{{ route('items.store') }}', 'POST', 'discardButton')">
+                            
+                            <span class="indicator-label">{{__('auth.submit')}}</span>
+                            <span class="indicator-progress">{{__('auth.please_wait')}}
                                 <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
                             </span>
                         </button>
@@ -98,47 +116,5 @@
         </div>
     </div>
 </div>
-
-
-<script>
-    const submitFormEntities = (formId, submitButtonId, url, method = 'POST') => {
-        document.getElementById(formId).addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            // Collect form data and add additional fields
-            const formData = Object.fromEntries(new FormData(this));
-            formData._method = method;
-            formData.routeName = url;
-
-            // Reference the submit button and reloading
-            const submitButton = document.getElementById(submitButtonId);
-            LiveBlade.toggleButtonLoading(submitButton, true);
-
-            // Submit form data asynchronously
-            LiveBlade.submitFormItems(formData)
-                .then(noErrors => {
-                    console.log(noErrors);
-                    
-                    if (noErrors) {
-                        // Close the modal if no errors
-                        const closeModal = () => {
-                            document.getElementById('discardDeptButton').click();
-                        };
-                        closeModal();
-                    }
-                })
-                .catch(error => {
-                    console.error('An unexpected error occurred:', error);
-                })
-                .finally(() => {
-                    LiveBlade.toggleButtonLoading(submitButton, false);
-                });
-
-                
-        });
-    };
-
-    submitFormEntities('kt_modal_add_inventory_form', 'submitButton', '{{ route('items.store') }}');
-</script>
 
 

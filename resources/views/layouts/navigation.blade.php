@@ -165,7 +165,7 @@
                             </a>
                         </div>
                         <div class="menu-item">
-                            <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('role.index') }}')">
+                            <a class="menu-link" data-link href="javascript:void(0);" onclick="reloadToApp('{{ route('role.index') }}')">
                                 <span class="menu-bullet">
                                     <span class="bullet bullet-dot"></span>
                                 </span>
@@ -173,7 +173,7 @@
                             </a>
                         </div>
                         <div class="menu-item">
-                            <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('permission.index') }}')">
+                            <a class="menu-link" data-link href="javascript:void(0);" onclick="reloadToApp('{{ route('permission.index') }}')">
                                 <span class="menu-bullet">
                                     <span class="bullet bullet-dot"></span>
                                 </span>
@@ -234,6 +234,15 @@
                                     <span class="bullet bullet-dot"></span>
                                 </span>
                                 <span class="menu-title">{{ __('auth._department') }}</span>
+                            </a>
+                        </div>
+
+                        <div class="menu-item">
+                            <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('locations.index') }}')">
+                                <span class="menu-bullet">
+                                    <span class="bullet bullet-dot"></span>
+                                </span>
+                                <span class="menu-title">{{ __('pagination._locations') }}</span>
                             </a>
                         </div>
 

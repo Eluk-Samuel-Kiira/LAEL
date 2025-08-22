@@ -25,21 +25,9 @@
                 </ul>
             </div>
             <div class="d-flex align-items-center gap-2 gap-lg-3">
-                <button type="button" class="btn btn-sm btn-light-primary me-3" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
-                <i class="ki-duotone ki-filter fs-2">
-                    <span class="path1"></span>
-                    <span class="path2"></span>
-                </i>{{__('auth._filter')}}</button>
-                <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
-                    <div class="px-7 py-5">
-                        <div class="fs-5 text-gray-900 fw-bold">{{__('auth.filter_options')}}</div>
-                    </div>
-                    <div class="separator border-gray-200"></div>
-
-                    <!-- Search Bar -->
-                    <div class="px-7 py-5">
-                        <input type="text" id="permissionSearchBar" class="form-control" placeholder="{{__('auth._search')}}{{__('auth._users')}}">
-                    </div>
+                <!-- Search Bar -->
+                <div class="px-7 py-5">
+                    <input type="text" id="permissionSearchBar" class="form-control" placeholder="{{__('auth._search')}}{{__('auth._users')}}">
                 </div>
             </div>
         </div>

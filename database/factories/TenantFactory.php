@@ -19,8 +19,10 @@ class TenantFactory extends Factory
      */
     public function definition(): array
     {
-        $name = $this->faker->company;
-        $subdomain = strtolower(preg_replace('/\s+/', '', $name)) . '.pointofsale.com';
+        $name = $this->faker->unique()->company;
+        $base = strtolower(preg_replace('/[^a-z0-9]/', '', $name)); // strip everything not alphanumeric
+        $unique = $base . '-' . $this->faker->unique()->lexify('????') . $this->faker->unique()->numerify('###');
+        $subdomain = $unique . '.pointofsale.com';
 
         return [
             'name' => $name,

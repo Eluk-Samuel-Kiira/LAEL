@@ -4,8 +4,8 @@
             <div class="card card-flush h-md-100">
                 <div class="card-header">
                     <div class="card-title">
-                    <h2>{{ ucwords(str_replace('_', ' ', $user->first_name . ' ' . $user->last_name)) }}</h2>
-                        </div>
+                        <h2>{{ ucwords(str_replace('_', ' ', $user->first_name . ' ' . $user->last_name)) }}</h2>
+                    </div>
                 </div>
                 <div class="card-body pt-1">
                     <div class="fw-bold text-gray-600 mb-5">{{__('auth.permissions_direct_count')}} {{ $user->getDirectPermissions()->count() }}</div>
@@ -87,13 +87,77 @@
 </div>
 
 <script>
-    function initializeComponentScripts() {
-        setupCardSearch('permissionSearchBar', '.permission-card', 'data-perm', '.card-title h2');
+    // Attach once DOM is loaded
+    document.addEventListener('DOMContentLoaded', function () {
+        setupCardSearch('permissionSearchBar', '.permission-card', '.card-title h2');
+    });
+
+    // Reusable function to filter cards
+    function setupCardSearch(inputId, cardSelector, titleSelector) {
+        const input = document.getElementById(inputId);
+        const cards = document.querySelectorAll(cardSelector);
+
+        input.addEventListener('input', function () {
+            const searchTerm = input.value.toLowerCase();
+
+            cards.forEach(card => {
+                const titleElement = card.querySelector(titleSelector);
+                const titleText = titleElement ? titleElement.textContent.toLowerCase() : '';
+                const dataAttr = card.getAttribute('data-perm')?.toLowerCase() || '';
+
+                // Match against both card title + data attribute
+                if (titleText.includes(searchTerm) || dataAttr.includes(searchTerm)) {
+                    card.style.display = ''; // show
+                } else {
+                    card.style.display = 'none'; // hide
+                }
+            });
+        });
     }
+</script>
+
+<script>
+    // function initializeComponentScripts() {
+    //     setupCardSearch('permissionSearchBar', '.permission-card', 'data-perm', '.card-title h2');
+    // }
+
+    // // Reusable function to filter cards based on search input
+    // function setupCardSearch(inputId, cardSelector, attributeName, titleSelector) {
+    //     LiveBlade.searchCardItems(inputId, cardSelector, attributeName, titleSelector)
+    // }
 
 
     function showAllPermissions(userId) {
-    var modal = new bootstrap.Modal(document.getElementById('permissionsModal' + userId));
-    modal.show();
-}
+        var modal = new bootstrap.Modal(document.getElementById('permissionsModal' + userId));
+        modal.show();
+    }
+</script>
+<!-- permissions  -->
+<script>
+    
+    function editInstanceLoopPermissions(uniqueId) {
+        const submitButton = document.getElementById('submitButton' + uniqueId);
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Select the form and create FormData from it
+        var form = document.getElementById('direct_permissions_form' + uniqueId);
+        var formData = new FormData(form);
+
+        // Get the checked permission values as an array
+        var permissions = getCheckedValues(uniqueId);
+        permissions.forEach(permissionId => formData.append('permissions[]', permissionId));
+        var data = Object.fromEntries(formData.entries());
+
+        // Confirm permissions as an array in final data object
+        data.permissions = permissions;
+
+        // Set up the URL dynamically
+        var updateUrl = @json(route('permission.update', ['id' => ':id'])).replace(':id', uniqueId);
+        // console.log(updateUrl)
+
+        // Submit form data asynchronously
+        
+        handleEditResponse(data, updateUrl, uniqueId, submitButton);
+
+    }
 </script>

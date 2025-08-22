@@ -59,7 +59,7 @@
                             class="btn btn-primary"
                             onclick="submitCurrencyForm('kt_modal_add_currency_form', 'submitCurrencyButton', '{{ route('currency.store') }}', 'POST', 'discardButton')">
 
-                            <span class="indicator-label">{{__('auth._update')}}</span>
+                            <span class="indicator-label">{{__('auth.submit')}}</span>
                             <span class="indicator-progress">{{__('auth.please_wait')}}
                                 <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
                             </span>

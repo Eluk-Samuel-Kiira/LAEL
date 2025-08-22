@@ -16,7 +16,7 @@
                     <th class="min-w-125px">{{__('auth.job_title')}}</th>
                     <th class="min-w-125px">{{__('auth.created_at')}}</th>
                     <th class="min-w-125px">{{__('auth._status')}}</th>
-                    <th class="min-w-125px">{{__('auth._actions')}}</th>
+                    <th class="min-w-125px text-end">{{__('auth._actions')}}</th>
                 </tr>
             </thead>
             <tbody class="text-gray-600 fw-semibold">
@@ -60,23 +60,25 @@
                                     <option value="inactive" {{ $employee->status === 'inactive' ? 'selected' : '' }}>{{__('auth._inactive')}}</option>
                                 </select>
                             </td>
-                            <td class="d-flex align-items-center gap-2 flex-column flex-sm-row">
-                                @can('edit user')
-                                    <button 
-                                    class="btn btn-sm btn-light btn-active-color-primary d-flex align-items-center px-3 py-2"  
+                            <td>
+                                <div class="d-flex gap-2">
+                                    @can('edit user')
+                                        <button 
+                                        class="btn btn-sm btn-light btn-active-color-primary d-flex align-items-center px-3 py-2"  
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#editUserModal{{$employee->id}}">
+                                            <i class="bi bi-pencil-square me-1 fs-5"></i> <span>{{ __('auth._edit') }}</span>
+                                        </button>
+                                    @endcan
+                                    @can('delete user')
+                                        <button type="button" 
+                                        class="btn btn-sm btn-light btn-active-color-danger d-flex align-items-center px-3 py-2" 
                                         data-bs-toggle="modal" 
-                                        data-bs-target="#editUserModal{{$employee->id}}">
-                                        <i class="bi bi-pencil-square me-1 fs-5"></i> <span>{{ __('auth._edit') }}</span>
-                                    </button>
-                                @endcan
-                                @can('delete user')
-                                    <button type="button" 
-                                    class="btn btn-sm btn-light btn-active-color-danger d-flex align-items-center px-3 py-2" 
-                                    data-bs-toggle="modal" 
-                                        data-bs-target="#deleteUserModal{{$employee->id}}">
-                                        <i class="bi bi-trash me-1 fs-5"></i> <span>{{ __('auth._delete') }}</span>                                
-                                    </button>
-                                @endcan
+                                            data-bs-target="#deleteUserModal{{$employee->id}}">
+                                            <i class="bi bi-trash me-1 fs-5"></i> <span>{{ __('auth._delete') }}</span>                                
+                                        </button>
+                                    @endcan 
+                                </div>
 
                                 <!-- Delete User Modal -->
                                 <div class="modal fade" id="deleteUserModal{{$employee->id}}" tabindex="-1" aria-hidden="true">

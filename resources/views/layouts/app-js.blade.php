@@ -145,9 +145,10 @@
 
                     // Insert the fetched content into the page
                     pageContent.innerHTML = ktAppMain.innerHTML;
-                } else {
-                    console.error('Error: #kt_app_main not found in the fetched content.');
-                }
+                } 
+                // else {
+                //     console.error('Error: #kt_app_main not found in the fetched content.');
+                // }
 
                 // Hide the loader after a small delay (optional)
                 setTimeout(hideLoader, 300);
@@ -200,34 +201,184 @@
 
 
 
-
-
+<!-- Inventory Mgt -->
 <script>
-    
-    function editInstanceLoopPermissions(uniqueId) {
-        const submitButton = document.getElementById('submitButton' + uniqueId);
+
+    function editItemInstanceLoop(uniqueId) {
+        const submitButton = document.getElementById('updateItemButton' + uniqueId);
         LiveBlade.toggleButtonLoading(submitButton, true);
 
         // Select the form and create FormData from it
-        var form = document.getElementById('direct_permissions_form' + uniqueId);
+        var form = document.getElementById('kt_modal_item_form' + uniqueId);
         var formData = new FormData(form);
 
-        // Get the checked permission values as an array
-        var permissions = getCheckedValues(uniqueId);
-        permissions.forEach(permissionId => formData.append('permissions[]', permissionId));
         var data = Object.fromEntries(formData.entries());
-
-        // Confirm permissions as an array in final data object
-        data.permissions = permissions;
+        // console.log(data);
 
         // Set up the URL dynamically
-        var updateUrl = @json(route('permission.update', ['id' => ':id'])).replace(':id', uniqueId);
-        // console.log(updateUrl)
+        var updateUrl = '{{ route('items.update', ['item' => ':id']) }}'.replace(':id', uniqueId);
 
-        // Submit form data asynchronously
+        // console.log(updateUrl);
+        handleEditResponse(data, updateUrl, uniqueId, submitButton);
+    }
+
+    function submitItemForm(formId, submitButtonId, url, method = 'POST', discardButtonId = 'discardButton') {
+        const form = document.getElementById(formId);
+        const submitButton = document.getElementById(submitButtonId);
+
+        if (!form || !submitButton) {
+            console.error('Form or button not found:', formId, submitButtonId);
+            return;
+        }
+
+        // Collect form data
+        const formData = Object.fromEntries(new FormData(form));
+        formData._method = method;
+        formData.routeName = url;
+
+        // Start loading
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Pass handling + data to reusable handler
+        handleFormSubmission(formData, submitButton, discardButtonId);
+    }
+
+
+
+    document.addEventListener("change", function (e) {
+        if (e.target.id === "departmentFilter" || e.target.id === "locationFilter") {
+            const departmentFilter = document.getElementById("departmentFilter");
+            const locationFilter = document.getElementById("locationFilter");
+            const rows = document.querySelectorAll("#kt_table_users tbody tr");
+
+            const selectedDepartment = departmentFilter ? departmentFilter.value : "";
+            const selectedLocation = locationFilter ? locationFilter.value : "";
+
+            rows.forEach(row => {
+                const rowDepartment = row.getAttribute("data-department");
+                const rowLocation = row.getAttribute("data-location");
+
+                let showRow = true;
+
+                if (selectedDepartment && rowDepartment !== selectedDepartment) {
+                    showRow = false;
+                }
+                if (selectedLocation && rowLocation !== selectedLocation) {
+                    showRow = false;
+                }
+
+                row.style.display = showRow ? "" : "none";
+            });
+        }
+    });
+
+</script>
+
+
+<!-- Product Catalog -->
+<script>
+
+    function editProductVariantInstanceLoop(uniqueId) {
+        const submitButton = document.getElementById('editUOMButton' + uniqueId);
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Select the form and create FormData from it
+        var form = document.getElementById('kt_modal_product_form' + uniqueId);
+        var formData = new FormData(form);
+
+        var data = Object.fromEntries(formData.entries());
+        // console.log(data);
+
+        // Set up the URL dynamically
+        var updateUrl = '{{ route('variants.update', ['variant' => ':id']) }}'.replace(':id', uniqueId);
         
+        // Submit form data asynchronously
         handleEditResponse(data, updateUrl, uniqueId, submitButton);
 
+    }
+    
+    function updateVariantStatus(uniqueId, selectedStatus) {
+        // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
+        const updateRoute = '/variant-status/' + uniqueId;
+        LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
+    }
+    
+    function editProductInstanceLoop(uniqueId) {
+        
+        const submitButton = document.getElementById('editProductButton' + uniqueId);
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Select the form and create FormData from it
+        var form = document.getElementById('kt_modal_product_form' + uniqueId);
+        var formData = new FormData(form);
+
+        var data = Object.fromEntries(formData.entries());
+        // console.log(data);
+
+        // Set up the URL dynamically
+        var updateUrl = '{{ route('products.update', ['product' => ':id']) }}'.replace(':id', uniqueId);
+        
+        // Submit form data asynchronously
+        handleEditResponse(data, updateUrl, uniqueId, submitButton);
+
+    }
+
+    function updateProductStatus(uniqueId, selectedStatus) {
+        // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
+        const updateRoute = '/product-status/' + uniqueId;
+        LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
+    }
+
+    function updateTaxStatus(uniqueId, selectedStatus) {
+        // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
+        const updateRoute = '/product-tax-status/' + uniqueId;
+        LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
+    }
+    
+    function submitCategoryForm(formId, submitButtonId, url, method = 'POST', discardButtonId = 'discardButton') {
+        const form = document.getElementById(formId);
+        const submitButton = document.getElementById(submitButtonId);
+
+        if (!form || !submitButton) {
+            console.error('Form or button not found:', formId, submitButtonId);
+            return;
+        }
+
+        // Collect form data
+        const formData = Object.fromEntries(new FormData(form));
+        formData._method = method;
+        formData.routeName = url;
+
+        // Start loading
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Pass handling + data to reusable handler
+        handleFormSubmission(formData, submitButton, discardButtonId);
+    }
+
+    function editCategoryInstanceLoop(uniqueId) {
+        const submitButton = document.getElementById('editUOMButton' + uniqueId);
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Select the form and create FormData from it
+        var form = document.getElementById('kt_modal_edit_uom_form' + uniqueId);
+        var formData = new FormData(form);
+
+        var data = Object.fromEntries(formData.entries());
+        // console.log(data);
+
+        // Set up the URL dynamically
+        var updateUrl = '{{ route('category.update', ['category' => ':id']) }}'.replace(':id', uniqueId);
+        
+        // Submit form data asynchronously
+        handleEditResponse(data, updateUrl, uniqueId, submitButton);
+
+    }
+    
+    function updateCategoryStatus(uniqueId, selectedStatus) {
+        // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
+        const updateRoute = '/category-status/' + uniqueId;
+        LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
     }
 </script>
 
@@ -235,8 +386,6 @@
 
 <!-- Roles -->
 <script>
-
-   
     function submitRoleForm(formId, submitButtonId, url, method = 'POST', discardButtonId = 'discardButton') {
         const form = document.getElementById(formId);
         const submitButton = document.getElementById(submitButtonId);
@@ -259,40 +408,7 @@
         handleFormSubmission(formDataObj, submitButton, discardButtonId);
     }
 
-    function filterRole () {
-        const roleFilter = document.getElementById('roleFilter');
-        const roleCards = document.querySelectorAll('.role-card');
 
-        // Listen for changes to the dropdown
-        roleFilter.addEventListener('change', function () {
-            const selectedRole = roleFilter.value.toLowerCase(); // Get the selected role value and convert it to lowercase
-
-            // Loop through all the cards and filter them based on the selected role
-            roleCards.forEach(card => {
-                const cardRole = card.getAttribute('data-role').toLowerCase(); // Get the role from the card’s data attribute
-
-                // If the selected role is empty, show all cards. Otherwise, filter based on the selected role
-                if (selectedRole === "" || cardRole.includes(selectedRole)) {
-                    card.style.display = 'block'; // Show matching card
-                } else {
-                    card.style.display = 'none'; // Hide non-matching card
-                }
-            });
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        filterRole();
-    });
-   
-    
-    function showAllPermissions(roleId) {
-        const modalId = `#permissionsModal${roleId}`;
-        const modal = new bootstrap.Modal(document.querySelector(modalId));
-        modal.show();
-    }
-
-    
     function editInstanceLoopRole(uniqueId) {
         const submitButton = document.getElementById('submitButton' + uniqueId);
         LiveBlade.toggleButtonLoading(submitButton, true);
@@ -316,64 +432,6 @@
         handleEditResponse(data, updateUrl, uniqueId, submitButton);
 
 
-    }
-
-
-    // Reusable function to filter cards based on search input
-    function setupCardSearch(inputId, cardSelector, attributeName, titleSelector) {
-        LiveBlade.searchCardItems(inputId, cardSelector, attributeName, titleSelector)
-    }
-
-    // Set up the event listener after the DOM is fully loaded
-    document.addEventListener('DOMContentLoaded', function() {
-        setupCardSearch('roleSearchBar', '.role-card', 'data-role', '.card-title h2'); // Call the function with parameters
-    });
-
-    // Function to initialize each modal
-    function initializeModal(roleId) {
-        const selectAllCheckbox = document.getElementById(`kt_roles_select_all${roleId}`);
-        const permissionCheckboxes = document.querySelectorAll(`#edit_role_form${roleId} .permission-checkbox`);
-
-        // Function to update "Select All" checkbox based on individual checkboxes' state
-        function updateSelectAllCheckbox() {
-            const allChecked = Array.from(permissionCheckboxes).every(checkbox => checkbox.checked);
-            selectAllCheckbox.checked = allChecked;
-        }
-
-        // Handle "Select All" checkbox click event to toggle all permissions
-        selectAllCheckbox.addEventListener('change', function () {
-            const isChecked = selectAllCheckbox.checked;
-            permissionCheckboxes.forEach(checkbox => {
-                checkbox.checked = isChecked;
-            });
-        });
-
-        // Handle individual permission checkbox change event
-        permissionCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', updateSelectAllCheckbox);
-        });
-
-        // Initial update of "Select All" checkbox on modal load
-        updateSelectAllCheckbox();
-    }
-
-    // Initialize all modals only once when the modal is triggered by the "Edit" button
-    function initializeModalOnClick(roleId) {
-        const modal = document.getElementById(`edit_role${roleId}`);
-        
-        // Initialize modal when it's opened
-        modal.addEventListener('shown.bs.modal', function () {
-            initializeModal(roleId);  // Call the modal initialization function
-        });
-    }
-
-
-
-    function getCheckedValues(uniqueId) {
-        // Fetch all checked checkboxes and map to their values, confirming it's an array
-        const checkedValues = Array.from(document.querySelectorAll(`#edit_role_form${uniqueId} .permission-checkbox:checked`))
-                                .map(cb => cb.value);
-        return checkedValues;
     }
 
 
@@ -504,6 +562,58 @@
     }
 
     function submitCurrencyForm(formId, submitButtonId, url, method = 'POST', discardButtonId = 'discardButton') {
+        const form = document.getElementById(formId);
+        const submitButton = document.getElementById(submitButtonId);
+
+        if (!form || !submitButton) {
+            console.error('Form or button not found:', formId, submitButtonId);
+            return;
+        }
+
+        // Collect form data
+        const formData = Object.fromEntries(new FormData(form));
+        formData._method = method;
+        formData.routeName = url;
+
+        // Start loading
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Pass handling + data to reusable handler
+        handleFormSubmission(formData, submitButton, discardButtonId);
+    }
+
+</script>
+
+
+<!-- Location -->
+<script>
+
+    function updatePrimaryStatus(uniqueId, selectedStatus) {
+        // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
+        const updateRoute = '/location-primary/' + uniqueId;
+        LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
+    }
+
+    function updateLocationStatus(uniqueId, selectedStatus) {
+        // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
+        const updateRoute = '/location-status/' + uniqueId;
+        LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
+    }
+
+    function editInstanceLoopLocation(uniqueId) {
+        const submitButton = document.getElementById('editLocationButton' + uniqueId);
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        var form = document.getElementById('kt_modal_edit_location_form' + uniqueId);
+        var formData = new FormData(form);
+
+        var data = Object.fromEntries(formData.entries());
+        // console.log(data);
+        var updateUrl = '{{ route('locations.update', ['location' => ':id']) }}'.replace(':id', uniqueId);
+        handleEditResponse(data, updateUrl, uniqueId, submitButton);
+    }
+
+    function submitLocationForm(formId, submitButtonId, url, method = 'POST', discardButtonId = 'discardButton') {
         const form = document.getElementById(formId);
         const submitButton = document.getElementById(submitButtonId);
 
@@ -763,8 +873,9 @@
         @if ( @json_decode(request()->routeIs('role.*')) )
             // filterRole();
         @endif
-        // Just for global access as an inner function
-        window.showAllPermissions = showAllPermissions;
+        @if ( @json_decode(request()->routeIs('permission.*')) )
+            window.showAllPermissions = showAllPermissions;
+        @endif
     }
     
 
