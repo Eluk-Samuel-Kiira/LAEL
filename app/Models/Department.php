@@ -26,4 +26,21 @@ class Department extends Model
     {
         return $this->belongsTo(Tenant::class, 'tenant_id', 'id');
     }
+
+    public function users()
+    {
+        return $this->belongsToMany(
+            User::class,          // or User::class if you’re using User model
+            'department_user',
+            'department_id',
+            'user_id'
+        );
+    }
+
+    public function products()
+    {
+        return $this->belongsToMany(Product::class, 'department_product');
+    }
+
+
 }

@@ -67,4 +67,16 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->belongsTo(Department::class, 'department_id');
     }
+
+    public function departments()
+    {
+        return $this->belongsToMany(
+            Department::class,        // related model
+            'department_user',        // pivot table name
+            'user_id',                // foreign key on pivot (for employees/users)
+            'department_id'           // related key on pivot (for departments)
+        );
+    }
+
+
 }

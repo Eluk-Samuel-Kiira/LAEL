@@ -15,6 +15,8 @@ use App\Http\Controllers\Catalog\ProductCategoryController;
 use App\Http\Controllers\Catalog\ProductVariantController;
 use App\Http\Controllers\Catalog\InventoryItemController;
 use App\Http\Controllers\Home\LocationController;
+use App\Http\Controllers\Orders\OrderController;
+use App\Http\Controllers\Orders\POSController;
 
     Route::get('/', function () {
         return view('welcome');
@@ -64,6 +66,8 @@ Route::middleware('auth')->group(function () {
     // Users/Employees
     Route::resource('employee', UserController::class);
     Route::post('/employee-status/{id}', [UserController::class, 'changeEmployeeStatus'])->name('employee.status');
+    Route::put('/employees/{id}/departments', [UserController::class, 'updateDepartments'])
+        ->name('employees.updateDepartments');
 
 
     // Roles n Permissions
@@ -91,6 +95,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/variant-status/{id}', [ProductVariantController::class, 'changeVariantStatus'])->name('variant.status');
     Route::post('/product/upload-image', [ProductController::class, 'uploadProductImage'])->name('product.upload_image');
     Route::post('/variant/upload-image', [ProductVariantController::class, 'uploadVariantImage'])->name('variant.upload_image');
+    Route::put('/products/{product}/update-locations-departments', [ProductController::class, 'updateLocationsDepartments'])
+        ->name('location.dept');
+
 
     // Stores and Inventory
     Route::resource('items', InventoryItemController::class);
@@ -101,6 +108,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/location-primary/{id}', [LocationController::class, 'updatePrimaryStatus']);
     Route::post('/location-status/{id}', [LocationController::class, 'updateLocationStatus']);
 
+
+    
+    // Orders and Purchases
+    Route::resource('orders', OrderController::class);
+    Route::get('/pos-index', [POSController::class, 'index'])->name('pos.index');
 
 });
 

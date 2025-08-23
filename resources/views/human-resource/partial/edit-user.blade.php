@@ -94,7 +94,7 @@
                     </div>
                         
                     <div class="text-center pt-15">
-                        <button type="reset" class="btn btn-light me-3" id="closeModalEditButton{{ $employee->id }}" data-bs-dismiss="modal">{{ __('Discard') }}</button>
+                        <button type="reset" class="btn btn-light me-3" id="closeModalEditButton{{ $employee->id }}" data-bs-dismiss="modal">{{ __('auth._discard') }}</button>
                         <button type="button" onclick="editEmployeeInstanceLoop({{$employee->id }})" class="btn btn-primary" id="submitEmplButton{{ $employee->id }}">
                             <span class="indicator-label">{{ __('auth._update') }}</span>
                             <span class="indicator-progress" style="display: none;">

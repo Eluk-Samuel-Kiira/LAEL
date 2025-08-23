@@ -55,6 +55,8 @@ return [
     'product_index' => 'Product Index',
     '_products' => 'Products',
     'product_catalog' => 'Product Catalog',
+    '_allocation' => 'Allocate',
+    '_dept_loc' => 'Allocate Product Department and Location for',
     '_product' => 'Product',
     'new_products' => 'New Product',
     'products_table' => 'Products Table',
@@ -102,5 +104,11 @@ return [
     'locations_new' => 'New Locations',
     'locations_edit' => 'Edit Locations',
     'locations_index' => 'Locations Index',
+
+    // 
+    'pos_index' => 'POS Index',
+    '_pos' => 'Point Of Sale',
+    '_orders' => 'Sale Orders',
+    
 
 ];

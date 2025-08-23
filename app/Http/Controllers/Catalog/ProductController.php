@@ -252,4 +252,29 @@ class ProductController extends Controller
         ]);
     }
 
+    public function updateLocationsDepartments(Request $request, Product $product)
+    {
+        // \Log::info($request->all());
+        $validated = $request->validate([
+            'departments' => ['nullable', 'array'],
+            'departments.*' => ['exists:departments,id'],
+            'locations' => ['nullable', 'array'],
+            'locations.*' => ['exists:locations,id'],
+        ]);
+
+        // Sync departments
+        $product->departments()->sync($validated['departments'] ?? []);
+
+        // Sync locations
+        $product->locations()->sync($validated['locations'] ?? []);
+
+        session()->flash('toast', [
+            'type' => 'success',
+            'message' => __('auth._updated'),
+        ]);
+
+        return redirect()->back();
+    }
+
+
 }
