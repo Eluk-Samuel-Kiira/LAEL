@@ -71,6 +71,14 @@
                             </td>
                             <td>
                                 <div class="d-flex gap-2">
+                                    @can('update product')
+                                        <button 
+                                            class="btn btn-sm btn-light btn-active-color-primary d-flex align-items-center px-3 py-2" 
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#updateProductLoc{{$product->id}}">
+                                            <i class="bi bi-building me-1 fs-5"></i> <span>{{ __('pagination._allocation') }}</span>
+                                        </button>
+                                    @endcan
                                     @can('view product')
                                         <a href="{{ route('products.show', $product->id) }}" 
                                             class="btn btn-sm btn-light btn-active-color-success d-flex align-items-center px-3 py-2">
@@ -126,6 +134,7 @@
                                     </div>
                                 </div>
                                 @include('inventory.product.edit')
+                                @include('inventory.product.product-dept')
                                 
                             </td>
                         </tr>

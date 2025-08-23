@@ -53,4 +53,16 @@ class Product extends Model
     {
         return $this->belongsTo(User::class, 'created_by', 'id');
     }
+
+    public function departments()
+    {
+        return $this->belongsToMany(Department::class, 'department_product', 'product_id', 'department_id');
+    }
+
+    public function locations()
+    {
+        return $this->belongsToMany(Location::class, 'location_product', 'product_id', 'location_id');
+    }
+
+
 }

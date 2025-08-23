@@ -153,6 +153,7 @@ return [
     '_tenant' => 'Tenant',
     '_select' => 'Select',
     '_edit_department' => 'Edit Department',
+    'user_department' => 'User Department for',
 
 
     

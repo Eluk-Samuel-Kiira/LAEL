@@ -35,4 +35,10 @@ class Location extends Model
     {
         return $this->belongsTo(User::class, 'manager_id', 'id');
     }
+
+    public function products()
+    {
+        return $this->belongsToMany(Product::class, 'location_product');
+    }
+
 }

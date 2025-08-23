@@ -237,4 +237,26 @@ class UserController extends Controller
         ]);
     }
 
+    public function updateDepartments(Request $request, $id)
+    {
+        $employee = User::findOrFail($id);
+
+        // validate departments[] array
+        $validated = $request->validate([
+            'departments'   => ['nullable', 'array'],
+            'departments.*' => ['exists:departments,id'],
+        ]);
+
+        // Sync departments (many-to-many relation)
+        $employee->departments()->sync($validated['departments'] ?? []);
+
+        session()->flash('toast', [
+            'type' => 'success',
+            'message' => __('auth._updated'),
+        ]);
+
+        return redirect()->back();
+    }
+
+
 }
