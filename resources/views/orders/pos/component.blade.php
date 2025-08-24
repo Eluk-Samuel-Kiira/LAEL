@@ -7,1245 +7,194 @@
             <!--begin::Body-->
             <div class="card-body">
                 <!--begin::Nav-->
-                <ul class="nav nav-pills d-flex justify-content-between nav-pills-custom gap-3 mb-6">
-                    
-                    <!--begin::Item-->
-                    <li class="nav-item mb-3 me-0">
-                        <!--begin::Nav link-->
-                        <a class="nav-link nav-link-border-solid btn btn-outline btn-flex btn-active-color-primary flex-column flex-stack pt-9 pb-7 page-bg show active" data-bs-toggle="pill" href="#kt_pos_food_content_1" style="width: 138px;height: 180px">
-                            <!--begin::Icon-->
-                            <div class="nav-icon mb-3">
-                                <!--begin::Food icon-->
-                                <img src="assets/media/svg/food-icons/spaghetti.svg" class="w-50px" alt="" />
-                                <!--end::Food icon-->
-                            </div>
-                            <!--end::Icon-->
-                            <!--begin::Info-->
-                            <div class="">
-                                <span class="text-gray-800 fw-bold fs-2 d-block">Lunch</span>
-                                <span class="text-gray-500 fw-semibold fs-7">8 Options</span>
-                            </div>
-                            <!--end::Info-->
-                        </a>
-                        <!--end::Nav link-->
-                    </li>
-                    <!--end::Item-->
-                    <!--begin::Item-->
-                    <li class="nav-item mb-3 me-0">
-                        <!--begin::Nav link-->
-                        <a class="nav-link nav-link-border-solid btn btn-outline btn-flex btn-active-color-primary flex-column flex-stack pt-9 pb-7 page-bg" data-bs-toggle="pill" href="#kt_pos_food_content_2" style="width: 138px;height: 180px">
-                            <!--begin::Icon-->
-                            <div class="nav-icon mb-3">
-                                <!--begin::Food icon-->
-                                <img src="assets/media/svg/food-icons/salad.svg" class="w-50px" alt="" />
-                                <!--end::Food icon-->
-                            </div>
-                            <!--end::Icon-->
-                            <!--begin::Info-->
-                            <div class="">
-                                <span class="text-gray-800 fw-bold fs-2 d-block">Salad</span>
-                                <span class="text-gray-500 fw-semibold fs-7">14 Salads</span>
-                            </div>
-                            <!--end::Info-->
-                        </a>
-                        <!--end::Nav link-->
-                    </li>
-                    <!--end::Item-->
-                    <!--begin::Item-->
-                    <li class="nav-item mb-3 me-0">
-                        <!--begin::Nav link-->
-                        <a class="nav-link nav-link-border-solid btn btn-outline btn-flex btn-active-color-primary flex-column flex-stack pt-9 pb-7 page-bg" data-bs-toggle="pill" href="#kt_pos_food_content_3" style="width: 138px;height: 180px">
-                            <!--begin::Icon-->
-                            <div class="nav-icon mb-3">
-                                <!--begin::Food icon-->
-                                <img src="assets/media/svg/food-icons/cheeseburger.svg" class="w-50px" alt="" />
-                                <!--end::Food icon-->
-                            </div>
-                            <!--end::Icon-->
-                            <!--begin::Info-->
-                            <div class="">
-                                <span class="text-gray-800 fw-bold fs-2 d-block">Burger</span>
-                                <span class="text-gray-500 fw-semibold fs-7">5 Burgers</span>
-                            </div>
-                            <!--end::Info-->
-                        </a>
-                        <!--end::Nav link-->
-                    </li>
-                    <!--end::Item-->
-                    <!--begin::Item-->
-                    <li class="nav-item mb-3 me-0">
-                        <!--begin::Nav link-->
-                        <a class="nav-link nav-link-border-solid btn btn-outline btn-flex btn-active-color-primary flex-column flex-stack pt-9 pb-7 page-bg" data-bs-toggle="pill" href="#kt_pos_food_content_4" style="width: 138px;height: 180px">
-                            <!--begin::Icon-->
-                            <div class="nav-icon mb-3">
-                                <!--begin::Food icon-->
-                                <img src="assets/media/svg/food-icons/coffee.svg" class="w-50px" alt="" />
-                                <!--end::Food icon-->
-                            </div>
-                            <!--end::Icon-->
-                            <!--begin::Info-->
-                            <div class="">
-                                <span class="text-gray-800 fw-bold fs-2 d-block">Coffee</span>
-                                <span class="text-gray-500 fw-semibold fs-7">7 Beverages</span>
-                            </div>
-                            <!--end::Info-->
-                        </a>
-                        <!--end::Nav link-->
-                    </li>
-                    <!--end::Item-->
-                    <!--begin::Item-->
-                    <li class="nav-item mb-3 me-0">
-                        <!--begin::Nav link-->
-                        <a class="nav-link nav-link-border-solid btn btn-outline btn-flex btn-active-color-primary flex-column flex-stack pt-9 pb-7 page-bg" data-bs-toggle="pill" href="#kt_pos_food_content_5" style="width: 138px;height: 180px">
-                            <!--begin::Icon-->
-                            <div class="nav-icon mb-3">
-                                <!--begin::Food icon-->
-                                <img src="assets/media/svg/food-icons/cheesecake.svg" class="w-50px" alt="" />
-                                <!--end::Food icon-->
-                            </div>
-                            <!--end::Icon-->
-                            <!--begin::Info-->
-                            <div class="">
-                                <span class="text-gray-800 fw-bold fs-2 d-block">Dessert</span>
-                                <span class="text-gray-500 fw-semibold fs-7">8 Desserts</span>
-                            </div>
-                            <!--end::Info-->
-                        </a>
-                        <!--end::Nav link-->
-                    </li>
-                    <!--end::Item-->
+                <!-- Remove d-flex justify-content-between and add flex-nowrap -->
+
+                <ul class="nav nav-pills nav-pills-custom gap-3 mb-6 d-flex flex-nowrap" 
+                    id="productList"
+                    style="overflow-x: auto; white-space: nowrap; list-style: none; padding: 0;">
+                    @php $first = true; @endphp
+                    @foreach ($products as $product)
+                        @if ($product->variants->count() > 0)
+                            @php
+                                $words = explode(' ', $product->name);
+                                $truncated = count($words) > 2 
+                                    ? implode(' ', array_slice($words, 0, 2)) . '...' 
+                                    : $product->name;
+                                
+                                // Get department IDs as comma-separated string
+                                $departmentIds = $product->departments->pluck('id')->implode(',');
+                            @endphp
+                            <li class="nav-item mb-3 me-0 product-item" 
+                                style="min-width: 180px;"
+                                data-department="{{ $departmentIds }}"> <!-- Added data attribute -->
+                                <a class="nav-link nav-link-border-solid btn btn-outline btn-flex btn-active-color-primary flex-column flex-stack pt-9 pb-7 page-bg {{ $first ? 'active' : '' }}" 
+                                data-bs-toggle="pill" 
+                                href="#kt_pos_{{ $product->id }}" 
+                                style="width: 100%; height: 180px">
+                                    <div class="nav-icon mb-3">
+                                        <img src="{{ productImage($product->image_url) }}" class="w-50px" alt="" />
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-800 fw-bold fs-2 d-block" 
+                                            data-bs-toggle="tooltip" 
+                                            title="{{ $product->name }}">
+                                            {{ $truncated }}
+                                        </span>
+                                        <span class="text-gray-500 fw-semibold fs-7">
+                                            {{ $product->variants->count() }} {{ __('pagination._options') }}
+                                        </span>
+                                    </div>
+                                </a>
+                            </li>
+                            @php $first = false; @endphp
+                        @endif
+                    @endforeach
+
+                    @if ($products->filter(fn($p) => $p->variants->count() > 0)->isEmpty())
+                        <div class="card-header pt-5">
+                            <h3 class="card-title fw-bold text-gray-800 fs-2qx">{{ __('pagination.not_assigned') }}</h3>
+                        </div>
+                    @endif
                 </ul>
                 <!--end::Nav-->
+
                 <!--begin::Tab Content-->
-                <div class="tab-content">
-                    <!--begin::Tap pane-->
-                    <div class="tab-pane fade show active" id="kt_pos_food_content_1">
-                        <!--begin::Wrapper-->
-                        <div class="d-flex flex-wrap d-grid gap-5 gap-xxl-9">
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-2.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">T-Bone Stake</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
+                <div class="tab-content" id="variantTabContent">
+                    @php $firstTab = true; @endphp
+                    @foreach ($products as $product)
+                        @if ($product->variants->count() > 0)
+                            <div class="tab-pane fade {{ $firstTab ? 'show active' : '' }}" id="kt_pos_{{ $product->id }}">
+                                <div class="d-flex flex-wrap d-grid gap-5 gap-xxl-9 variant-container">
+                                    @foreach ($product->variants as $variant)
+                                        <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100 variant-item" 
+                                            data-name="{{ strtolower($variant->name ?? $product->name) }}"
+                                            data-product="{{ $product->id }}">
+                                            <div class="card-body text-center">
+                                                <img src="{{ productVariantImage($variant->image_url ?? $product->image_url) }}" 
+                                                    class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" 
+                                                    alt="{{ $variant->name ?? $product->name }}" />
+                                                <div class="mb-2">
+                                                    <div class="text-center">
+                                                        <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1"
+                                                            data-bs-toggle="tooltip" 
+                                                            title="{{ $variant->name ?? $product->name }}">
+                                                            {{ \Illuminate\Support\Str::words($variant->name ?? $product->name, 2, '...') }}
+                                                        </span>
+                                                        <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">
+                                                            {{ $variant->inventory->quantity_on_hand ?? 0 }} {{__('pagination._available')}}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <span class="text-success text-end fw-bold fs-1">
+                                                    {{ number_format($variant->price, 2) }}$
+                                                </span>
+                                            </div>
                                         </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$16.50$</span>
-                                    <!--end::Total-->
+                                    @endforeach
                                 </div>
-                                <!--end::Body-->
                             </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-7.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Chef’s Salmon</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$12.40$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-8.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Ramen</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$14.90$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-4.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Chicken Breast</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$9.00$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-10.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Tenderlion Steak</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$19.00$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-9.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Soup of the Day</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$7.50$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-3.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Pancakes</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$6.50$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-5.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Breakfast</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$8.20$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-11.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Sweety</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$11.40$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                        </div>
-                        <!--end::Wrapper-->
-                    </div>
-                    <!--end::Tap pane-->
-                    <!--begin::Tap pane-->
-                    <div class="tab-pane fade" id="kt_pos_food_content_2">
-                        <!--begin::Wrapper-->
-                        <div class="d-flex flex-wrap d-grid gap-5 gap-xxl-9">
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-11.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Sweety</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$11.40$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-5.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Breakfast</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$8.20$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-4.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Chicken Breast</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$9.00$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-8.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Ramen</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$14.90$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-10.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Tenderlion Steak</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$19.00$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-9.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Soup of the Day</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$7.50$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-3.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Pancakes</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$6.50$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-7.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Chef’s Salmon</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$12.40$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-2.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">T-Bone Stake</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$16.50$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                        </div>
-                        <!--end::Wrapper-->
-                    </div>
-                    <!--end::Tap pane-->
-                    <!--begin::Tap pane-->
-                    <div class="tab-pane fade" id="kt_pos_food_content_3">
-                        <!--begin::Wrapper-->
-                        <div class="d-flex flex-wrap d-grid gap-5 gap-xxl-9">
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-5.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Breakfast</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$8.20$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-11.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Sweety</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$11.40$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-2.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">T-Bone Stake</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$16.50$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-7.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Chef’s Salmon</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$12.40$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-4.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Chicken Breast</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$9.00$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-8.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Ramen</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$14.90$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-9.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Soup of the Day</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$7.50$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-10.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Tenderlion Steak</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$19.00$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-3.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Pancakes</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$6.50$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                        </div>
-                        <!--end::Wrapper-->
-                    </div>
-                    <!--end::Tap pane-->
-                    <!--begin::Tap pane-->
-                    <div class="tab-pane fade" id="kt_pos_food_content_4">
-                        <!--begin::Wrapper-->
-                        <div class="d-flex flex-wrap d-grid gap-5 gap-xxl-9">
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-3.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Pancakes</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$6.50$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-5.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Breakfast</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$8.20$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-4.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Chicken Breast</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$9.00$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-8.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Ramen</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$14.90$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-9.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Soup of the Day</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$7.50$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-11.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Sweety</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$11.40$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-3.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Pancakes</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$6.50$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-7.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Chef’s Salmon</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$12.40$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-10.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Tenderlion Steak</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$19.00$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                        </div>
-                        <!--end::Wrapper-->
-                    </div>
-                    <!--end::Tap pane-->
-                    <!--begin::Tap pane-->
-                    <div class="tab-pane fade" id="kt_pos_food_content_5">
-                        <!--begin::Wrapper-->
-                        <div class="d-flex flex-wrap d-grid gap-5 gap-xxl-9">
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-10.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Tenderlion Steak</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$19.00$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-5.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Breakfast</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$8.20$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-4.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Chicken Breast</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$9.00$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-3.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Pancakes</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$6.50$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-2.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">T-Bone Stake</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$16.50$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-7.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Chef’s Salmon</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$12.40$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-8.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Ramen</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$14.90$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-9.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Soup of the Day</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$7.50$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                            <!--begin::Card-->
-                            <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100">
-                                <!--begin::Body-->
-                                <div class="card-body text-center">
-                                    <!--begin::Food img-->
-                                    <img src="assets/media/stock/food/img-11.jpg" class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" alt="" />
-                                    <!--end::Food img-->
-                                    <!--begin::Info-->
-                                    <div class="mb-2">
-                                        <!--begin::Title-->
-                                        <div class="text-center">
-                                            <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1">Sweety</span>
-                                            <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">16 mins to cook</span>
-                                        </div>
-                                        <!--end::Title-->
-                                    </div>
-                                    <!--end::Info-->
-                                    <!--begin::Total-->
-                                    <span class="text-success text-end fw-bold fs-1">$11.40$</span>
-                                    <!--end::Total-->
-                                </div>
-                                <!--end::Body-->
-                            </div>
-                            <!--end::Card-->
-                        </div>
-                        <!--end::Wrapper-->
-                    </div>
-                    <!--end::Tap pane-->
+                            @php $firstTab = false; @endphp
+                        @endif
+                    @endforeach
                 </div>
                 <!--end::Tab Content-->
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const departmentFilter = document.getElementById('departmentFilter');
+                        const productItems = document.querySelectorAll('.product-item');
+                        const productList = document.getElementById('productList');
+                        
+                        departmentFilter.addEventListener('change', function() {
+                            const selectedDepartment = this.value;
+                            let hasVisibleProducts = false;
+                            
+                            productItems.forEach(function(item) {
+                                const itemDepartments = item.getAttribute('data-department').split(',');
+                                
+                                if (selectedDepartment === '' || itemDepartments.includes(selectedDepartment)) {
+                                    item.style.display = ''; // Show the item
+                                    hasVisibleProducts = true;
+                                } else {
+                                    item.style.display = 'none'; // Hide the item
+                                }
+                            });
+                            
+                            // Remove any existing "no products" message
+                            const existingMessage = productList.querySelector('.no-products-message');
+                            if (existingMessage) {
+                                existingMessage.remove();
+                            }
+                            
+                            // If no products match and a department is selected, show message
+                            if (!hasVisibleProducts && selectedDepartment !== '') {
+                                const messageDiv = document.createElement('div');
+                                messageDiv.className = 'card-header pt-5 no-products-message';
+                                messageDiv.innerHTML = '<h3 class="card-title fw-bold text-gray-800 fs-2qx">{{ __("pagination.no_products_in_department") }}</h3>';
+                                productList.appendChild(messageDiv);
+                            }
+                        });
+                    });
+                </script>
+
+                <script>
+                    function filterVariants(searchTerm) {
+                        const searchValue = searchTerm.toLowerCase().trim();
+                        const allVariantItems = document.querySelectorAll('.variant-item');
+                        const activeTab = document.querySelector('.tab-pane.active');
+                        
+                        if (searchValue === '') {
+                            // Show all variants when search is empty
+                            allVariantItems.forEach(item => {
+                                item.style.display = '';
+                            });
+                            return;
+                        }
+
+                        // Filter variants based on search term
+                        allVariantItems.forEach(item => {
+                            const variantName = item.getAttribute('data-name');
+                            const isInActiveTab = activeTab && activeTab.contains(item);
+                            
+                            if (variantName.includes(searchValue)) {
+                                item.style.display = '';
+                                // If not in active tab, ensure it's visible when user switches to that tab
+                            } else {
+                                item.style.display = 'none';
+                            }
+                        });
+
+                        // Optional: Show message if no variants found in active tab
+                        const visibleVariantsInActiveTab = activeTab ? 
+                            activeTab.querySelectorAll('.variant-item[style=""]').length : 0;
+                        
+                        if (visibleVariantsInActiveTab === 0 && searchValue !== '') {
+                            // You could add a "no results" message here if desired
+                            console.log('No variants found matching search');
+                        }
+                    }
+
+                    // Optional: Add event listener for tab changes to reapply search filter
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const tabPanes = document.querySelectorAll('.tab-pane');
+                        
+                        tabPanes.forEach(tab => {
+                            tab.addEventListener('shown.bs.tab', function () {
+                                const searchInput = document.getElementById('variantSearchInput');
+                                if (searchInput.value) {
+                                    filterVariants(searchInput.value);
+                                }
+                            });
+                        });
+                    });
+                </script>
+
             </div>
-            <!--end: Card Body-->
         </div>
-        <!--end::Pos food-->
     </div>
     <!--end::Content-->
+
+
     <!--begin::Sidebar-->
     <div class="flex-row-auto w-xl-450px">
         <!--begin::Pos order-->

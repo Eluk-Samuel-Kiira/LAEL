@@ -67,7 +67,7 @@
                                             class="btn btn-sm btn-light btn-active-color-primary d-flex align-items-center px-3 py-2"  
                                             data-bs-toggle="modal" 
                                             data-bs-target="#editUserDeptModal{{$employee->id}}">
-                                            <i class="bi bi-building me-1 fs-5"></i> <span>{{ __('auth._allocation') }}</span>
+                                            <i class="bi bi-building me-1 fs-5"></i> <span>{{ __('pagination._allocation') }}</span>
                                         </button>
                                     @endcan
                                     @can('edit user')
