@@ -40,5 +40,10 @@ class ProductVariant extends Model
         return $this->belongsTo(User::class, 'created_by', 'id');
     }
     
+    public function inventory()
+    {   
+        return $this->hasOne(InventoryItems::class, 'variant_id', 'id');
+    }
+
 
 }

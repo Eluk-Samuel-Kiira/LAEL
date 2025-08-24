@@ -28,8 +28,9 @@
             <div class="d-flex align-items-center gap-2 gap-lg-3">
                 <!-- Search Bar -->
                 <div class="px-7 py-5">
-                    <input type="text" id="searchInput" class="form-control" placeholder="{{__('auth._search')}} {{__('pagination._products')}}"
-                        onkeyup="searchTable(this.value, 'kt_table_users')">
+                    <input type="text" id="variantSearchInput" class="form-control" 
+                        placeholder="{{__('auth._search')}} {{__('pagination._variants')}}"
+                        onkeyup="filterVariants(this.value)">
                 </div>
 
                 <!-- Department Filter -->

@@ -105,10 +105,15 @@ return [
     'locations_edit' => 'Edit Locations',
     'locations_index' => 'Locations Index',
 
-    // 
+    // POS
     'pos_index' => 'POS Index',
     '_pos' => 'Point Of Sale',
     '_orders' => 'Sale Orders',
+    '_options' => 'Options',
+    '_available' => 'Available',
+    'no_variant' => 'This Product Has No Variant',
+    'not_assigned' => 'You\'re Not Assigned Any Department Yet!!',
+    'no_products_in_department' => 'No products found in this department',
     
 
 ];
