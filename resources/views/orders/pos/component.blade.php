@@ -68,7 +68,15 @@
                                     @foreach ($product->variants as $variant)
                                         <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100 variant-item" 
                                             data-name="{{ strtolower($variant->name ?? $product->name) }}"
-                                            data-product="{{ $product->id }}">
+                                            data-product="{{ $product->id }}"
+                                            onclick="addToCart({{ json_encode([
+                                                'id' => $variant->id,
+                                                'name' => $variant->name ?? $product->name,
+                                                'price' => $variant->price,
+                                                'image' => productVariantImage($variant->image_url ?? $product->image_url),
+                                                'quantity_available' => $variant->inventory->quantity_on_hand ?? 0
+                                            ]) }})"
+                                            style="cursor: pointer;">
                                             <div class="card-body text-center">
                                                 <img src="{{ productVariantImage($variant->image_url ?? $product->image_url) }}" 
                                                     class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" 
@@ -195,220 +203,405 @@
     <!--end::Content-->
 
 
-    <!--begin::Sidebar-->
+    <!--begin::Body-->
     <div class="flex-row-auto w-xl-450px">
         <!--begin::Pos order-->
         <div class="card card-flush bg-body" id="kt_pos_form">
-            <!--begin::Header-->
             <div class="card-header pt-5">
-                <h3 class="card-title fw-bold text-gray-800 fs-2qx">Current Order</h3>
-                <!--begin::Toolbar-->
+                <h3 class="card-title fw-bold text-gray-800 fs-2qx">{{__('pagination._current_order')}}</h3>
                 <div class="card-toolbar">
-                    <a href="#" class="btn btn-light-primary fs-4 fw-bold py-4">Clear All</a>
+                    <a href="#" class="btn btn-light-primary fs-4 fw-bold py-4" onclick="clearCart()">{{__('pagination.clear_all')}}</a>
                 </div>
-                <!--end::Toolbar-->
             </div>
-            <!--end::Header-->
+
             <!--begin::Body-->
             <div class="card-body pt-0">
-                <!--begin::Table container-->
                 <div class="table-responsive mb-8">
-                    <!--begin::Table-->
                     <table class="table align-middle gs-0 gy-4 my-0">
-                        <!--begin::Table head-->
                         <thead>
                             <tr>
-                                <th class="min-w-175px"></th>
-                                <th class="w-125px"></th>
-                                <th class="w-60px"></th>
+                                <th class="min-w-175px">{{__('pagination._item')}}</th>
+                                <th class="w-125px">{{__('pagination._quantity')}}</th>
+                                <th class="w-60px">{{__('pagination._total')}}</th>
                             </tr>
                         </thead>
-                        <!--end::Table head-->
-                        <!--begin::Table body-->
                         <tbody>
-                            <tr data-kt-pos-element="item" data-kt-pos-item-price="33">
-                                <td class="pe-0">
-                                    <div class="d-flex align-items-center">
-                                        <img src="assets/media/stock/food/img-2.jpg" class="w-50px h-50px rounded-3 me-3" alt="" />
-                                        <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-6 me-1">T-Bone Stake</span>
-                                    </div>
-                                </td>
-                                <td class="pe-0">
-                                    <!--begin::Dialer-->
-                                    <div class="position-relative d-flex align-items-center" data-kt-dialer="true" data-kt-dialer-min="1" data-kt-dialer-max="10" data-kt-dialer-step="1" data-kt-dialer-decimals="0">
-                                        <!--begin::Decrease control-->
-                                        <button type="button" class="btn btn-icon btn-sm btn-light btn-icon-gray-500" data-kt-dialer-control="decrease">
-                                            <i class="ki-duotone ki-minus fs-3x"></i>
-                                        </button>
-                                        <!--end::Decrease control-->
-                                        <!--begin::Input control-->
-                                        <input type="text" class="form-control border-0 text-center px-0 fs-3 fw-bold text-gray-800 w-30px" data-kt-dialer-control="input" placeholder="Amount" name="manageBudget" readonly="readonly" value="2" />
-                                        <!--end::Input control-->
-                                        <!--begin::Increase control-->
-                                        <button type="button" class="btn btn-icon btn-sm btn-light btn-icon-gray-500" data-kt-dialer-control="increase">
-                                            <i class="ki-duotone ki-plus fs-3x"></i>
-                                        </button>
-                                        <!--end::Increase control-->
-                                    </div>
-                                    <!--end::Dialer-->
-                                </td>
-                                <td class="text-end">
-                                    <span class="fw-bold text-primary fs-2" data-kt-pos-element="item-total">$66.00</span>
-                                </td>
-                            </tr>
-                            <tr data-kt-pos-element="item" data-kt-pos-item-price="7.5">
-                                <td class="pe-0">
-                                    <div class="d-flex align-items-center">
-                                        <img src="assets/media/stock/food/img-9.jpg" class="w-50px h-50px rounded-3 me-3" alt="" />
-                                        <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-6 me-1">Soup of the Day</span>
-                                    </div>
-                                </td>
-                                <td class="pe-0">
-                                    <!--begin::Dialer-->
-                                    <div class="position-relative d-flex align-items-center" data-kt-dialer="true" data-kt-dialer-min="1" data-kt-dialer-max="10" data-kt-dialer-step="1" data-kt-dialer-decimals="0">
-                                        <!--begin::Decrease control-->
-                                        <button type="button" class="btn btn-icon btn-sm btn-light btn-icon-gray-500" data-kt-dialer-control="decrease">
-                                            <i class="ki-duotone ki-minus fs-3x"></i>
-                                        </button>
-                                        <!--end::Decrease control-->
-                                        <!--begin::Input control-->
-                                        <input type="text" class="form-control border-0 text-center px-0 fs-3 fw-bold text-gray-800 w-30px" data-kt-dialer-control="input" placeholder="Amount" name="manageBudget" readonly="readonly" value="1" />
-                                        <!--end::Input control-->
-                                        <!--begin::Increase control-->
-                                        <button type="button" class="btn btn-icon btn-sm btn-light btn-icon-gray-500" data-kt-dialer-control="increase">
-                                            <i class="ki-duotone ki-plus fs-3x"></i>
-                                        </button>
-                                        <!--end::Increase control-->
-                                    </div>
-                                    <!--end::Dialer-->
-                                </td>
-                                <td class="text-end">
-                                    <span class="fw-bold text-primary fs-2" data-kt-pos-element="item-total">$7.50</span>
-                                </td>
-                            </tr>
-                            <tr data-kt-pos-element="item" data-kt-pos-item-price="13.5">
-                                <td class="pe-0">
-                                    <div class="d-flex align-items-center">
-                                        <img src="assets/media/stock/food/img-3.jpg" class="w-50px h-50px rounded-3 me-3" alt="" />
-                                        <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-6 me-1">Pancakes</span>
-                                    </div>
-                                </td>
-                                <td class="pe-0">
-                                    <!--begin::Dialer-->
-                                    <div class="position-relative d-flex align-items-center" data-kt-dialer="true" data-kt-dialer-min="1" data-kt-dialer-max="10" data-kt-dialer-step="1" data-kt-dialer-decimals="0">
-                                        <!--begin::Decrease control-->
-                                        <button type="button" class="btn btn-icon btn-sm btn-light btn-icon-gray-500" data-kt-dialer-control="decrease">
-                                            <i class="ki-duotone ki-minus fs-3x"></i>
-                                        </button>
-                                        <!--end::Decrease control-->
-                                        <!--begin::Input control-->
-                                        <input type="text" class="form-control border-0 text-center px-0 fs-3 fw-bold text-gray-800 w-30px" data-kt-dialer-control="input" placeholder="Amount" name="manageBudget" readonly="readonly" value="2" />
-                                        <!--end::Input control-->
-                                        <!--begin::Increase control-->
-                                        <button type="button" class="btn btn-icon btn-sm btn-light btn-icon-gray-500" data-kt-dialer-control="increase">
-                                            <i class="ki-duotone ki-plus fs-3x"></i>
-                                        </button>
-                                        <!--end::Increase control-->
-                                    </div>
-                                    <!--end::Dialer-->
-                                </td>
-                                <td class="text-end">
-                                    <span class="fw-bold text-primary fs-2" data-kt-pos-element="item-total">$27.00</span>
-                                </td>
-                            </tr>
+                            <!-- Cart items will be dynamically inserted here -->
                         </tbody>
-                        <!--end::Table body-->
                     </table>
-                    <!--end::Table-->
                 </div>
-                <!--end::Table container-->
-                <!--begin::Summary-->
-                <div class="d-flex flex-stack bg-success rounded-3 p-6 mb-11">
-                    <!--begin::Content-->
-                    <div class="fs-6 fw-bold text-white">
-                        <span class="d-block lh-1 mb-2">Subtotal</span>
-                        <span class="d-block mb-2">Discounts</span>
-                        <span class="d-block mb-9">Tax(12%)</span>
-                        <span class="d-block fs-2qx lh-1">Total</span>
-                    </div>
-                    <!--end::Content-->
-                    <!--begin::Content-->
-                    <div class="fs-6 fw-bold text-white text-end">
-                        <span class="d-block lh-1 mb-2" data-kt-pos-element="total">$100.50</span>
-                        <span class="d-block mb-2" data-kt-pos-element="discount">-$8.00</span>
-                        <span class="d-block mb-9" data-kt-pos-element="tax">$11.20</span>
-                        <span class="d-block fs-2qx lh-1" data-kt-pos-element="grant-total">$93.46</span>
-                    </div>
-                    <!--end::Content-->
-                </div>
-                <!--end::Summary-->
-                <!--begin::Payment Method-->
-                <div class="m-0">
-                    <!--begin::Title-->
-                    <h1 class="fw-bold text-gray-800 mb-5">Payment Method</h1>
-                    <!--end::Title-->
-                    <!--begin::Radio group-->
-                    <div class="d-flex flex-equal gap-5 gap-xxl-9 px-0 mb-12" data-kt-buttons="true" data-kt-buttons-target="[data-kt-button]">
-                        <!--begin::Radio-->
-                        <label class="btn bg-light btn-color-gray-600 btn-active-text-gray-800 border border-3 border-gray-100 border-active-primary btn-active-light-primary w-100 px-4" data-kt-button="true">
-                            <!--begin::Input-->
-                            <input class="btn-check" type="radio" name="method" value="0" />
-                            <!--end::Input-->
-                            <!--begin::Icon-->
-                            <i class="ki-duotone ki-dollar fs-2hx mb-2 pe-0">
-                                <span class="path1"></span>
-                                <span class="path2"></span>
-                                <span class="path3"></span>
-                            </i>
-                            <!--end::Icon-->
-                            <!--begin::Title-->
-                            <span class="fs-7 fw-bold d-block">Cash</span>
-                            <!--end::Title-->
-                        </label>
-                        <!--end::Radio-->
-                        <!--begin::Radio-->
-                        <label class="btn bg-light btn-color-gray-600 btn-active-text-gray-800 border border-3 border-gray-100 border-active-primary btn-active-light-primary w-100 px-4 active" data-kt-button="true">
-                            <!--begin::Input-->
-                            <input class="btn-check" type="radio" name="method" value="1" />
-                            <!--end::Input-->
-                            <!--begin::Icon-->
-                            <i class="ki-duotone ki-credit-cart fs-2hx mb-2 pe-0">
-                                <span class="path1"></span>
-                                <span class="path2"></span>
-                            </i>
-                            <!--end::Icon-->
-                            <!--begin::Title-->
-                            <span class="fs-7 fw-bold d-block">Card</span>
-                            <!--end::Title-->
-                        </label>
-                        <!--end::Radio-->
-                        <!--begin::Radio-->
-                        <label class="btn bg-light btn-color-gray-600 btn-active-text-gray-800 border border-3 border-gray-100 border-active-primary btn-active-light-primary w-100 px-4" data-kt-button="true">
-                            <!--begin::Input-->
-                            <input class="btn-check" type="radio" name="method" value="2" />
-                            <!--end::Input-->
-                            <!--begin::Icon-->
-                            <i class="ki-duotone ki-paypal fs-2hx mb-2 pe-0">
-                                <span class="path1"></span>
-                                <span class="path2"></span>
-                            </i>
-                            <!--end::Icon-->
-                            <!--begin::Title-->
-                            <span class="fs-7 fw-bold d-block">E-Wallet</span>
-                            <!--end::Title-->
-                        </label>
-                        <!--end::Radio-->
-                    </div>
-                    <!--end::Radio group-->
-                    <!--begin::Actions-->
-                    <button class="btn btn-primary fs-1 w-100 py-4">Print Bills</button>
-                    <!--end::Actions-->
-                </div>
-                <!--end::Payment Method-->
             </div>
-            <!--end: Card Body-->
         </div>
-        <!--end::Pos order-->
+
+        <!--begin::Summary-->
+        <div class="d-flex flex-stack bg-success rounded-3 p-6 mb-11">
+            <!--begin::Content-->
+            <div class="fs-6 fw-bold text-white">
+                <span class="d-block lh-1 mb-2">{{__('pagination.sub_total')}}</span>
+                <span class="d-block mb-2">{{__('pagination._discount')}}</span>
+                <span class="d-block mb-9">{{__('pagination._tax')}}</span>
+                <span class="d-block fs-2qx lh-1">{{__('pagination.grant_total')}}</span>
+            </div>
+            <!--end::Content-->
+            <!--begin::Content-->
+            <div class="fs-6 fw-bold text-white text-end">
+                <span class="d-block lh-1 mb-2" data-kt-pos-element="total">$0.00</span>
+                <span class="d-block mb-2" data-kt-pos-element="discount">-$0.00</span>
+                <span class="d-block mb-9" data-kt-pos-element="tax">$11.20</span>
+                <span class="d-block fs-2qx lh-1" data-kt-pos-element="grant-total">$0.00</span>
+            </div>
+            <!--end::Content-->
+        </div>
+        
+        <!--begin::Payment Method-->
+        <div class="m-0">
+            <h1 class="fw-bold text-gray-800 mb-5">{{__('pagination.payment_method')}}</h1>
+            <!--begin::Radio group-->
+            <div class="d-flex flex-equal gap-5 gap-xxl-9 px-0 mb-12" data-kt-buttons="true" data-kt-buttons-target="[data-kt-button]">
+                <!--begin::Radio-->
+                <label class="btn bg-light btn-color-gray-600 btn-active-text-gray-800 border border-3 border-gray-100 border-active-primary btn-active-light-primary w-100 px-4" data-kt-button="true">
+                    <input class="btn-check" type="radio" name="method" value="1" />
+                    <i class="ki-duotone ki-dollar fs-2hx mb-2 pe-0">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                        <span class="path3"></span>
+                    </i>
+                    <span class="fs-7 fw-bold d-block">{{__('pagination._cash')}}</span>
+                </label>
+
+                <!--begin::Radio-->
+                <label class="btn bg-light btn-color-gray-600 btn-active-text-gray-800 border border-3 border-gray-100 border-active-primary btn-active-light-primary w-100 px-4" data-kt-button="true">
+                    <input class="btn-check" type="radio" name="method" value="2" />
+                    <i class="ki-duotone ki-finance-calculator fs-2hx mb-2 pe-0">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>
+                    <span class="fs-7 fw-bold d-block">{{__('pagination.mobile_money')}}</span>
+                </label>
+                
+                <!--begin::Radio-->
+                <label class="btn bg-light btn-color-gray-600 btn-active-text-gray-800 border border-3 border-gray-100 border-active-primary btn-active-light-primary w-100 px-4 active" data-kt-button="true">
+                    <input class="btn-check" type="radio" name="method" value="3" />
+                    <i class="ki-duotone ki-credit-cart fs-2hx mb-2 pe-0">
+                        <span class="path1"></span>
+                        <span class="path2"></span>
+                    </i>
+                    <span class="fs-7 fw-bold d-block">{{__('pagination._card')}}</span>
+                </label>
+            </div>
+            
+            <button 
+                id="processBill" 
+                type="button" 
+                class="btn btn-primary fs-1 w-100 py-4"
+                onclick="processPayment()">
+                
+                <span class="indicator-label">{{__('pagination.print_bill')}}</span>
+                <span class="indicator-progress">{{__('pagination.processing_payments')}}
+                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                </span>
+            </button>
+        </div>
     </div>
     <!--end::Sidebar-->
 </div>
+
+<script>
+    // Cart array to store items
+    let cart = [];
+
+    // Add item to cart with stock validation
+    function addToCart(variant) {
+        // Check if item is out of stock
+        if (variant.quantity_available <= 0) {
+            toastr['error']('{{ __("pagination.out_of_stock") }}');
+            return;
+        }
+        
+        // Check if item already exists in cart
+        const existingItemIndex = cart.findIndex(item => item.id === variant.id);
+        
+        if (existingItemIndex > -1) {
+            // Check if we can add more (don't exceed available stock)
+            if (cart[existingItemIndex].quantity < variant.quantity_available) {
+                cart[existingItemIndex].quantity += 1;
+                updateCartItem(existingItemIndex);
+                toastr['success']('{{ __("pagination.item_added") }}');
+            } else {
+                toastr['warning']('{{ __("pagination.max_quantity_reached") }}');
+            }
+        } else {
+            // Add new item to cart
+            const cartItem = {
+                id: variant.id,
+                name: variant.name,
+                price: variant.price,
+                image: variant.image,
+                quantity: 1,
+                quantity_available: variant.quantity_available
+            };
+            cart.push(cartItem);
+            renderCartItem(cartItem);
+            toastr['success']('{{ __("pagination.item_added") }}');
+        }
+        
+        updateCartTotal();
+        calculateCartSummary();
+    }
+
+    // Render new cart item
+    function renderCartItem(item) {
+        const cartTable = document.querySelector('#kt_pos_form tbody');
+        const newRow = document.createElement('tr');
+        newRow.setAttribute('data-kt-pos-element', 'item');
+        newRow.setAttribute('data-kt-pos-item-price', item.price);
+        newRow.setAttribute('data-item-id', item.id);
+        newRow.innerHTML = `
+            <td class="pe-0">
+                <div class="d-flex align-items-center">
+                    <img src="${item.image}" class="w-50px h-50px rounded-3 me-3" alt="${item.name}" />
+                    <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-6 me-1">${item.name}</span>
+                </div>
+            </td>
+            <td class="pe-0">
+                <div class="position-relative d-flex align-items-center" data-kt-dialer="true" data-kt-dialer-min="1" data-kt-dialer-max="${item.quantity_available}" data-kt-dialer-step="1" data-kt-dialer-decimals="0">
+                    <button type="button" class="btn btn-icon btn-sm btn-light btn-icon-gray-500"  onclick="decreaseQuantity(${item.id})">
+                        <i class="ki-duotone ki-minus fs-3x"></i>
+                    </button>
+                    <input type="text" class="form-control border-0 text-center px-0 fs-3 fw-bold text-gray-800 w-30px quantity-input" 
+                        data-kt-dialer-control="input" placeholder="Amount" name="quantity_${item.id}" 
+                        value="${item.quantity}" onchange="updateQuantity(${item.id}, this.value)" />
+                    <button type="button" class="btn btn-icon btn-sm btn-light btn-icon-gray-500"  onclick="increaseQuantity(${item.id})">
+                        <i class="ki-duotone ki-plus fs-3x"></i>
+                    </button>
+                </div>
+            </td>
+            <td class="text-end">
+                <div class="d-flex align-items-center justify-content-end">
+                    <span class="fw-bold text-primary fs-2 item-total me-2">$${(item.price * item.quantity).toFixed(2)}</span>
+                    <button type="button" class="btn btn-icon btn-sm btn-danger" onclick="removeFromCart(${item.id})">
+                        <i class="bi bi-trash fs-2"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+        cartTable.appendChild(newRow);
+    }
+
+    // Update existing cart item
+    function updateCartItem(itemIndex) {
+        const item = cart[itemIndex];
+        const row = document.querySelector(`tr[data-item-id="${item.id}"]`);
+        if (row) {
+            const quantityInput = row.querySelector('.quantity-input');
+            const itemTotal = row.querySelector('.item-total');
+            
+            quantityInput.value = item.quantity;
+            itemTotal.textContent = `$${(item.price * item.quantity).toFixed(2)}`;
+        }
+    }
+
+    
+    // Quantity functions with stock validation
+    function increaseQuantity(itemId) {
+        const itemIndex = cart.findIndex(item => item.id === itemId);
+        if (itemIndex > -1) {
+            if (cart[itemIndex].quantity < cart[itemIndex].quantity_available) {
+                cart[itemIndex].quantity += 1;
+                updateCartItem(itemIndex);
+                updateCartTotal();
+            } else {
+                toastr['warning']('{{ __("pagination.max_quantity_reached") }}');
+            }
+        }
+    }
+
+
+    function decreaseQuantity(itemId) {
+        const itemIndex = cart.findIndex(item => item.id === itemId);
+        if (itemIndex > -1 && cart[itemIndex].quantity > 1) {
+            cart[itemIndex].quantity -= 1;
+            updateCartItem(itemIndex);
+            updateCartTotal();
+        }
+    }
+
+    function updateQuantity(itemId, newQuantity) {
+        const quantity = parseInt(newQuantity);
+        const itemIndex = cart.findIndex(item => item.id === itemId);
+        
+        if (itemIndex > -1 && !isNaN(quantity)) {
+            if (quantity > 0 && quantity <= cart[itemIndex].quantity_available) {
+                cart[itemIndex].quantity = quantity;
+                updateCartItem(itemIndex);
+                updateCartTotal();
+            } else if (quantity > cart[itemIndex].quantity_available) {
+
+                toastr['warning']('{{ __("pagination.max_quantity_reached") }}');
+                // Reset to max available
+                cart[itemIndex].quantity = cart[itemIndex].quantity_available;
+                updateCartItem(itemIndex);
+                updateCartTotal();
+            }
+        }
+    }
+
+    // Remove item from cart
+    function removeFromCart(itemId) {
+        const itemIndex = cart.findIndex(item => item.id === itemId);
+        if (itemIndex > -1) {
+            cart.splice(itemIndex, 1);
+            const row = document.querySelector(`tr[data-item-id="${itemId}"]`);
+            if (row) row.remove();
+            updateCartTotal();
+            toastr['success']('{{ __("pagination.item_removed") }}');
+        }
+    }
+
+    // Clear all items from cart
+    function clearCart() {
+        cart = [];
+        const cartTable = document.querySelector('#kt_pos_form tbody');
+        cartTable.innerHTML = '';
+        updateCartTotal();
+        toastr['success']('{{ __("pagination.cart_cleared") }}');
+    }
+
+    // Update cart total
+    function updateCartTotal() {
+        const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        document.querySelector('[data-kt-pos-element="total"]').textContent = `$${total.toFixed(2)}`;
+        
+        // Show/hide empty state
+        const emptyState = document.querySelector('.cart-empty-state');
+        const cartTable = document.querySelector('#kt_pos_form tbody');
+        
+        if (cart.length === 0) {
+            if (!emptyState) {
+                const emptyRow = document.createElement('tr');
+                emptyRow.className = 'cart-empty-state';
+                emptyRow.innerHTML = `
+                    <td colspan="3" class="text-center py-10">
+                        <div class="text-gray-600 fs-5">{{ __("pagination.cart_empty") }}</div>
+                    </td>
+                `;
+                cartTable.appendChild(emptyRow);
+            }
+        } else {
+            if (emptyState) emptyState.remove();
+        }
+    }
+
+    // Initialize cart on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        updateCartTotal();
+        
+        // Add event listener to clear all button
+        document.querySelector('[onclick="clearCart()"]').addEventListener('click', function(e) {
+            e.preventDefault();
+            clearCart();
+        });
+    });
+
+    // Calculate cart summary (subtotal, discount, tax, grand total)
+    function calculateCartSummary() {
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const discount = 0; // 0% discount for now
+        const taxRate = 0; // 0% tax for now
+        const tax = subtotal * (taxRate / 100);
+        const grandTotal = subtotal - discount + tax;
+        
+        // Update summary display
+        document.querySelector('[data-kt-pos-element="total"]').textContent = `$${subtotal.toFixed(2)}`;
+        document.querySelector('[data-kt-pos-element="discount"]').textContent = `-$${discount.toFixed(2)}`;
+        document.querySelector('[data-kt-pos-element="tax"]').textContent = `$${tax.toFixed(2)}`;
+        document.querySelector('[data-kt-pos-element="grant-total"]').textContent = `$${grandTotal.toFixed(2)}`;
+    }
+
+    // Update the updateCartTotal function to also calculate summary
+    function updateCartTotal() {
+        calculateCartSummary();
+    }
+</script>
+
+<script>
+    function processPayment() {
+        const submitButton = document.getElementById('processBill');
+
+        // Check if cart is empty
+        if (cart.length === 0) {
+            toastr['warning']('{{ __("pagination.cart_empty") }}');
+            console.log('Cart is empty - cannot process payment');
+            return;
+        }
+
+        // Start loading
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Get selected payment method
+        const selectedMethod = document.querySelector('input[name="method"]:checked');
+        const paymentMethod = selectedMethod ? selectedMethod.value : '3'
+
+        // Prepare cart data
+        const cartData = {
+            items: cart.map(item => ({
+                variant_id: item.id,
+                quantity: item.quantity,
+                price: item.price,
+                name: item.name
+            })),
+            payment_method: paymentMethod,
+            subtotal: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+            discount: 0, 
+            tax: 0, 
+            total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+        };
+        
+        const formData = new FormData();
+        formData.append('cart_data', JSON.stringify(cartData));
+        console.log(formData);
+        
+        fetch('{{ route("orders.process-payment") }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+            },
+            body: formData
+        })
+        .then(response => {
+            // Check if response is OK
+            if (!response.ok) {
+                toastr['danger']('{{ __("pagination.network_error") }}');
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Stop loading
+            LiveBlade.toggleButtonLoading(submitButton, false);
+            
+            if (data.success) {
+                toastr['success'](data.message);
+                
+                // Open modal based on payment method
+                // openPaymentModal(paymentMethod, data.order_data || {});
+                
+                // Clear cart after successful payment
+                clearCart();
+            } else {
+                // Show error toast from backend response
+                const message = data.message || '{{ __("pagination.order_failed") }}';
+                toastr['success'](message);
+            }
+        })
+        .catch(error => {
+            // Stop loading
+            LiveBlade.toggleButtonLoading(submitButton, false);
+            console.error('Payment error:', error);
+            toastr['error']('{{ __("pagination.payment_error") }}');
+        });
+
+        
+    }
+</script>

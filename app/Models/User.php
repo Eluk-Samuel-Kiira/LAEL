@@ -28,6 +28,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'telephone_number',
         'job_title',
         'department_id',
+        'location_id',
         'profile_image',
         'role_id',
         'status',
@@ -66,6 +67,11 @@ class User extends Authenticatable implements MustVerifyEmail
     public function userDepartment()
     {
         return $this->belongsTo(Department::class, 'department_id');
+    }
+    
+    public function userLocation()
+    {
+        return $this->belongsTo(Location::class, 'location_id');
     }
 
     public function departments()

@@ -27,6 +27,7 @@ class ProductVariantFactory extends Factory
             'name' => $this->faker->word(),
             'barcode' => $this->faker->ean13(),
             'price' => $this->faker->randomFloat(2, 5, 500),
+            'product_id' => Product::factory(),
             'cost_price' => $this->faker->randomFloat(2, 3, 400),
             'image_url' => $this->faker->imageUrl(640, 480, 'products', true),
             'weight' => $this->faker->randomFloat(2, 50, 2000),

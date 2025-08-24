@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('job_title')->nullable();
             $table->string('profile_image')->nullable();
             $table->unsignedBigInteger('role_id');
+            $table->unsignedBigInteger('location_id');
             $table->unsignedBigInteger('department_id');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();

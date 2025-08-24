@@ -52,13 +52,26 @@
                         </div>
                         
                         <div class="row g-9 mb-8">
-                            <div class="d-flex flex-column mb-8 fv-row col-md-12">
+                            <div class="d-flex flex-column mb-8 fv-row col-md-6">
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
                                         <span class="required">{{__('auth.job_title')}}</span>
                                 </label>
                                 <input type="text" id="job_title" class="form-control form-control-solid" name="job_title" />
                                 <div id="job_title"></div>
                             </div>
+
+                            <div class="d-flex flex-column mb-8 fv-row col-md-6">
+                                <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                    <span class="required">{{__('pagination._location')}}</span>
+                                </label>
+                                <select name="location_id" class="form-select form-select" data-control="select2" data-close-on-select="false" data-placeholder="Select an option" data-allow-clear="true">
+                                    <option></option>
+                                    @foreach ($locations as $location)
+                                        <option value="{{ $location->id }}">{{ $location->name }}</option>
+                                    @endforeach
+                                </select>
+                                <div id="location_id"></div>
+                            </div> 
                         </div>
 
                         <div class="row g-9 mb-8">
@@ -95,7 +108,7 @@
                             class="btn btn-primary"
                             onclick="submitEmployeeForm('kt_modal_add_user_form', 'submitEmplButton', '{{ route('employee.store') }}', 'POST', 'discardButton')">
                             
-                            <span class="indicator-label">{{__('auth.sumbit')}}</span>
+                            <span class="indicator-label">{{__('auth.submit')}}</span>
                             <span class="indicator-progress">{{__('auth.please_wait')}}
                                 <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
                             </span>

@@ -15,6 +15,7 @@ class Order extends Model
         'customer_id',
         'customer_name',
         'location_id',
+        'department_id',
         'order_number',
         'type',
         'status',
@@ -34,4 +35,14 @@ class Order extends Model
     public function customer() { return $this->belongsTo(Customer::class); }
     public function location() { return $this->belongsTo(Location::class); }
     public function orderCreater() { return $this->belongsTo(User::class, 'created_by'); }
+
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
 }

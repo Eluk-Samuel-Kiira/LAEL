@@ -13,6 +13,7 @@
                     <th class="min-w-125px">{{__('auth._role')}}</th>
                     <th class="min-w-125px">{{__('auth._phone')}}</th>
                     <th class="min-w-125px">{{__('auth._department')}}</th>
+                    <th class="min-w-125px">{{__('pagination._location')}}</th>
                     <th class="min-w-125px">{{__('auth.job_title')}}</th>
                     <th class="min-w-125px">{{__('auth.created_at')}}</th>
                     <th class="min-w-125px">{{__('auth._status')}}</th>
@@ -50,6 +51,9 @@
                             </td>
                             <td>
                                 <div class="badge badge-light fw-bold">{{ $employee->userDepartment->name ?? 'None'}}</div>
+                            </td>
+                            <td>
+                                <div class="badge badge-light fw-bold">{{ $employee->userLocation->name ?? 'None'}}</div>
                             </td>
                             <td>{{ $employee->job_title }}</td>
                             <td>{{ $employee->created_at->format('d M Y, h:i a') }}</td>
