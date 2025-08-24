@@ -5,6 +5,8 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use App\Models\Location;
+use App\Models\Department;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
@@ -29,7 +31,8 @@ class UserFactory extends Factory
             'last_name' => fake()->word(),
             'telephone_number' => '0700000001',
             'job_title' => $this->faker->randomElement(['waiter', 'cleaner', 'atendant', 'keeper']),
-            'department_id' => $this->faker->randomElement([1, 2, 3, 4, 6, 76, 34, 22, 90]),
+            'department_id' => $this->faker->randomElement([1, 2, 3, 4, 6, 7, 8, 9, 10]),
+            'location_id' => $this->faker->randomElement([1, 2, 3, 4, 6, 7, 8, 9, 10]),
             'profile_image' => '',
             'role_id' => $this->faker->randomElement([1, 2, 3, 4]),
             'email' => fake()->unique()->safeEmail(),

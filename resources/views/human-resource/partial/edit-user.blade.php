@@ -51,12 +51,26 @@
                         </div>
                         
                         <div class="row g-9 mb-8">
-                            <div class="d-flex flex-column mb-8 fv-row col-md-12">
+                            <div class="d-flex flex-column mb-8 fv-row col-md-6">
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
                                         <span class="required">{{__('auth.job_title')}}</span>
                                 </label>
                                 <input type="text" class="form-control form-control-solid" value="{{ $employee->job_title }}" name="job_title" />
                                 <div id="job_title{{ $employee->id }}"></div>
+                            </div>
+                            <div class="d-flex flex-column mb-8 fv-row col-md-6">
+                                <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                    <span class="required">{{ __('pagination._location') }}</span>
+                                </label>
+                                <select name="location_id" class="form-select" data-control="select2" data-close-on-select="false" data-placeholder="Select an option" data-allow-clear="true">
+                                    <option value="" disabled {{ is_null($employee->location_id) ? 'selected' : '' }}></option>
+                                    @foreach ($locations as $location)
+                                        <option value="{{ $location->id }}" {{ $location->id == $employee->location_id ? 'selected' : '' }}>
+                                            {{ ucwords(str_replace('_', ' ', $location->name)) }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <div id="location_id{{ $employee->id }}"></div>
                             </div>
                         </div>
 

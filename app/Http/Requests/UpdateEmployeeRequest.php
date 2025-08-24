@@ -25,8 +25,9 @@ class UpdateEmployeeRequest extends FormRequest
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'email' => 'required|email',
-            'role_id' => 'required',
-            'department_id' => 'required',
+            'role_id' => 'required|exists:roles,id',
+            'department_id' => 'required|integer|exists:departments,id',
+            'location_id' => 'required|integer|exists:locations,id',
             'telephone_number' => 'required|string|max:20',
             'job_title' => 'nullable',
         ];

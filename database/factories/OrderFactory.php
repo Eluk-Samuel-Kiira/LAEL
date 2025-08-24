@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Tenant;
 use App\Models\Customer;
 use App\Models\Location;
+use App\Models\Department;
 use App\Models\User;
 
 /**
@@ -20,20 +21,27 @@ class OrderFactory extends Factory
      */
     public function definition(): array
     {
+        $subtotal = $this->faker->randomFloat(2, 50, 500);
+        $discountTotal = $this->faker->randomFloat(2, 0, 50);
+        $taxTotal = $this->faker->randomFloat(2, 5, 30);
+        $total = $subtotal - $discountTotal + $taxTotal;
+        $paidAmount = $this->faker->randomFloat(2, 0, $total);
+        
         return [
             'tenant_id' => Tenant::factory(),
             'customer_id' => Customer::factory(),
             'customer_name' => $this->faker->name(),
             'location_id' => Location::factory(),
+            'department_id' => Department::factory(),
             'order_number' => strtoupper($this->faker->unique()->bothify('ORD###??')),
             'type' => $this->faker->randomElement(['sale', 'return', 'quote', 'layby']),
             'status' => $this->faker->randomElement(['draft', 'confirmed', 'processing', 'completed', 'cancelled', 'refunded']),
-            'subtotal' => $this->faker->randomFloat(2, 50, 500),
-            'discount_total' => $this->faker->randomFloat(2, 0, 50),
-            'tax_total' => $this->faker->randomFloat(2, 5, 30),
-            'total' => $this->faker->randomFloat(2, 60, 600),
-            'paid_amount' => $this->faker->randomFloat(2, 0, 600),
-            'balance_due' => $this->faker->randomFloat(2, 0, 200),
+            'subtotal' => $subtotal,
+            'discount_total' => $discountTotal,
+            'tax_total' => $taxTotal,
+            'total' => $total,
+            'paid_amount' => $paidAmount,
+            'balance_due' => max(0, $total - $paidAmount),
             'source' => $this->faker->randomElement(['pos', 'online', 'phone', 'mobile']),
             'notes' => $this->faker->sentence(),
             'created_by' => User::factory(),

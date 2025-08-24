@@ -854,7 +854,7 @@
 
         // Reinitialize the DataTable
         $(tableId).DataTable({
-            paging: true,
+            paging: false,
             searching: true,
             ordering: true,
             responsive: false, // Disable responsive behavior

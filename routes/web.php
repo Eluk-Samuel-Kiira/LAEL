@@ -113,6 +113,8 @@ Route::middleware('auth')->group(function () {
     // Orders and Purchases
     Route::resource('orders', OrderController::class);
     Route::get('/pos-index', [POSController::class, 'index'])->name('pos.index');
+    Route::post('/orders/process-payment', [POSController::class, 'processPayment'])
+        ->name('orders.process-payment');
 
 });
 

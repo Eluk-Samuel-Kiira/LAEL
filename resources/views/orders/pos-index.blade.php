@@ -25,16 +25,16 @@
                     <li class="breadcrumb-item text-muted">{{__('pagination.pos_index')}}</li>
                 </ul>
             </div>
-            <div class="d-flex align-items-center gap-2 gap-lg-3">
+            <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-2 gap-lg-3">
                 <!-- Search Bar -->
-                <div class="px-7 py-5">
+                <div class="px-3 px-md-7 py-3 py-md-5 w-100 w-md-auto">
                     <input type="text" id="variantSearchInput" class="form-control" 
                         placeholder="{{__('auth._search')}} {{__('pagination._variants')}}"
                         onkeyup="filterVariants(this.value)">
                 </div>
 
                 <!-- Department Filter -->
-                <select class="form-select form-select-solid fw-bold w-auto" id="departmentFilter">
+                <select class="form-select form-select-solid fw-bold w-100 w-md-auto" id="departmentFilter">
                     <option value="">{{ __('auth._department') }}</option>
                     @foreach ($user_departments as $department)
                         <option value="{{ $department->id }}">{{ ucwords($department->name) }}</option>

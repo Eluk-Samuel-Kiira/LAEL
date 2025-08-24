@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('customer_id')->nullable()->constrained('customers')->nullOnDelete();
             $table->string('customer_name')->nullable();
             $table->foreignId('location_id')->constrained('locations')->restrictOnDelete();
+            $table->foreignId('department_id')->constrained('departments')->restrictOnDelete();
             $table->string('order_number', 50);
             $table->enum('type', ['sale', 'return', 'quote', 'layby']);
             $table->enum('status', ['draft', 'confirmed', 'processing', 'completed', 'cancelled', 'refunded']);
