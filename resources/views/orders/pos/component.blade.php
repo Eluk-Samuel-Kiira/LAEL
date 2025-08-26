@@ -253,13 +253,56 @@
             <!--end::Content-->
         </div>
         
+        
+        <!--begin::Customer-->
+        <div class="m-0">
+            <div class="mb-8">
+                <h3 class="fw-bold text-gray-800 mb-5">{{__('pagination.select_customer')}}</h3>
+
+                <!-- Radio Options -->
+                <div class="d-flex flex-column gap-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="radio" name="customerOption" id="existingOption" value="existing" checked>
+                        <label for="existingOption" class="btn bg-light btn-color-gray-600 btn-active-text-gray-800 border border-3 border-gray-100 border-active-primary btn-active-light-primary w-100 px-4">
+                            {{__('pagination.existing_customer')}}
+                        </label>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="radio" name="customerOption" id="newOption" value="new">
+                        <label for="newOption" class="btn bg-light btn-color-gray-600 btn-active-text-gray-800 border border-3 border-gray-100 border-active-primary btn-active-light-primary w-100 px-4">
+                            {{__('pagination.new_customer')}}
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Existing Customer -->
+                <div id="existingCustomerWrapper" class="mt-4">
+                    <select class="form-select form-select-lg" id="existingCustomer">
+                        <option value="">{{__('pagination.choose_customer')}}</option>
+                        @foreach ($customers as $customer)
+                            <option value="{{ $customer->id }}">
+                                {{ $customer->first_name }} {{ $customer->last_name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- New Customer -->
+                <div id="newCustomerWrapper" class="mt-4 d-none">
+                    <input type="text" class="form-control form-control-lg" 
+                        placeholder="{{__('pagination.customer_name_placeholder')}}" 
+                        id="newCustomer">
+                </div>
+            </div>
+        </div>
+        
         <!--begin::Payment Method-->
         <div class="m-0">
-            <h1 class="fw-bold text-gray-800 mb-5">{{__('pagination.payment_method')}}</h1>
+            <h3 class="fw-bold text-gray-800 mb-5">{{__('pagination.payment_method')}}</h3>
             <!--begin::Radio group-->
             <div class="d-flex flex-equal gap-5 gap-xxl-9 px-0 mb-12" data-kt-buttons="true" data-kt-buttons-target="[data-kt-button]">
                 <!--begin::Radio-->
-                <label class="btn bg-light btn-color-gray-600 btn-active-text-gray-800 border border-3 border-gray-100 border-active-primary btn-active-light-primary w-100 px-4" data-kt-button="true">
+                <label class="btn bg-light btn-color-gray-600 btn-active-text-gray-800 border border-3 border-gray-100 border-active-primary btn-active-light-primary w-100 px-4 active" data-kt-button="true">
                     <input class="btn-check" type="radio" name="method" value="1" />
                     <i class="ki-duotone ki-dollar fs-2hx mb-2 pe-0">
                         <span class="path1"></span>
@@ -280,7 +323,7 @@
                 </label>
                 
                 <!--begin::Radio-->
-                <label class="btn bg-light btn-color-gray-600 btn-active-text-gray-800 border border-3 border-gray-100 border-active-primary btn-active-light-primary w-100 px-4 active" data-kt-button="true">
+                <label class="btn bg-light btn-color-gray-600 btn-active-text-gray-800 border border-3 border-gray-100 border-active-primary btn-active-light-primary w-100 px-4" data-kt-button="true">
                     <input class="btn-check" type="radio" name="method" value="3" />
                     <i class="ki-duotone ki-credit-cart fs-2hx mb-2 pe-0">
                         <span class="path1"></span>
@@ -305,6 +348,31 @@
     </div>
     <!--end::Sidebar-->
 </div>
+
+<script>
+    const existingOption = document.getElementById('existingOption');
+    const newOption = document.getElementById('newOption');
+    const existingWrapper = document.getElementById('existingCustomerWrapper');
+    const newWrapper = document.getElementById('newCustomerWrapper');
+
+    function toggleCustomerFields() {
+        if (existingOption.checked) {
+            existingWrapper.classList.remove('d-none');
+            newWrapper.classList.add('d-none');
+        } else {
+            existingWrapper.classList.add('d-none');
+            newWrapper.classList.remove('d-none');
+        }
+    }
+
+    // Init state
+    toggleCustomerFields();
+
+    // Listen for changes
+    existingOption.addEventListener('change', toggleCustomerFields);
+    newOption.addEventListener('change', toggleCustomerFields);
+</script>
+@include('orders.pos.payment-mode')
 
 <script>
     // Cart array to store items
@@ -524,6 +592,7 @@
     }
 </script>
 
+
 <script>
     function processPayment() {
         const submitButton = document.getElementById('processBill');
@@ -535,12 +604,40 @@
             return;
         }
 
-        // Start loading
-        LiveBlade.toggleButtonLoading(submitButton, true);
+        // --- Check Customer Selection ---
+        const existingCustomer = document.getElementById('existingCustomer'); // dropdown
+        const newCustomer = document.getElementById('newCustomer'); // input
+        const existingOption = document.getElementById('existingOption'); // radio
+        const newOption = document.getElementById('newOption'); // radio
+
+        let customerData = null;
+
+        if (existingOption.checked) {
+            // Existing customer chosen
+            if (existingCustomer.value === "") {
+                toastr['warning']('{{ __("pagination.please_select_existing_customer") }}');
+                return;
+            }
+            customerData = {
+                type: "existing",
+                id: existingCustomer.value
+            };
+        } else if (newOption.checked) {
+            // New customer chosen
+            if (newCustomer.value.trim() === "") {
+                toastr['warning']('{{ __("pagination.please_enter_customer") }}');
+                return;
+            }
+            customerData = {
+                type: "new",
+                name: newCustomer.value.trim()
+            };
+        }
+
 
         // Get selected payment method
         const selectedMethod = document.querySelector('input[name="method"]:checked');
-        const paymentMethod = selectedMethod ? selectedMethod.value : '3'
+        const paymentMethod = selectedMethod ? selectedMethod.value : '1'
 
         // Prepare cart data
         const cartData = {
@@ -550,16 +647,22 @@
                 price: item.price,
                 name: item.name
             })),
+            customer: customerData,
             payment_method: paymentMethod,
             subtotal: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
             discount: 0, 
             tax: 0, 
             total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
         };
+
+        // console.log(cartData);
+        
+        // Start loading
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
         
         const formData = new FormData();
         formData.append('cart_data', JSON.stringify(cartData));
-        console.log(formData);
         
         fetch('{{ route("orders.process-payment") }}', {
             method: 'POST',
@@ -583,12 +686,17 @@
             
             if (data.success) {
                 toastr['success'](data.message);
+
+                const cartDataRaw = formData.get("cart_data");  // JSON string
+                const cartData = JSON.parse(cartDataRaw);       // Convert to object
+                cartData.order_number = data.order_number;     
+                cartData.customerName = data.customerName; 
                 
                 // Open modal based on payment method
-                // openPaymentModal(paymentMethod, data.order_data || {});
+                openPaymentModal(paymentMethod, cartData);
                 
                 // Clear cart after successful payment
-                clearCart();
+                // clearCart();
             } else {
                 // Show error toast from backend response
                 const message = data.message || '{{ __("pagination.order_failed") }}';
@@ -605,3 +713,4 @@
         
     }
 </script>
+
