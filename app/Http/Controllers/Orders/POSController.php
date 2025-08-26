@@ -15,6 +15,7 @@ use Illuminate\Support\Str;
 use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\InventoryLog;
+use App\Models\Customer;
 
 class POSController extends Controller
 {
@@ -47,13 +48,27 @@ class POSController extends Controller
             $cartData = json_decode($request->cart_data, true);
             $user = Auth::user();
 
+            // Determine customer details
+            $customerId = null;
+            $customerName = null;
+
+            if (isset($cartData['customer'])) {
+                if ($cartData['customer']['type'] === 'existing') {
+                    $customerId = $cartData['customer']['id'];
+                    
+                    $customer = Customer::find($customerId);
+                    $customerName = $customer ? trim($customer->first_name . ' ' . $customer->last_name) : null;
+                } elseif ($cartData['customer']['type'] === 'new') {
+                    $customerName = $cartData['customer']['name'];
+                }
+            }
             // Generate order number
             $orderNumber = 'ORD-' . date('Ymd') . '-' . strtoupper(Str::random(6));
             
             $order = Order::create([
                 'tenant_id' => 1,
-                'customer_id' => null, 
-                'customer_name' => 'Walker Jim',
+                'customer_id' => $customerId,     
+                'customer_name' => $customerName, 
                 'location_id' => 1,
                 'department_id' => 1,
                 'order_number' => $orderNumber,
@@ -68,6 +83,8 @@ class POSController extends Controller
                 'source' => 'pos',
                 'created_by' => $user->id,
             ]);
+
+            // \Log::info($order);
 
             // Create order items and update inventory
             foreach ($cartData['items'] as $item) {
@@ -98,6 +115,8 @@ class POSController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => __('pagination.order_placed'),
+                'order_number' => $orderNumber,
+                'customerName' => $customerName,
             ]);
 
         } catch (\Exception $e) {
