@@ -7,7 +7,6 @@
             <!--begin::Body-->
             <div class="card-body">
                 <!--begin::Nav-->
-                <!-- Remove d-flex justify-content-between and add flex-nowrap -->
 
                 <ul class="nav nav-pills nav-pills-custom gap-3 mb-6 d-flex flex-nowrap" 
                     id="productList"
@@ -206,7 +205,7 @@
     <!--begin::Body-->
     <div class="flex-row-auto w-xl-450px">
         <!--begin::Pos order-->
-        <div class="card card-flush bg-body" id="kt_pos_form">
+        <div id="kt_pos_form" class="card card-flush bg-body">
             <div class="card-header pt-5">
                 <h3 class="card-title fw-bold text-gray-800 fs-2qx">{{__('pagination._current_order')}}</h3>
                 <div class="card-toolbar">
@@ -230,120 +229,121 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
-        </div>
 
-        <!--begin::Summary-->
-        <div class="d-flex flex-stack bg-success rounded-3 p-6 mb-11">
-            <!--begin::Content-->
-            <div class="fs-6 fw-bold text-white">
-                <span class="d-block lh-1 mb-2">{{__('pagination.sub_total')}}</span>
-                <span class="d-block mb-2">{{__('pagination._discount')}}</span>
-                <span class="d-block mb-9">{{__('pagination._tax')}}</span>
-                <span class="d-block fs-2qx lh-1">{{__('pagination.grant_total')}}</span>
-            </div>
-            <!--end::Content-->
-            <!--begin::Content-->
-            <div class="fs-6 fw-bold text-white text-end">
-                <span class="d-block lh-1 mb-2" data-kt-pos-element="total">$0.00</span>
-                <span class="d-block mb-2" data-kt-pos-element="discount">-$0.00</span>
-                <span class="d-block mb-9" data-kt-pos-element="tax">$11.20</span>
-                <span class="d-block fs-2qx lh-1" data-kt-pos-element="grant-total">$0.00</span>
-            </div>
-            <!--end::Content-->
-        </div>
-        
-        
-        <!--begin::Customer-->
-        <div class="m-0">
-            <div class="mb-8">
-                <h3 class="fw-bold text-gray-800 mb-5">{{__('pagination.select_customer')}}</h3>
+                <!--begin::Summary-->
+                <div class="d-flex flex-stack bg-success rounded-3 p-6 mb-11">
+                    <!--begin::Content-->
+                    <div class="fs-6 fw-bold text-white">
+                        <span class="d-block lh-1 mb-2">{{__('pagination.sub_total')}}</span>
+                        <span class="d-block mb-2">{{__('pagination._discount')}}</span>
+                        <span class="d-block mb-9">{{__('pagination._tax')}}</span>
+                        <span class="d-block fs-2qx lh-1">{{__('pagination.grant_total')}}</span>
+                    </div>
+                    <!--end::Content-->
+                    <!--begin::Content-->
+                    <div class="fs-6 fw-bold text-white text-end">
+                        <span class="d-block lh-1 mb-2" data-kt-pos-element="total">$0.00</span>
+                        <span class="d-block mb-2" data-kt-pos-element="discount">-$0.00</span>
+                        <span class="d-block mb-9" data-kt-pos-element="tax">$11.20</span>
+                        <span class="d-block fs-2qx lh-1" data-kt-pos-element="grant-total">$0.00</span>
+                    </div>
+                    <!--end::Content-->
+                </div>
+                
+                
+                <!--begin::Customer-->
+                <div class="m-0">
+                    <div class="mb-8">
+                        <h3 class="fw-bold text-gray-800 mb-5">{{__('pagination.select_customer')}}</h3>
 
-                <!-- Radio Options -->
-                <div class="d-flex flex-column gap-3">
-                    <div class="d-flex align-items-center gap-2">
-                        <input type="radio" name="customerOption" id="existingOption" value="existing" checked>
-                        <label for="existingOption" class="btn bg-light btn-color-gray-600 btn-active-text-gray-800 border border-3 border-gray-100 border-active-primary btn-active-light-primary w-100 px-4">
-                            {{__('pagination.existing_customer')}}
+                        <!-- Radio Options -->
+                        <div class="d-flex flex-column gap-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <input type="radio" name="customerOption" id="existingOption" value="existing" checked>
+                                <label for="existingOption" class="btn bg-light btn-color-gray-600 btn-active-text-gray-800 border border-3 border-gray-100 border-active-primary btn-active-light-primary w-100 px-4">
+                                    {{__('pagination.existing_customer')}}
+                                </label>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <input type="radio" name="customerOption" id="newOption" value="new">
+                                <label for="newOption" class="btn bg-light btn-color-gray-600 btn-active-text-gray-800 border border-3 border-gray-100 border-active-primary btn-active-light-primary w-100 px-4">
+                                    {{__('pagination.new_customer')}}
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Existing Customer -->
+                        <div id="existingCustomerWrapper" class="mt-4">
+                            <select class="form-select form-select-lg" id="existingCustomer">
+                                <option value="">{{__('pagination.choose_customer')}}</option>
+                                @foreach ($customers as $customer)
+                                    <option value="{{ $customer->id }}">
+                                        {{ $customer->first_name }} {{ $customer->last_name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- New Customer -->
+                        <div id="newCustomerWrapper" class="mt-4 d-none">
+                            <input type="text" class="form-control form-control-lg" 
+                                placeholder="{{__('pagination.customer_name_placeholder')}}" 
+                                id="newCustomer">
+                        </div>
+                    </div>
+                </div>
+                
+                <!--begin::Payment Method-->
+                <div class="m-0">
+                    <h3 class="fw-bold text-gray-800 mb-5">{{__('pagination.payment_method')}}</h3>
+                    <!--begin::Radio group-->
+                    <div class="d-flex flex-equal gap-5 gap-xxl-9 px-0 mb-12" data-kt-buttons="true" >
+
+                        <!--begin::Radio-->
+                        <label class="btn bg-light btn-color-gray-600 btn-active-text-gray-800 border border-3 border-gray-100 border-active-primary btn-active-light-primary w-100 px-4" >
+                            <input class="btn-check" type="radio" name="method" value="2" />
+                            <i class="ki-duotone ki-finance-calculator fs-2hx mb-2 pe-0">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                            <span class="fs-7 fw-bold d-block">{{__('pagination.mobile_money')}}</span>
+                        </label>
+                        
+                        <!--begin::Radio-->
+                        <label class="btn bg-light btn-color-gray-600 btn-active-text-gray-800 border border-3 border-gray-100 border-active-primary btn-active-light-primary w-100 px-4 active" >
+                            <input class="btn-check" type="radio" name="method" value="1" checked="checked"/>
+                            <i class="ki-duotone ki-dollar fs-2hx mb-2 pe-0">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                                <span class="path3"></span>
+                            </i>
+                            <span class="fs-7 fw-bold d-block">{{__('pagination._cash')}}</span>
+                        </label>
+                        
+                        <!--begin::Radio-->
+                        <label class="btn bg-light btn-color-gray-600 btn-active-text-gray-800 border border-3 border-gray-100 border-active-primary btn-active-light-primary w-100 px-4" >
+                            <input class="btn-check" type="radio" name="method" value="3" />
+                            <i class="ki-duotone ki-credit-cart fs-2hx mb-2 pe-0">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                            <span class="fs-7 fw-bold d-block">{{__('pagination._card')}}</span>
                         </label>
                     </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <input type="radio" name="customerOption" id="newOption" value="new">
-                        <label for="newOption" class="btn bg-light btn-color-gray-600 btn-active-text-gray-800 border border-3 border-gray-100 border-active-primary btn-active-light-primary w-100 px-4">
-                            {{__('pagination.new_customer')}}
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Existing Customer -->
-                <div id="existingCustomerWrapper" class="mt-4">
-                    <select class="form-select form-select-lg" id="existingCustomer">
-                        <option value="">{{__('pagination.choose_customer')}}</option>
-                        @foreach ($customers as $customer)
-                            <option value="{{ $customer->id }}">
-                                {{ $customer->first_name }} {{ $customer->last_name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <!-- New Customer -->
-                <div id="newCustomerWrapper" class="mt-4 d-none">
-                    <input type="text" class="form-control form-control-lg" 
-                        placeholder="{{__('pagination.customer_name_placeholder')}}" 
-                        id="newCustomer">
+                    
+                    <button 
+                        id="processBill" 
+                        type="button" 
+                        class="btn btn-primary fs-1 w-100 py-4"
+                        onclick="processPayment()">
+                        
+                        <span class="indicator-label">{{__('pagination.print_bill')}}</span>
+                        <span class="indicator-progress">{{__('pagination.processing_payments')}}
+                            <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                        </span>
+                    </button>
                 </div>
             </div>
-        </div>
-        
-        <!--begin::Payment Method-->
-        <div class="m-0">
-            <h3 class="fw-bold text-gray-800 mb-5">{{__('pagination.payment_method')}}</h3>
-            <!--begin::Radio group-->
-            <div class="d-flex flex-equal gap-5 gap-xxl-9 px-0 mb-12" data-kt-buttons="true" data-kt-buttons-target="[data-kt-button]">
-                <!--begin::Radio-->
-                <label class="btn bg-light btn-color-gray-600 btn-active-text-gray-800 border border-3 border-gray-100 border-active-primary btn-active-light-primary w-100 px-4 active" data-kt-button="true">
-                    <input class="btn-check" type="radio" name="method" value="1" />
-                    <i class="ki-duotone ki-dollar fs-2hx mb-2 pe-0">
-                        <span class="path1"></span>
-                        <span class="path2"></span>
-                        <span class="path3"></span>
-                    </i>
-                    <span class="fs-7 fw-bold d-block">{{__('pagination._cash')}}</span>
-                </label>
-
-                <!--begin::Radio-->
-                <label class="btn bg-light btn-color-gray-600 btn-active-text-gray-800 border border-3 border-gray-100 border-active-primary btn-active-light-primary w-100 px-4" data-kt-button="true">
-                    <input class="btn-check" type="radio" name="method" value="2" />
-                    <i class="ki-duotone ki-finance-calculator fs-2hx mb-2 pe-0">
-                        <span class="path1"></span>
-                        <span class="path2"></span>
-                    </i>
-                    <span class="fs-7 fw-bold d-block">{{__('pagination.mobile_money')}}</span>
-                </label>
-                
-                <!--begin::Radio-->
-                <label class="btn bg-light btn-color-gray-600 btn-active-text-gray-800 border border-3 border-gray-100 border-active-primary btn-active-light-primary w-100 px-4" data-kt-button="true">
-                    <input class="btn-check" type="radio" name="method" value="3" />
-                    <i class="ki-duotone ki-credit-cart fs-2hx mb-2 pe-0">
-                        <span class="path1"></span>
-                        <span class="path2"></span>
-                    </i>
-                    <span class="fs-7 fw-bold d-block">{{__('pagination._card')}}</span>
-                </label>
-            </div>
-            
-            <button 
-                id="processBill" 
-                type="button" 
-                class="btn btn-primary fs-1 w-100 py-4"
-                onclick="processPayment()">
-                
-                <span class="indicator-label">{{__('pagination.print_bill')}}</span>
-                <span class="indicator-progress">{{__('pagination.processing_payments')}}
-                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
-                </span>
-            </button>
         </div>
     </div>
     <!--end::Sidebar-->
@@ -635,9 +635,10 @@
         }
 
 
-        // Get selected payment method
-        const selectedMethod = document.querySelector('input[name="method"]:checked');
-        const paymentMethod = selectedMethod ? selectedMethod.value : '1'
+            // Get selected payment method
+            const selectedMethod = document.querySelector('input[name="method"]:checked');
+            const paymentMethod = selectedMethod ? selectedMethod.value : '1';
+            // console.log(paymentMethod);
 
         // Prepare cart data
         const cartData = {
@@ -690,7 +691,8 @@
                 const cartDataRaw = formData.get("cart_data");  // JSON string
                 const cartData = JSON.parse(cartDataRaw);       // Convert to object
                 cartData.order_number = data.order_number;     
-                cartData.customerName = data.customerName; 
+                cartData.customerName = data.customerName;    
+                cartData.order_id = data.order_id; 
                 
                 // Open modal based on payment method
                 openPaymentModal(paymentMethod, cartData);

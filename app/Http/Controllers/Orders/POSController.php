@@ -13,9 +13,11 @@ use App\Models\Order;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str; 
 use App\Models\OrderItem;
-use App\Models\Payment;
+use App\Models\OrderPayment;
 use App\Models\InventoryLog;
 use App\Models\Customer;
+use App\Models\Inventory;
+use App\Models\OrderTax;
 
 class POSController extends Controller
 {
@@ -79,7 +81,7 @@ class POSController extends Controller
                 'tax_total' => $cartData['tax'],
                 'total' => $cartData['total'],
                 'paid_amount' => 0, // Will be updated after payment
-                'balance_due' => $cartData['total'],
+                'balance_due' => 0,
                 'source' => 'pos',
                 'created_by' => $user->id,
             ]);
@@ -117,6 +119,7 @@ class POSController extends Controller
                 'message' => __('pagination.order_placed'),
                 'order_number' => $orderNumber,
                 'customerName' => $customerName,
+                'order_id' => $order['id'],
             ]);
 
         } catch (\Exception $e) {
@@ -127,6 +130,60 @@ class POSController extends Controller
                 'message' => 'Order processing failed: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    
+    public function completePayment(Request $request) 
+    {
+        // \Log::info($request->all());
+        $cartData = $request->items; 
+        $paymentDetails = $request->payment_details;  
+
+        $order = Order::findOrFail($request->order_id);
+        $order->update([
+            'paid_amount' => $paymentDetails['amount_tendered'] ?? 0,
+            'balance_due' => $paymentDetails['change_due'] ?? 0,
+            'notes'       => __('pagination.payment_completed'),
+            'status' => 'completed',
+        ]);
+
+        // Payment Details - FIXED: Access payment_method from $request, not $cartData
+        $transactionId = ($request->payment_method === 'cash') 
+                            ? (string) Str::uuid() 
+                            : null;
+
+        // --- Update or create Payment ---
+        OrderPayment::updateOrCreate(
+            ['order_id' => $order->id],
+            [
+                'amount'          => $request->total ?? 0,
+                'payment_method'  => $request->payment_method, // Fixed this line too
+                'transaction_id'  => $transactionId,
+                'status'          => 'completed',
+                'notes'           => __('pagination.payment_completed'),
+                'processed_at'    => now(),
+                'processed_by'    => auth()->id(),
+            ]
+        );
+
+        // --- Update or create total Tax ---
+        OrderTax::updateOrCreate(
+            [
+                'order_id' => $order->id,
+            ],
+            [
+                'tax_name'   => 'VAT',
+                'tax_rate'    => (($request->total - $request->subtotal) / $request->total) * 100,
+                'tax_amount'  => $request->tax,
+                'is_compound' => 1,
+                'created_by'  => auth()->id(),
+            ]
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => __('pagination.payment_completed'),
+        ]);
     }
 
 }
