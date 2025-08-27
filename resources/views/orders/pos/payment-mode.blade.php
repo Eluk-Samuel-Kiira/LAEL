@@ -202,8 +202,6 @@
         const submitButton = document.getElementById('cashCheckout');
         const tendered = parseFloat(document.getElementById('cashAmountInput').value) || 0;
         
-        
-
         if (tendered < window.currentOrder.total) {
             toastr['error']('{{ __("pagination.insufficient_amount") }}');
             return;
@@ -276,15 +274,44 @@
         bootstrap.Modal.getInstance(document.getElementById('cashModal'))?.hide();
         bootstrap.Modal.getInstance(document.getElementById('mobileMoneyModal'))?.hide();
         bootstrap.Modal.getInstance(document.getElementById('cardModal'))?.hide();
+
+        const order = window.currentOrder;
+        order.payment_method = method;
+        order.payment_details = {
+            amount_tendered: paymentDetails.amount_tendered,
+            change_due: paymentDetails.change_due
+        };
+
+        fetch("/orders/checkout", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify(order)
+        })
+        .then(res => res.json().then(data => ({ status: res.status, ok: res.ok, body: data })))
+        .then(response => {
+            if (!response.ok) {
+                // Laravel usually returns { message: "...", errors: {...} }
+                throw new Error(response.body.message || '{{ __("pagination.order_saved_error") }}');
+            }
+            toastr['success']('{{ __("pagination.order_saved") }}');
+            console.log("Order saved:", response.body);
+
+            setTimeout(() => {
+                generateReceipt(order.payment_method, order);
+                openReceiptModal(window.currentOrder);
+
+                toastr['success']('{{ __("pagination.payment_completed") }}');
+            }, 2000);
+        })
+        .catch(err => {
+            console.error("❌ Error saving order:", err);
+            toastr['error'](err.message || '{{ __("pagination.order_saved_error") }}');
+        });
+
         
-        // Simulate payment processing
-        setTimeout(() => {
-            // Generate receipt and show success
-            generateReceipt(method, paymentDetails);
-            openReceiptModal(window.currentOrder);
-            
-            toastr['success']('{{ __("pagination.payment_completed") }}');
-        }, 1000);
     }
 
     // --- Generate Receipt ---
@@ -358,11 +385,11 @@
                 ${paymentMethod === 'cash' ? `
                     <div class="d-flex justify-content-between mb-2">
                         <span>{{__('pagination.amount_tendered')}}:</span>
-                        <span>$${paymentDetails.amount_tendered}</span>
+                        <span>$${paymentDetails.payment_details.amount_tendered}</span>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
                         <span>{{__('pagination.change_due')}}:</span>
-                        <span>$${paymentDetails.change_due}</span>
+                        <span>$${paymentDetails.payment_details.change_due}</span>
                     </div>
                 ` : ''}
             </div>

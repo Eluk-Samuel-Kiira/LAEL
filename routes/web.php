@@ -115,6 +115,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/pos-index', [POSController::class, 'index'])->name('pos.index');
     Route::post('/orders/process-payment', [POSController::class, 'processPayment'])
         ->name('orders.process-payment');
+    Route::post('/orders/checkout', [POSController::class, 'completePayment'])->name('orders.checkout');
 
 });
 

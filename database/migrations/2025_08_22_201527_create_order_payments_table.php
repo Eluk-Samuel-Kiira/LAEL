@@ -18,7 +18,7 @@ return new class extends Migration
             $table->enum('payment_method', [
                 'cash', 'credit_card', 'debit_card', 'gift_card', 
                 'store_credit', 'bank_transfer', 'mobile', 'other'
-            ]);
+            ])->default('cash');
             $table->string('transaction_id', 100)->nullable();
             $table->enum('status', ['pending', 'completed', 'failed', 'refunded']);
             $table->char('card_last_four', 4)->nullable();
