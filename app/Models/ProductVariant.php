@@ -23,6 +23,7 @@ class ProductVariant extends Model
         'is_active',
         'created_by',
         'tenant_id',
+        'is_taxable',
     ];
 
     public function product()

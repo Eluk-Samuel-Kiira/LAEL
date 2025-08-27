@@ -33,6 +33,7 @@ class ProductVariantFactory extends Factory
             'weight' => $this->faker->randomFloat(2, 50, 2000),
             'weight_unit' => $this->faker->randomElement([1, 2, 4, 3, 5]),
             'is_active' => $this->faker->boolean(90),
+            'is_taxable' => $this->faker->boolean(80),
             'tenant_id' => 1,
             'created_by' => User::where('role_id', '1' )->where('status', 'active')->get()->random()->id,
         ];

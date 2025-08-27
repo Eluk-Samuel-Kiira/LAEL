@@ -634,7 +634,6 @@
             };
         }
 
-
             // Get selected payment method
             const selectedMethod = document.querySelector('input[name="method"]:checked');
             const paymentMethod = selectedMethod ? selectedMethod.value : '1';
