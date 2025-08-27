@@ -21,6 +21,7 @@ return new class extends Migration
             $table->decimal('weight', 15, 2)->nullable();
             $table->boolean('is_active')->default(true);
             $table->string('image_url', 255)->nullable();
+            $table->boolean('is_taxable')->default(true);
             
             $table->foreignId('weight_unit')->constrained('unit_of_measures')->cascadeOnDelete();
             $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
