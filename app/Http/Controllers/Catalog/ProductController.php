@@ -47,7 +47,7 @@ class ProductController extends Controller
     {
         $data = $request->validate([
             'category_id' => 'nullable|exists:product_categories,id',
-            'sku' => 'required|string|max:50|unique:products,sku,NULL,id,',
+            'sku' => 'required|string|max:50|unique:products,sku',
             'name' => 'required|string|max:100',
             'description' => 'nullable|string',
             'type' => 'required|in:physical,digital,service,composite',
@@ -113,7 +113,7 @@ class ProductController extends Controller
                 Rule::unique('products', 'name')->ignore($product->id),
             ],
             'category_id' => 'nullable|exists:product_categories,id',
-            'sku' => 'required|string|max:50|unique:products,sku,NULL,id,tenant_id,' . $request->tenant_id,
+            'sku' => 'required|string|max:50|unique:products,sku',
             'description' => 'nullable|string',
             'type' => 'required|in:physical,digital,service,composite',
         ]);

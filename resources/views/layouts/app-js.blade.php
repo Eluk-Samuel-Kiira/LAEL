@@ -200,6 +200,58 @@
  
 
 
+<!-- Taxes and Promotions -->
+<script>
+
+    function editTaxInstanceLoop(uniqueId) {
+        const submitButton = document.getElementById('editTaxButton' + uniqueId);
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Select the form and create FormData from it
+        var form = document.getElementById('kt_modal_tax_form' + uniqueId);
+        var formData = new FormData(form);
+
+        var data = Object.fromEntries(formData.entries());
+        // console.log(data);
+
+        // Set up the URL dynamically
+        var updateUrl = '{{ route('tax.update', ['tax' => ':id']) }}'.replace(':id', uniqueId);
+        
+        // Submit form data asynchronously
+        handleEditResponse(data, updateUrl, uniqueId, submitButton);
+
+    }
+
+    
+    function submitTaxForm(formId, submitButtonId, url, method = 'POST', discardButtonId = 'discardButton') {
+        const form = document.getElementById(formId);
+        const submitButton = document.getElementById(submitButtonId);
+
+        if (!form || !submitButton) {
+            console.error('Form or button not found:', formId, submitButtonId);
+            return;
+        }
+
+        // Collect form data
+        const formData = Object.fromEntries(new FormData(form));
+        formData._method = method;
+        formData.routeName = url;
+
+        // Start loading
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Pass handling + data to reusable handler
+        handleFormSubmission(formData, submitButton, discardButtonId);
+    }
+
+    function updateTaxesStatus(uniqueId, selectedStatus) {
+        // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
+        const updateRoute = '/tax-status/' + uniqueId;
+        LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
+    }
+
+</script>
+
 
 <!-- Inventory Mgt -->
 <script>
@@ -277,6 +329,26 @@
 
 <!-- Product Catalog -->
 <script>
+    function submitProductForm(formId, submitButtonId, url, method = 'POST', discardButtonId = 'discardButton') {
+        const form = document.getElementById(formId);
+        const submitButton = document.getElementById(submitButtonId);
+
+        if (!form || !submitButton) {
+            console.error('Form or button not found:', formId, submitButtonId);
+            return;
+        }
+
+        // Collect form data
+        const formData = Object.fromEntries(new FormData(form));
+        formData._method = method;
+        formData.routeName = url;
+
+        // Start loading
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Pass handling + data to reusable handler
+        handleFormSubmission(formData, submitButton, discardButtonId);
+    }
 
     function editProductVariantInstanceLoop(uniqueId) {
         const submitButton = document.getElementById('editUOMButton' + uniqueId);
@@ -295,6 +367,12 @@
         // Submit form data asynchronously
         handleEditResponse(data, updateUrl, uniqueId, submitButton);
 
+    }
+
+    function updateVariantTaxStatus(uniqueId, selectedStatus) {
+        // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
+        const updateRoute = '/variant-tax-status/' + uniqueId;
+        LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
     }
     
     function updateVariantStatus(uniqueId, selectedStatus) {

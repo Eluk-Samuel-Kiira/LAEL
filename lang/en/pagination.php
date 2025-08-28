@@ -184,4 +184,28 @@ return [
     'please_select_existing_customer' => 'Insufficient Amount Entered',
     
 
+
+
+    // Taxes and Promotion
+    '_tax' => 'Tax',
+    'tax_index' => 'Tax Index',
+    'tax_table' => 'Tax Table',
+    '_taxes' => 'Taxes',
+    '_id' => 'ID',
+    'new_tax' => 'New Tax',
+    'create_tax' => 'Create Tax',
+    '_code' => 'Code',
+    '_rate' => 'Rate',
+    '_percentage' => 'Percentage',
+    '_fixed' => 'Fixed',
+    '_promotion' => 'Promotion',
+    '_promotions' => 'Promotions',
+    'promotion_index' => 'Promotion Index',
+    'promotion_table' => 'Promotions Table',
+    'new_promotion' => 'New Promotion',
+    'discount_type' => 'Discount Type',
+    'discount_value' => 'Discount Value',
+    'start_date' => 'start Date',
+    'end_date' => 'End Date',
+
 ];

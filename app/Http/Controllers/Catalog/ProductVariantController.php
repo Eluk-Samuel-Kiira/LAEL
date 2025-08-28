@@ -208,4 +208,37 @@ class ProductVariantController extends Controller
             'message' => __('auth.upload_failed '),
         ]);
     }
+
+    public function changeProductVariantTaxStatus(Request $request, $id) 
+    {
+        // Validate the request data for status
+        $validated = $request->validate([
+            'status' => 'required|in:1,0',  // Ensures only 'active' or 'inactive' are allowed
+        ]);
+        
+        $product = ProductVariant::find($id);
+    
+        if ($product) {
+            $product->is_taxable = $validated['status']; 
+            $product->save();
+            if ($validated['status'] == 1) {  
+                $message = __('pagination.taxable_now');
+            } else {
+                $message = __('pagination.not_taxable');
+            }
+            return response()->json([
+                'success' => true,
+                'reload' => true,
+                'refresh' => false,
+                'componentId' => 'reloadProductComponent',
+                'message' => $message,
+            ]);
+        }
+    
+        // If user not found or status update failed
+        return response()->json([
+            'success' => false,
+            'message' => __('auth._not_found'),
+        ]);
+    }
 }

@@ -72,7 +72,8 @@
                             <th class="min-w-125px">{{__('pagination._price')}}</th> 
                             <th class="min-w-125px">{{__('pagination.cost_price')}}</th>
                             <th class="min-w-125px">{{__('pagination._weight')}}</th> 
-                            <th class="min-w-125px">{{__('pagination.weight_unit')}}</th> 
+                            <th class="min-w-125px">{{__('pagination.weight_unit')}}</th>
+                            <th class="min-w-125px">{{__('pagination.is_taxable')}}</th>  
                             <th class="min-w-125px">{{__('auth._creater')}}</th> 
                             <th class="min-w-125px">{{__('auth.created_at')}}</th>
                             <th class="min-w-125px">{{__('auth._status')}}</th>
@@ -115,6 +116,13 @@
                                     <td>{{ $product->weight }}</td>
                                     <td>
                                         <div class="badge badge-light fw-bold">{{ $product->unitMeasure->name ?? __('pagination._none') }}</div>
+                                    </td>
+                                    <td>
+                                        <select name="status" class="form-select form-select-solid form-select-sm" onchange="updateVariantTaxStatus({{ $product->id }}, this.value)"
+                                            @cannot('update product') disabled @endcannot>
+                                            <option value="1" {{ $product->is_taxable == 1 ? 'selected' : '' }}>{{__('pagination._yes')}}</option>
+                                            <option value="0" {{ $product->is_taxable == 0 ? 'selected' : '' }}>{{__('pagination._no')}}</option>
+                                        </select>
                                     </td>
                                     <td>
                                         <div class="badge badge-light fw-bold">{{ $product->variantCreater->name ?? __('pagination._none')}}</div>
