@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('promotion_id')->constrained('promotions')->cascadeOnDelete();
             $table->foreignId('product_id')->nullable()->constrained('products')->cascadeOnDelete();
             $table->foreignId('variant_id')->nullable()->constrained('product_variants')->cascadeOnDelete();
-            $table->enum('applies_to', ['specific_products', 'product_categories', 'all_products']);
+            $table->enum('applies_to', ['specific_products', 'product_categories', 'all_products'])->default('specific_products');
             $table->timestampsTz();
         });
     }

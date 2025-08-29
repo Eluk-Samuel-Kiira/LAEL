@@ -17,6 +17,8 @@ use App\Http\Controllers\Catalog\InventoryItemController;
 use App\Http\Controllers\Home\LocationController;
 use App\Http\Controllers\Orders\OrderController;
 use App\Http\Controllers\Orders\POSController;
+use App\Http\Controllers\Setting\TaxController;
+use App\Http\Controllers\Setting\PromotionController;
 
     Route::get('/', function () {
         return view('welcome');
@@ -93,10 +95,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/product-tax-status/{id}', [ProductController::class, 'changeProductTaxStatus'])->name('product.taxable');
     Route::resource('variants', ProductVariantController::class);
     Route::post('/variant-status/{id}', [ProductVariantController::class, 'changeVariantStatus'])->name('variant.status');
+    Route::post('/variant-tax-status/{id}', [ProductVariantController::class, 'changeProductVariantTaxStatus'])->name('product.taxable');
     Route::post('/product/upload-image', [ProductController::class, 'uploadProductImage'])->name('product.upload_image');
     Route::post('/variant/upload-image', [ProductVariantController::class, 'uploadVariantImage'])->name('variant.upload_image');
-    Route::put('/products/{product}/update-locations-departments', [ProductController::class, 'updateLocationsDepartments'])
-        ->name('location.dept');
+    Route::put('/products/{product}/update-assignment', [ProductController::class, 'updateProductAssignments'])
+        ->name('assign.product');
+    Route::put('/assignment/{product}', [ProductVariantController::class, 'updateVariantAssignments'])
+        ->name('assign.variant');
 
 
     // Stores and Inventory
@@ -117,6 +122,13 @@ Route::middleware('auth')->group(function () {
         ->name('orders.process-payment');
     Route::post('/orders/checkout', [POSController::class, 'completePayment'])->name('orders.checkout');
 
+
+    // Taxes and Promotions
+    
+    Route::resource('tax', TaxController::class);
+    Route::post('/tax-status/{id}', [TaxController::class, 'updateTaxStatus']);
+    Route::resource('promotion', PromotionController::class);
+    Route::post('/promotion-status/{id}', [PromotionController::class, 'updatePromotionStatus']);
 });
 
 require __DIR__.'/auth.php';

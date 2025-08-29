@@ -47,7 +47,7 @@ class ProductController extends Controller
     {
         $data = $request->validate([
             'category_id' => 'nullable|exists:product_categories,id',
-            'sku' => 'required|string|max:50|unique:products,sku,NULL,id,',
+            'sku' => 'required|string|max:50|unique:products,sku',
             'name' => 'required|string|max:100',
             'description' => 'nullable|string',
             'type' => 'required|in:physical,digital,service,composite',
@@ -112,8 +112,12 @@ class ProductController extends Controller
                 'max:100',
                 Rule::unique('products', 'name')->ignore($product->id),
             ],
-            'category_id' => 'nullable|exists:product_categories,id',
-            'sku' => 'required|string|max:50|unique:products,sku,NULL,id,tenant_id,' . $request->tenant_id,
+            'sku' => [
+                'required',
+                'max:50',
+                Rule::unique('products', 'sku')->ignore($product->id),
+            ],
+            'category_id' => 'required|exists:product_categories,id',
             'description' => 'nullable|string',
             'type' => 'required|in:physical,digital,service,composite',
         ]);
@@ -141,7 +145,7 @@ class ProductController extends Controller
     public function destroy(string $id)
     {
         $product = Product::find($id);
-        if ($product->is_active === 1) {
+        if ($product->is_active == 1) {
             return response()->json([
                 'success' => false,
                 'message' => __('auth.still_active'),
@@ -252,7 +256,7 @@ class ProductController extends Controller
         ]);
     }
 
-    public function updateLocationsDepartments(Request $request, Product $product)
+    public function updateProductAssignments(Request $request, Product $product)
     {
         // \Log::info($request->all());
         $validated = $request->validate([
@@ -260,6 +264,10 @@ class ProductController extends Controller
             'departments.*' => ['exists:departments,id'],
             'locations' => ['nullable', 'array'],
             'locations.*' => ['exists:locations,id'],
+            'taxes' => ['nullable', 'array'],
+            'taxes.*' => ['exists:taxes,id'],
+            'promotions' => ['nullable', 'array'],
+            'promotions.*' => ['exists:promotions,id'],
         ]);
 
         // Sync departments
@@ -267,6 +275,12 @@ class ProductController extends Controller
 
         // Sync locations
         $product->locations()->sync($validated['locations'] ?? []);
+        
+        // Sync taxes
+        $product->taxes()->sync($validated['taxes'] ?? []);
+
+        // Sync taxes
+        $product->promotions()->sync($validated['promotions'] ?? []);
 
         session()->flash('toast', [
             'type' => 'success',

@@ -18,4 +18,9 @@ class Tax extends Model
         'is_active',
         'created_by',
     ];
+
+    public function taxCreater()
+    {
+        return $this->belongsTo(User::class, 'created_by', 'id');
+    }
 }

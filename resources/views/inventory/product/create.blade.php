@@ -88,58 +88,24 @@
                             </div>
                         </div>
 
-                        <button type="reset" class="btn btn-light me-3" id="discardDeptButton" data-bs-dismiss="modal">{{__('auth._discard') }}</button>
-                        <button id="submitUOMButton" type="submit" class="btn btn-primary" id>
-                            <span class="indicator-label">{{__('auth.submit') }}</span>
-                            <span class="indicator-progress">{{__('auth.please_wait') }}
-                            <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                        <button type="reset" class="btn btn-light me-3" id="discardProductButton" data-bs-dismiss="modal">{{__('auth._discard') }}</button>
+                        
+                        <button 
+                            id="submitProductButton" 
+                            type="button" 
+                            class="btn btn-primary"
+                            onclick="submitProductForm('kt_modal_add_product_form', 'submitProductButton', '{{ route('products.store') }}', 'POST', 'discardProductButton')">
+                            
+                            <span class="indicator-label">{{__('auth.submit')}}</span>
+                            <span class="indicator-progress">{{__('auth.please_wait')}}
+                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                            </span>
                         </button>
+
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>  
-
-
-<script>
-    const submitFormEntities = (formId, submitButtonId, url, method = 'POST') => {
-        document.getElementById(formId).addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            // Collect form data and add additional fields
-            const formData = Object.fromEntries(new FormData(this));
-            formData._method = method;
-            formData.routeName = url;
-
-            // Reference the submit button and reloading
-            const submitButton = document.getElementById(submitButtonId);
-            LiveBlade.toggleButtonLoading(submitButton, true);
-
-            // Submit form data asynchronously
-            LiveBlade.submitFormItems(formData)
-                .then(noErrors => {
-                    console.log(noErrors);
-                    
-                    if (noErrors) {
-                        // Close the modal if no errors
-                        const closeModal = () => {
-                            document.getElementById('discardDeptButton').click();
-                        };
-                        closeModal();
-                    }
-                })
-                .catch(error => {
-                    console.error('An unexpected error occurred:', error);
-                })
-                .finally(() => {
-                    LiveBlade.toggleButtonLoading(submitButton, false);
-                });
-
-                
-        });
-    };
-
-    submitFormEntities('kt_modal_add_product_form', 'submitUOMButton', '{{ route('products.store') }}');
-</script>
 

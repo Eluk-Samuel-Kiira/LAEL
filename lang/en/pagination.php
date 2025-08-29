@@ -56,7 +56,8 @@ return [
     '_products' => 'Products',
     'product_catalog' => 'Product Catalog',
     '_allocation' => 'Allocate',
-    '_dept_loc' => 'Allocate Product Department and Location for',
+    '_dept_loc' => 'Taxes, Promotions, Departments and Locations for ',
+    'variant_assign' => 'Taxes & Promotions for ',
     '_product' => 'Product',
     'new_products' => 'New Product',
     'products_table' => 'Products Table',
@@ -73,6 +74,8 @@ return [
     '_composite' => 'Composite',
     'taxable_now' => 'Product Is Now Taxable',
     'not_taxable' => 'Product Not Taxable Now',
+    'variant_taxable_now' => 'Product Variant Is Now Taxable',
+    'variant_not_taxable' => 'Product Variant Not Taxable Now',
     'product_variant' => 'Product Variant',
     'product_variant_new' => 'New Product Variant',
     'product_index' => 'Product Index',
@@ -183,5 +186,34 @@ return [
     'please_select_existing_customer' => '⚠️ Please select an existing customer',
     'please_select_existing_customer' => 'Insufficient Amount Entered',
     
+
+
+
+    // Taxes and Promotion
+    '_tax' => 'Tax',
+    'tax_index' => 'Tax Index',
+    'tax_table' => 'Tax Table',
+    '_taxes' => 'Taxes',
+    '_id' => 'ID',
+    'new_tax' => 'New Tax',
+    'create_tax' => 'Create Tax',
+    '_code' => 'Code',
+    '_rate' => 'Rate',
+    '_percentage' => 'Percentage',
+    '_fixed' => 'Fixed',
+    '_promotion' => 'Promotion',
+    '_promotions' => 'Promotions',
+    'promotion_index' => 'Promotion Index',
+    'promotion_table' => 'Promotions Table',
+    'new_promotion' => 'New Promotion',
+    'discount_type' => 'Discount Type',
+    'discount_value' => 'Discount Value',
+    'start_date' => 'start Date',
+    'end_date' => 'End Date',
+    'buy_x_get_y' => 'Buy X get Y',
+    'allocate_dept'      => 'Assign to Departments',
+    'allocate_location'  => 'Assign to Locations',
+    'assign_tax'         => 'Apply Tax Type',
+    'assign_promotions'  => 'Apply Promotions',
 
 ];

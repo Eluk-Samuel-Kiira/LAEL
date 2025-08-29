@@ -208,4 +208,86 @@ class ProductVariantController extends Controller
             'message' => __('auth.upload_failed '),
         ]);
     }
+
+    public function changeProductVariantTaxStatus(Request $request, $id) 
+    {
+        // Validate the request data for status
+        $validated = $request->validate([
+            'status' => 'required|in:1,0',  // Ensures only 'active' or 'inactive' are allowed
+        ]);
+        
+        $product = ProductVariant::find($id);
+    
+        if ($product) {
+            $product->is_taxable = $validated['status']; 
+            $product->save();
+            if ($validated['status'] == 1) {  
+                $message = __('pagination.variant_taxable_now');
+            } else {
+                $message = __('pagination.variant_not_taxable');
+            }
+            return response()->json([
+                'success' => true,
+                'reload' => true,
+                'refresh' => false,
+                'componentId' => 'reloadProductComponent',
+                'message' => $message,
+            ]);
+        }
+    
+        // If user not found or status update failed
+        return response()->json([
+            'success' => false,
+            'message' => __('auth._not_found'),
+        ]);
+    }
+
+    public function updateVariantAssignments(Request $request, $id)
+    {
+        try {
+            $validated = $request->validate([
+                'variant_id' => ['required', 'exists:product_variants,id'],
+                'created_by' => ['required', 'exists:users,id'],
+                'tenant_id' => ['required', 'exists:tenants,id'],
+                'taxes' => ['nullable', 'array'],
+                'taxes.*' => ['exists:taxes,id'],
+            ]);
+
+            // Get the variant
+            $product = ProductVariant::findOrFail($id);
+            $pivotData = [];
+            if (!empty($validated['taxes'])) {
+                foreach ($validated['taxes'] as $taxId) {
+                    $pivotData[$taxId] = [
+                        'created_by' => $validated['created_by'],
+                        'tenant_id' => $validated['tenant_id'],
+                    ];
+                }
+                $product->variantTaxes()->sync($pivotData);
+            } else {
+                $product->variantTaxes()->detach();
+            }
+
+            \Log::info('Taxes synced for variant ' . $id, ['taxes' => $validated['taxes'] ?? []]);
+
+            session()->flash('toast', [
+                'type' => 'success',
+                'message' => __('auth._updated'),
+            ]);
+
+            return redirect()->back();
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Validation failed for variant ' . $id, ['errors' => $e->errors()]);
+            return redirect()->back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            \Log::error('Failed to update variant ' . $id, ['message' => $e->getMessage()]);
+            session()->flash('toast', [
+                'type' => 'error',
+                'message' => 'Failed to update variant: ' . $e->getMessage(),
+            ]);
+            return redirect()->back()->withInput();
+        }
+    }
+
+
 }

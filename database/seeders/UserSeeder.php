@@ -119,6 +119,20 @@ class UserSeeder extends Seeder
             'delete subcategory',
             'update subcategory',
 
+            // tax Management
+            'create tax',
+            'view tax',
+            'edit tax',
+            'delete tax',
+            'update tax',
+
+            // promotion Management
+            'create promotion',
+            'view promotion',
+            'edit promotion',
+            'delete promotion',
+            'update promotion',
+
             // Admin Management
             'admin only',
             'create role',
