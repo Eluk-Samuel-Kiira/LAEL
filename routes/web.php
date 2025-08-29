@@ -98,8 +98,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/variant-tax-status/{id}', [ProductVariantController::class, 'changeProductVariantTaxStatus'])->name('product.taxable');
     Route::post('/product/upload-image', [ProductController::class, 'uploadProductImage'])->name('product.upload_image');
     Route::post('/variant/upload-image', [ProductVariantController::class, 'uploadVariantImage'])->name('variant.upload_image');
-    Route::put('/products/{product}/update-locations-departments', [ProductController::class, 'updateLocationsDepartments'])
-        ->name('location.dept');
+    Route::put('/products/{product}/update-assignment', [ProductController::class, 'updateProductAssignments'])
+        ->name('assign.product');
+    Route::put('/assignment/{product}', [ProductVariantController::class, 'updateVariantAssignments'])
+        ->name('assign.variant');
 
 
     // Stores and Inventory
@@ -124,8 +126,9 @@ Route::middleware('auth')->group(function () {
     // Taxes and Promotions
     
     Route::resource('tax', TaxController::class);
-    Route::post('/tax-status/{id}', [TaxController::class, 'updateTaxtatus']);
+    Route::post('/tax-status/{id}', [TaxController::class, 'updateTaxStatus']);
     Route::resource('promotion', PromotionController::class);
+    Route::post('/promotion-status/{id}', [PromotionController::class, 'updatePromotionStatus']);
 });
 
 require __DIR__.'/auth.php';

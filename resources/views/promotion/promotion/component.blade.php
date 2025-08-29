@@ -5,7 +5,11 @@
                 <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
                     <th class="w-10px pe-2">
                         <div class="form-check form-check-sm form-check-custom form-check-solid me-3">
-                            <input class="form-check-input" type="checkbox" data-kt-check="true" data-kt-check-target="#kt_table_users .form-check-input" value="1" />
+                            <input class="form-check-input"
+                                type="checkbox"
+                                data-kt-check="true"
+                                data-kt-check-target="#kt_table_users .row-checkbox"
+                                value="1" />
                         </div>
                     </th>
                     <th class="min-w-125px">{{__('pagination._id')}}</th>
@@ -26,7 +30,7 @@
                         <tr data-role="{{ strtolower($promotion->name) }}">
                             <td>
                                 <div class="form-check form-check-sm form-check-custom form-check-solid">
-                                    <input class="form-check-input" type="checkbox" value="1" />
+                                    <input class="form-check-input row-checkbox" type="checkbox" value="{{ $promotion->id }}" />
                                 </div>
                             </td>
                             <td>
@@ -45,19 +49,26 @@
                             <td>{{ $promotion->start_date->format('d M Y, h:i a') }}</td>
                             <td>{{ $promotion->end_date->format('d M Y, h:i a') }}</td>
                             <td>
-                                <div class="badge badge-light fw-bold">{{ $promotion->taxCreater->name ?? __('pagination._none')}}</div>
+                                <div class="badge badge-light fw-bold">{{ $promotion->Promotioncreator->name ?? __('pagination._none')}}</div>
                             </td>
                             <td>{{ $promotion->created_at->format('d M Y, h:i a') }}</td>
                             <td>
-                                <select name="status" class="form-select form-select-solid form-select-sm" onchange="updateTaxesStatus({{ $promotion->id }}, this.value)"
-                                    @cannot('update tax') disabled @endcannot>
-                                    <option value="1" {{ $promotion->is_active == 1 ? 'selected' : '' }}>{{__('auth._active')}}</option>
-                                    <option value="0" {{ $promotion->is_active == 0 ? 'selected' : '' }}>{{__('auth._inactive')}}</option>
-                                </select>
+                                <label class="form-check form-switch form-switch-sm form-check-custom form-check-solid">
+                                    <input type="checkbox"
+                                        class="form-check-input status-switch"
+                                        onchange="updatePromotionStatus({{ $promotion->id }}, this.checked ? 1 : 0)"
+                                        {{ $promotion->is_active ? 'checked' : '' }}
+                                        @cannot('update promotion') disabled @endcannot>
+
+                                    <span id="promotion-label-{{ $promotion->id }}"
+                                        class="form-check-label ms-2 fw-bold fs-6 text-gray-700">
+                                        {{ $promotion->is_active ? __('auth._active') : __('auth._inactive') }}
+                                    </span>
+                                </label>
                             </td>
                             <td>
                                 <div class="d-flex gap-2">
-                                    @can('edit tax')
+                                    @can('edit promotion')
                                         <button 
                                             class="btn btn-sm btn-light btn-active-color-primary d-flex align-items-center px-3 py-2" 
                                             data-bs-toggle="modal"
@@ -65,7 +76,7 @@
                                             <i class="bi bi-pencil-square me-1 fs-5"></i> <span>{{ __('auth._edit') }}</span>
                                         </button>
                                     @endcan
-                                    @can('delete tax')
+                                    @can('delete promotion')
                                         <button type="button" 
                                             class="btn btn-sm btn-light btn-active-color-danger d-flex align-items-center px-3 py-2" 
                                             data-bs-toggle="modal" 
@@ -92,7 +103,7 @@
                                                 <button type="button" id="closeDeleteModal{{$promotion->id}}" class="btn btn-light me-3" data-bs-dismiss="modal">{{ __('auth._discard') }}</button>
                                                 <!-- Confirm Button -->
                                                 <button type="button" id="deleteButton{{$promotion->id}}" class="btn btn-danger" 
-                                                    data-item-url="{{ route('tax.destroy', $promotion->id) }}" 
+                                                    data-item-url="{{ route('promotion.destroy', $promotion->id) }}" 
                                                     data-item-id="{{ $promotion->id }}"
                                                     onclick="deleteItem(this)">
                                                     <span class="indicator-label">{{ __('auth._confirm') }}</span>

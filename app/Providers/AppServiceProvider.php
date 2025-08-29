@@ -16,6 +16,8 @@ use App\Models\ProductVariant;
 use App\Models\Currency;
 use App\Models\Location;
 use App\Models\Customer;
+use App\Models\Tax;
+use App\Models\Promotion;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -38,6 +40,8 @@ class AppServiceProvider extends ServiceProvider
             })
             ->get();
 
+        $taxes = Tax::where('is_active', 1)->get();
+        $promotions = Promotion::where('is_active', 1)->get();
         $customers = Customer::where('is_active', 1)->get();
         $locations = Location::where('is_active', 1)->get();
         $sub_categories = ProductCategory::where('is_active', 1)->get();
@@ -61,6 +65,8 @@ class AppServiceProvider extends ServiceProvider
             'currencies' => $currencies,
             'locations' => $locations,
             'customers' => $customers,
+            'taxes' => $taxes,
+            'promotions' => $promotions,
         ]);
 
         $app_mails = Setting::first();

@@ -46,5 +46,11 @@ class ProductVariant extends Model
         return $this->hasOne(InventoryItems::class, 'variant_id', 'id');
     }
 
+    public function variantTaxes()
+    {
+        return $this->belongsToMany(Tax::class, 'variant_taxes', 'variant_id', 'tax_id')
+                    ->withPivot(['created_by', 'tenant_id'])
+                    ->withTimestamps();
+    }
 
 }

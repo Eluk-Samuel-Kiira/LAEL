@@ -45,7 +45,32 @@ class PromotionController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:55|unique:taxes,name',
+            'discount_type' => 'required|string|in:fixed_amount,percentage,buy_x_get_y',
+            'discount_value' => 'required',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date',
+        ]);
+
+        $promotion = Promotion::create([
+            'name' => $request->name,
+            'discount_type' => $request->discount_type,
+            'discount_value' => $request->discount_value,
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+            'created_by' => Auth::user()->id,
+            'tenant_id' => 1,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'reload' => true,
+            'componentId' => 'reloadPromotionComponent',
+            'refresh' => false,
+            'message' => __('auth._created'),
+            'redirect' => route('promotion.index'),
+        ]);
     }
 
     /**
@@ -69,7 +94,38 @@ class PromotionController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $promotion = Promotion::find($id);
+        $request->validate([
+            'name' => [
+                'required',
+                'max:255',
+                Rule::unique('taxes', 'name')->ignore($promotion->id),
+            ],
+            'discount_type' => 'required|string|in:fixed_amount,percentage,buy_x_get_y',
+            'discount_value' => 'required',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date',
+        ]);
+
+        $promotion->update([
+            'name' => $request->name,
+            'discount_type' => $request->discount_type,
+            'discount_value' => $request->discount_value,
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+            'created_by' => Auth::user()->id,
+            'tenant_id' => 1,
+        ]);
+
+        
+        return response()->json([
+            'success' => true,
+            'reload' => true,
+            'componentId' => 'reloadPromotionComponent',
+            'refresh' => false,
+            'message' => __('auth._created'),
+            'redirect' => route('promotion.index'),
+        ]);
     }
 
     /**
@@ -77,6 +133,53 @@ class PromotionController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $promotion = Promotion::find($id);
+        if ($promotion->is_active == 1) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.still_active'),
+            ]);
+        }
+
+        $promotion->delete();
+        return response()->json([
+            'success' => true,
+            'reload' => true,
+            'componentId' => 'reloadPromotionComponent',
+            'refresh' => false,
+            'message' => __('auth._updated'),
+            'redirect' => route('promotion.index'),
+        ]);
+    }
+
+    public function updatePromotionStatus(Request $request, $id) 
+    {
+        // \Log::info($id);
+        // Validate the request data for status
+        $validated = $request->validate([
+            'status' => 'required|in:1,0',  // Ensures only 'active' or 'inactive' are allowed
+        ]);
+        
+        $promotion = Promotion::find($id);
+    
+        if ($promotion) {
+            $promotion->is_active = $validated['status']; 
+            if ($promotion->save()) {  // Save the user object
+                return response()->json([
+                    'success' => true,
+                    'reload' => true,
+                    'componentId' => 'reloadPromotionComponent',
+                    'refresh' => false,
+                    'message' => __('auth._updated'),
+                    'redirect' => route('promotion.index'),
+                ]);
+            }
+        }
+    
+        // If user not found or status update failed
+        return response()->json([
+            'success' => false,
+            'message' => __('auth._not_found'),
+        ]);
     }
 }

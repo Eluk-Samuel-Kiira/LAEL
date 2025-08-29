@@ -118,11 +118,18 @@
                                         <div class="badge badge-light fw-bold">{{ $product->unitMeasure->name ?? __('pagination._none') }}</div>
                                     </td>
                                     <td>
-                                        <select name="status" class="form-select form-select-solid form-select-sm" onchange="updateVariantTaxStatus({{ $product->id }}, this.value)"
-                                            @cannot('update product') disabled @endcannot>
-                                            <option value="1" {{ $product->is_taxable == 1 ? 'selected' : '' }}>{{__('pagination._yes')}}</option>
-                                            <option value="0" {{ $product->is_taxable == 0 ? 'selected' : '' }}>{{__('pagination._no')}}</option>
-                                        </select>
+                                        <label class="form-check form-switch form-switch-sm form-check-custom form-check-solid">
+                                            <input type="checkbox"
+                                                class="form-check-input variant-tax-switch"
+                                                onchange="updateVariantTaxStatus({{ $product->id }}, this.checked ? 1 : 0)"
+                                                {{ $product->is_taxable ? 'checked' : '' }}
+                                                @cannot('update product') disabled @endcannot>
+
+                                            <span id="variant-tax-label-{{ $product->id }}"
+                                                class="form-check-label ms-2 fw-bold fs-6 text-gray-700">
+                                                {{ $product->is_taxable ? __('pagination._yes') : __('pagination._no') }}
+                                            </span>
+                                        </label>
                                     </td>
                                     <td>
                                         <div class="badge badge-light fw-bold">{{ $product->variantCreater->name ?? __('pagination._none')}}</div>
@@ -137,6 +144,14 @@
                                     </td>
                                     <td>
                                         <div class="d-flex gap-2">
+                                            @can('update product')
+                                                <button 
+                                                    class="btn btn-sm btn-light btn-active-color-success d-flex align-items-center px-3 py-2" 
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#variantAssign{{$product->id}}">
+                                                    <i class="bi bi-building me-1 fs-5"></i> <span>{{ __('pagination._allocation') }}</span>
+                                                </button>
+                                            @endcan
                                             @can('edit product')
                                                 <button 
                                                     class="btn btn-sm btn-light btn-active-color-primary d-flex align-items-center px-3 py-2" 
@@ -186,6 +201,7 @@
                                             </div>
                                         </div>
                                         @include('inventory.product-variant.edit')
+                                        @include('inventory.product-variant.variant-assignt')
                                         
                                     </td>
                                 </tr>

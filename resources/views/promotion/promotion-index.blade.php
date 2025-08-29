@@ -36,7 +36,7 @@
                     <i class="ki-duotone ki-plus fs-2"></i>{{__('pagination.new_promotion')}}</button>
                 @endcan
 
-                @include('promotion.tax.create')    
+                @include('promotion.promotion.create')    
             </div>
         </div>
     </div>

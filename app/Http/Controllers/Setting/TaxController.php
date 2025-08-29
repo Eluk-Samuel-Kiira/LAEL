@@ -146,7 +146,7 @@ class TaxController extends Controller
         ]);
     }
 
-    public function updateTaxtatus(Request $request, $id) 
+    public function updateTaxStatus(Request $request, $id) 
     {
         // \Log::info($id);
         // Validate the request data for status

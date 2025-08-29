@@ -10,7 +10,7 @@
             </div>
             <div class="modal-body scroll-y mx-lg-5 my-7">
                 <form id="edit_user_form{{ $employee->id }}" 
-                    class="form" 
+                    class="form"
                     action="{{ route('employees.updateDepartments', $employee->id) }}" 
                     method="POST">
                     @csrf
@@ -18,23 +18,19 @@
 
                     <input type="hidden" name="user_id" value="{{ $employee->id }}">
 
-                    <div class="d-flex flex-column mb-8 fv-row col-md-12">
-                        <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
-                            <span class="required">{{ __('auth._department') }}</span>
-                        </label>
-
-                        <div class="row">
+                    <!-- DEPARTMENT ASSIGNMENT -->
+                    <div class="mb-5">
+                        <h6 class="fw-bold mb-3">{{ __('auth._department') }}</h6>
+                        <div class="row g-3">
                             @foreach ($departments as $department)
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-6">
                                     <div class="form-check">
-                                        <input 
-                                            type="checkbox" 
-                                            class="form-check-input" 
+                                        <input type="checkbox" 
+                                            class="form-check-input"
                                             name="departments[]" 
                                             value="{{ $department->id }}"
                                             id="dept-{{ $employee->id }}-{{ $department->id }}"
-                                            {{ optional($employee->departments)->contains($department->id) ? 'checked' : '' }}
-                                        >
+                                            {{ optional($employee->departments)->contains($department->id) ? 'checked' : '' }}>
                                         <label class="form-check-label" for="dept-{{ $employee->id }}-{{ $department->id }}">
                                             {{ ucwords(str_replace('_', ' ', $department->name)) }}
                                         </label>
@@ -42,11 +38,16 @@
                                 </div>
                             @endforeach
                         </div>
+
+                        <!-- Optional error/feedback container -->
                         <div id="departments{{ $employee->id }}"></div>
                     </div>
 
-                    <div class="text-center pt-15">
-                        <button type="reset" class="btn btn-light me-3" data-bs-dismiss="modal">{{ __('auth._discard') }}</button>
+                    <!-- ACTION BUTTONS -->
+                    <div class="d-flex justify-content-center pt-10">
+                        <button type="reset" class="btn btn-light me-3" data-bs-dismiss="modal">
+                            {{ __('auth._discard') }}
+                        </button>
                         <button type="submit" class="btn btn-primary">
                             <span class="indicator-label">{{ __('auth._update') }}</span>
                         </button>

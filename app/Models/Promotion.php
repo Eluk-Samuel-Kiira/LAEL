@@ -37,7 +37,7 @@ class Promotion extends Model
         return $this->belongsTo(Tenant::class);
     }
 
-    public function creator()
+    public function Promotioncreator()
     {
         return $this->belongsTo(User::class, 'created_by');
     }

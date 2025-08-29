@@ -11,55 +11,109 @@
             <div class="modal-body scroll-y mx-lg-5 my-7">
                 <form id="edit_user_form{{ $product->id }}" 
                     class="form" 
-                    action="{{ route('location.dept', $product) }}" 
+                    action="{{ route('assign.product', $product) }}" 
                     method="POST">
                     @csrf
                     @method('PUT')
 
                     <input type="hidden" name="product_id" value="{{ $product->id }}">
 
-                    <div class="mb-3">
-                        <label for="departments">{{ __('auth._department') }}</label>
-                        <div class="row">
-                            @foreach($departments as $department)
-                                <div class="col-md-6 mb-3">
+                    <!-- TAX ASSIGNMENT -->
+                    <div class="mb-5">
+                        <h6 class="fw-bold mb-3">{{ __('pagination.assign_tax') }}</h6>
+
+                        @if ($product->is_taxable == 1)
+                            <div class="row g-3">
+                                @foreach($taxes as $tax)
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input type="checkbox" 
+                                                class="form-check-input"
+                                                name="taxes[]" 
+                                                value="{{ $tax->id }}"
+                                                {{ in_array($tax->id, old('taxes', $product->taxes->pluck('id')->toArray() ?? [])) ? 'checked' : '' }}>
+                                            <label class="form-check-label">
+                                                {{ ucwords(str_replace('_', ' ', $tax->name)) }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="alert alert-secondary py-2">
+                                {{ __('pagination.not_taxable') }}
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- PROMOTIONS ASSIGNMENT -->
+                    <div class="mb-5">
+                        <h6 class="fw-bold mb-3">{{ __('pagination.assign_promotions') }}</h6>
+                        <div class="row g-3">
+                            @foreach($promotions as $promotion)
+                                <div class="col-md-6">
                                     <div class="form-check">
-                                        <input 
-                                            type="checkbox" 
+                                        <input type="checkbox" 
+                                            class="form-check-input"
+                                            name="promotions[]" 
+                                            value="{{ $promotion->id }}"
+                                            {{ in_array($promotion->id, old('promotions', $product->promotions->pluck('id')->toArray() ?? [])) ? 'checked' : '' }}>
+                                        <label class="form-check-label">
+                                            {{ ucwords(str_replace('_', ' ', $promotion->name)) }}
+                                        </label>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <!-- DEPARTMENTS ASSIGNMENT -->
+                    <div class="mb-5">
+                        <h6 class="fw-bold mb-3">{{ __('pagination.allocate_dept') }}</h6>
+                        <div class="row g-3">
+                            @foreach($departments as $department)
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input type="checkbox" 
                                             class="form-check-input"
                                             name="departments[]" 
                                             value="{{ $department->id }}"
-                                            {{ in_array($department->id, old('departments', $product->departments->pluck('id')->toArray() ?? [])) ? 'checked' : '' }}
-                                        >
-                                        {{ $department->name }}
+                                            {{ in_array($department->id, old('departments', $product->departments->pluck('id')->toArray() ?? [])) ? 'checked' : '' }}>
+                                        <label class="form-check-label">
+                                            {{ ucwords(str_replace('_', ' ', $department->name)) }}
+                                        </label>
                                     </div>
                                 </div>
                             @endforeach
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="locations">{{ __('pagination._location') }}</label>
-                        <div class="row">
+                    <!-- LOCATIONS ASSIGNMENT -->
+                    <div class="mb-5">
+                        <h6 class="fw-bold mb-3">{{ __('pagination.allocate_location') }}</h6>
+                        <div class="row g-3">
                             @foreach($locations as $location)
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-6">
                                     <div class="form-check">
-                                        <input 
-                                            type="checkbox"
-                                            class="form-check-input" 
+                                        <input type="checkbox" 
+                                            class="form-check-input"
                                             name="locations[]" 
                                             value="{{ $location->id }}"
-                                            {{ in_array($location->id, old('locations', $product->locations->pluck('id')->toArray() ?? [])) ? 'checked' : '' }}
-                                        >
-                                        {{ $location->name }}
+                                            {{ in_array($location->id, old('locations', $product->locations->pluck('id')->toArray() ?? [])) ? 'checked' : '' }}>
+                                        <label class="form-check-label">
+                                            {{ $location->name }}
+                                        </label>
                                     </div>
                                 </div>
                             @endforeach
                         </div>
                     </div>
 
-                    <div class="text-center pt-15">
-                        <button type="reset" class="btn btn-light me-3" data-bs-dismiss="modal">{{ __('auth._discard') }}</button>
+                    <!-- ACTION BUTTONS -->
+                    <div class="d-flex justify-content-center pt-10">
+                        <button type="reset" class="btn btn-light me-3" data-bs-dismiss="modal">
+                            {{ __('auth._discard') }}
+                        </button>
                         <button type="submit" class="btn btn-primary">
                             <span class="indicator-label">{{ __('auth._update') }}</span>
                         </button>

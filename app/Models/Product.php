@@ -59,6 +59,16 @@ class Product extends Model
         return $this->belongsToMany(Department::class, 'department_product', 'product_id', 'department_id');
     }
 
+    public function taxes()
+    {
+        return $this->belongsToMany(Tax::class, 'tax_product', 'product_id', 'tax_id');
+    }
+
+    public function promotions()
+    {
+        return $this->belongsToMany(Promotion::class, 'promotion_products', 'product_id', 'promotion_id');
+    }
+
 
     public function locations()
     {

@@ -203,6 +203,60 @@
 <!-- Taxes and Promotions -->
 <script>
 
+    function editPromotionInstanceLoop(uniqueId) {
+        const submitButton = document.getElementById('editPromotionButton' + uniqueId);
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Select the form and create FormData from it
+        var form = document.getElementById('kt_modal_promotion_form' + uniqueId);
+        var formData = new FormData(form);
+
+        var data = Object.fromEntries(formData.entries());
+        // console.log(data);
+
+        // Set up the URL dynamically
+        var updateUrl = '{{ route('promotion.update', ['promotion' => ':id']) }}'.replace(':id', uniqueId);
+        
+        // Submit form data asynchronously
+        handleEditResponse(data, updateUrl, uniqueId, submitButton);
+
+    }
+
+    function updatePromotionStatus(uniqueId, selectedStatus) {
+        // Update text instantly
+        const label = document.getElementById('promotion-label-' + uniqueId);
+        if (label) {
+            label.innerText = selectedStatus == 1 ? 'Active' : 'Inactive';
+        }
+
+        // console.log(selectedStatus)
+        // Send update to backend
+        const updateRoute = '/promotion-status/' + uniqueId;
+        LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
+    }
+
+
+    function submitPromotionForm(formId, submitButtonId, url, method = 'POST', discardButtonId = 'discardButton') {
+        const form = document.getElementById(formId);
+        const submitButton = document.getElementById(submitButtonId);
+
+        if (!form || !submitButton) {
+            console.error('Form or button not found:', formId, submitButtonId);
+            return;
+        }
+
+        // Collect form data
+        const formData = Object.fromEntries(new FormData(form));
+        formData._method = method;
+        formData.routeName = url;
+
+        // Start loading
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Pass handling + data to reusable handler
+        handleFormSubmission(formData, submitButton, discardButtonId);
+    }
+
     function editTaxInstanceLoop(uniqueId) {
         const submitButton = document.getElementById('editTaxButton' + uniqueId);
         LiveBlade.toggleButtonLoading(submitButton, true);
@@ -244,11 +298,19 @@
         handleFormSubmission(formData, submitButton, discardButtonId);
     }
 
+
     function updateTaxesStatus(uniqueId, selectedStatus) {
-        // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
+        // Update label instantly
+        const label = document.getElementById('tax-label-' + uniqueId);
+        if (label) {
+            label.innerText = selectedStatus == 1 ? '{{ __("auth._active") }}' : '{{ __("auth._inactive") }}';
+        }
+
+        // Send update to backend
         const updateRoute = '/tax-status/' + uniqueId;
         LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
     }
+
 
 </script>
 
@@ -369,10 +431,16 @@
 
     }
 
-    function updateVariantTaxStatus(uniqueId, selectedStatus) {
-        // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
-        const updateRoute = '/variant-tax-status/' + uniqueId;
-        LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
+    function updateVariantTaxStatus(productId, status) {
+        // Update label immediately
+        const label = document.getElementById('variant-tax-label-' + productId);
+        if (label) {
+            label.innerText = status == 1 ? '{{ __("pagination._yes") }}' : '{{ __("pagination._no") }}';
+        }
+
+        // Send update to backend
+        const updateRoute = '/variant-tax-status/' + productId;
+        LiveBlade.loopUpdateStatus(updateRoute, status);
     }
     
     function updateVariantStatus(uniqueId, selectedStatus) {
@@ -407,11 +475,18 @@
         LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
     }
 
-    function updateTaxStatus(uniqueId, selectedStatus) {
-        // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
-        const updateRoute = '/product-tax-status/' + uniqueId;
-        LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
+    function updateProductTaxStatus(productId, status) {
+        // Update label instantly
+        const label = document.getElementById('tax-label-' + productId);
+        if (label) {
+            label.innerText = status == 1 ? '{{ __("pagination._yes") }}' : '{{ __("pagination._no") }}';
+        }
+
+        // Send update to backend
+        const updateRoute = '/product-tax-status/' + productId;
+        LiveBlade.loopUpdateStatus(updateRoute, status);
     }
+
     
     function submitCategoryForm(formId, submitButtonId, url, method = 'POST', discardButtonId = 'discardButton') {
         const form = document.getElementById(formId);

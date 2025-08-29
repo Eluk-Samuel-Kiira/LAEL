@@ -9,9 +9,8 @@
                 </button>
             </div>
             <div class="modal-body scroll-y mx-lg-5 my-7">
-                <form class="form" 
-                    action="{{ route('assign.variant', $product->id) }}" 
-                    method="POST">
+
+                <form class="form" action="{{ route('assign.variant', $product->id) }}" method="POST">
                     @csrf
                     @method('PUT')
 
@@ -29,7 +28,7 @@
                                     <div class="col-md-6">
                                         <div class="form-check">
                                             <input type="checkbox" 
-                                                class="form-check-input"
+                                                class="form-check-input @error('taxes.*') is-invalid @enderror"
                                                 name="taxes[]" 
                                                 value="{{ $tax->id }}"
                                                 {{ in_array($tax->id, old('taxes', $product->variantTaxes->pluck('id')->toArray() ?? [])) ? 'checked' : '' }}>
@@ -40,6 +39,9 @@
                                     </div>
                                 @endforeach
                             </div>
+                            @error('taxes.*')
+                                <div class="text-danger mt-2">{{ $message }}</div>
+                            @enderror
                         @else
                             <div class="alert alert-secondary py-2">
                                 {{ __('pagination.not_taxable') }}
@@ -55,10 +57,10 @@
                                 <div class="col-md-6">
                                     <div class="form-check">
                                         <input type="checkbox" 
-                                            class="form-check-input"
+                                            class="form-check-input @error('promotions.*') is-invalid @enderror"
                                             name="promotions[]" 
                                             value="{{ $promotion->id }}"
-                                            {{-- {{ in_array($promotion->id, old('promotions', $product->promotions->pluck('id')->toArray() ?? [])) ? 'checked' : '' }} --}}>
+                                            {{--{{ in_array($promotion->id, old('promotions', $product->promotions->pluck('id')->toArray() ?? [])) ? 'checked' : '' }}--}}>
                                         <label class="form-check-label">
                                             {{ ucwords(str_replace('_', ' ', $promotion->name)) }}
                                         </label>
@@ -66,6 +68,9 @@
                                 </div>
                             @endforeach
                         </div>
+                        @error('promotions.*')
+                            <div class="text-danger mt-2">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <!-- ACTION BUTTONS -->
