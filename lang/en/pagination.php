@@ -215,5 +215,7 @@ return [
     'allocate_location'  => 'Assign to Locations',
     'assign_tax'         => 'Apply Tax Type',
     'assign_promotions'  => 'Apply Promotions',
+    'variant_not_taxable_now'  => 'Product variant nolonger Taxable, activate tax status to apply taxes',
+    'product_not_taxable_now'  => 'Product nolonger Taxable, activate tax status to apply taxes',
 
 ];

@@ -73,7 +73,8 @@
                                                 'name' => $variant->name ?? $product->name,
                                                 'price' => $variant->price,
                                                 'image' => productVariantImage($variant->image_url ?? $product->image_url),
-                                                'quantity_available' => $variant->inventory->quantity_on_hand ?? 0
+                                                'quantity_available' => $variant->inventory->quantity_on_hand ?? 0,
+                                                'taxes' => $variant->applicable_taxes ?? []   // <-- add this
                                             ]) }})"
                                             style="cursor: pointer;">
                                             <div class="card-body text-center">
@@ -375,55 +376,50 @@
 @include('orders.pos.payment-mode')
 
 <script>
-    // Cart array to store items
     let cart = [];
 
-    // Add item to cart with stock validation
     function addToCart(variant) {
-        // Check if item is out of stock
         if (variant.quantity_available <= 0) {
             toastr['error']('{{ __("pagination.out_of_stock") }}');
             return;
         }
-        
-        // Check if item already exists in cart
-        const existingItemIndex = cart.findIndex(item => item.id === variant.id);
-        
-        if (existingItemIndex > -1) {
-            // Check if we can add more (don't exceed available stock)
-            if (cart[existingItemIndex].quantity < variant.quantity_available) {
-                cart[existingItemIndex].quantity += 1;
-                updateCartItem(existingItemIndex);
+
+        const idx = cart.findIndex(i => i.id === variant.id);
+        if (idx > -1) {
+            if (cart[idx].quantity < variant.quantity_available) {
+                cart[idx].quantity += 1;
+                updateCartItem(idx);
                 toastr['success']('{{ __("pagination.item_added") }}');
             } else {
                 toastr['warning']('{{ __("pagination.max_quantity_reached") }}');
             }
         } else {
-            // Add new item to cart
             const cartItem = {
                 id: variant.id,
                 name: variant.name,
-                price: variant.price,
+                price: parseFloat(variant.price),
                 image: variant.image,
                 quantity: 1,
-                quantity_available: variant.quantity_available
+                quantity_available: variant.quantity_available,
+                taxes: Array.isArray(variant.taxes) ? variant.taxes : [] // <-- keep taxes
             };
             cart.push(cartItem);
             renderCartItem(cartItem);
             toastr['success']('{{ __("pagination.item_added") }}');
         }
-        
+
         updateCartTotal();
         calculateCartSummary();
     }
 
-    // Render new cart item
     function renderCartItem(item) {
         const cartTable = document.querySelector('#kt_pos_form tbody');
         const newRow = document.createElement('tr');
         newRow.setAttribute('data-kt-pos-element', 'item');
         newRow.setAttribute('data-kt-pos-item-price', item.price);
         newRow.setAttribute('data-item-id', item.id);
+
+        const lineSubtotal = (item.price * item.quantity);
         newRow.innerHTML = `
             <td class="pe-0">
                 <div class="d-flex align-items-center">
@@ -433,50 +429,89 @@
             </td>
             <td class="pe-0">
                 <div class="position-relative d-flex align-items-center" data-kt-dialer="true" data-kt-dialer-min="1" data-kt-dialer-max="${item.quantity_available}" data-kt-dialer-step="1" data-kt-dialer-decimals="0">
-                    <button type="button" class="btn btn-icon btn-sm btn-light btn-icon-gray-500"  onclick="decreaseQuantity(${item.id})">
+                    <button type="button" class="btn btn-icon btn-sm btn-light btn-icon-gray-500" onclick="decreaseQuantity(${item.id})">
                         <i class="ki-duotone ki-minus fs-3x"></i>
                     </button>
-                    <input type="text" class="form-control border-0 text-center px-0 fs-3 fw-bold text-gray-800 w-30px quantity-input" 
-                        data-kt-dialer-control="input" placeholder="Amount" name="quantity_${item.id}" 
+                    <input type="text" class="form-control border-0 text-center px-0 fs-3 fw-bold text-gray-800 w-30px quantity-input"
+                        placeholder="Amount" name="quantity_${item.id}"
                         value="${item.quantity}" onchange="updateQuantity(${item.id}, this.value)" />
-                    <button type="button" class="btn btn-icon btn-sm btn-light btn-icon-gray-500"  onclick="increaseQuantity(${item.id})">
+                    <button type="button" class="btn btn-icon btn-sm btn-light btn-icon-gray-500" onclick="increaseQuantity(${item.id})">
                         <i class="ki-duotone ki-plus fs-3x"></i>
                     </button>
                 </div>
             </td>
             <td class="text-end">
                 <div class="d-flex align-items-center justify-content-end">
-                    <span class="fw-bold text-primary fs-2 item-total me-2">$${(item.price * item.quantity).toFixed(2)}</span>
-                    <button type="button" class="btn btn-icon btn-sm btn-danger" onclick="removeFromCart(${item.id})">
+                    <div class="d-flex flex-column text-end">
+                        <span class="fw-bold text-primary fs-2 item-total">$${lineSubtotal.toFixed(2)}</span>
+                        <small class="text-muted item-tax-line" style="display:none;"></small>
+                    </div>
+                    <button type="button" class="btn btn-icon btn-sm btn-danger ms-2" onclick="removeFromCart(${item.id})">
                         <i class="bi bi-trash fs-2"></i>
                     </button>
                 </div>
             </td>
         `;
         cartTable.appendChild(newRow);
+        updateItemTaxLine(item.id); // show per-line tax if any
     }
 
-    // Update existing cart item
+    function updateItemTaxLine(itemId) {
+        const item = cart.find(i => i.id === itemId);
+        const row = document.querySelector(`tr[data-item-id="${itemId}"]`);
+        if (!item || !row) return;
+
+        const lineTax = computeItemTax(item);
+        const taxEl = row.querySelector('.item-tax-line');
+        if (lineTax > 0) {
+            taxEl.style.display = '';
+            taxEl.textContent = `+ tax $${lineTax.toFixed(2)}`;
+        } else {
+            taxEl.style.display = 'none';
+            taxEl.textContent = '';
+        }
+
+        // Also refresh the line subtotal (price * qty)
+        const itemTotalEl = row.querySelector('.item-total');
+        const lineSubtotal = item.price * item.quantity;
+        itemTotalEl.textContent = `$${lineSubtotal.toFixed(2)}`;
+    }
+
+    function computeItemTax(item) {
+        const base = item.price * item.quantity;
+        let taxTotal = 0;
+        if (!item.taxes || !item.taxes.length) return 0;
+
+        item.taxes.forEach(t => {
+            const rate = parseFloat(t.rate || 0);
+            if (t.type === 'percentage') {
+                // rate is e.g. 0.18 for 18%
+                taxTotal += base * rate;
+            } else {
+                // fixed amount per unit
+                taxTotal += rate * item.quantity;
+            }
+        });
+        return taxTotal;
+    }
+
     function updateCartItem(itemIndex) {
         const item = cart[itemIndex];
         const row = document.querySelector(`tr[data-item-id="${item.id}"]`);
-        if (row) {
-            const quantityInput = row.querySelector('.quantity-input');
-            const itemTotal = row.querySelector('.item-total');
-            
-            quantityInput.value = item.quantity;
-            itemTotal.textContent = `$${(item.price * item.quantity).toFixed(2)}`;
-        }
+        if (!row) return;
+
+        const quantityInput = row.querySelector('.quantity-input');
+        quantityInput.value = item.quantity;
+
+        updateItemTaxLine(item.id);
     }
 
-    
-    // Quantity functions with stock validation
     function increaseQuantity(itemId) {
-        const itemIndex = cart.findIndex(item => item.id === itemId);
-        if (itemIndex > -1) {
-            if (cart[itemIndex].quantity < cart[itemIndex].quantity_available) {
-                cart[itemIndex].quantity += 1;
-                updateCartItem(itemIndex);
+        const idx = cart.findIndex(i => i.id === itemId);
+        if (idx > -1) {
+            if (cart[idx].quantity < cart[idx].quantity_available) {
+                cart[idx].quantity += 1;
+                updateCartItem(idx);
                 updateCartTotal();
             } else {
                 toastr['warning']('{{ __("pagination.max_quantity_reached") }}');
@@ -484,41 +519,36 @@
         }
     }
 
-
     function decreaseQuantity(itemId) {
-        const itemIndex = cart.findIndex(item => item.id === itemId);
-        if (itemIndex > -1 && cart[itemIndex].quantity > 1) {
-            cart[itemIndex].quantity -= 1;
-            updateCartItem(itemIndex);
+        const idx = cart.findIndex(i => i.id === itemId);
+        if (idx > -1 && cart[idx].quantity > 1) {
+            cart[idx].quantity -= 1;
+            updateCartItem(idx);
             updateCartTotal();
         }
     }
 
     function updateQuantity(itemId, newQuantity) {
-        const quantity = parseInt(newQuantity);
-        const itemIndex = cart.findIndex(item => item.id === itemId);
-        
-        if (itemIndex > -1 && !isNaN(quantity)) {
-            if (quantity > 0 && quantity <= cart[itemIndex].quantity_available) {
-                cart[itemIndex].quantity = quantity;
-                updateCartItem(itemIndex);
+        const qty = parseInt(newQuantity);
+        const idx = cart.findIndex(i => i.id === itemId);
+        if (idx > -1 && !isNaN(qty)) {
+            if (qty > 0 && qty <= cart[idx].quantity_available) {
+                cart[idx].quantity = qty;
+                updateCartItem(idx);
                 updateCartTotal();
-            } else if (quantity > cart[itemIndex].quantity_available) {
-
+            } else if (qty > cart[idx].quantity_available) {
                 toastr['warning']('{{ __("pagination.max_quantity_reached") }}');
-                // Reset to max available
-                cart[itemIndex].quantity = cart[itemIndex].quantity_available;
-                updateCartItem(itemIndex);
+                cart[idx].quantity = cart[idx].quantity_available;
+                updateCartItem(idx);
                 updateCartTotal();
             }
         }
     }
 
-    // Remove item from cart
     function removeFromCart(itemId) {
-        const itemIndex = cart.findIndex(item => item.id === itemId);
-        if (itemIndex > -1) {
-            cart.splice(itemIndex, 1);
+        const idx = cart.findIndex(i => i.id === itemId);
+        if (idx > -1) {
+            cart.splice(idx, 1);
             const row = document.querySelector(`tr[data-item-id="${itemId}"]`);
             if (row) row.remove();
             updateCartTotal();
@@ -526,7 +556,6 @@
         }
     }
 
-    // Clear all items from cart
     function clearCart() {
         cart = [];
         const cartTable = document.querySelector('#kt_pos_form tbody');
@@ -535,62 +564,37 @@
         toastr['success']('{{ __("pagination.cart_cleared") }}');
     }
 
-    // Update cart total
-    function updateCartTotal() {
-        const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        document.querySelector('[data-kt-pos-element="total"]').textContent = `$${total.toFixed(2)}`;
-        
-        // Show/hide empty state
-        const emptyState = document.querySelector('.cart-empty-state');
-        const cartTable = document.querySelector('#kt_pos_form tbody');
-        
-        if (cart.length === 0) {
-            if (!emptyState) {
-                const emptyRow = document.createElement('tr');
-                emptyRow.className = 'cart-empty-state';
-                emptyRow.innerHTML = `
-                    <td colspan="3" class="text-center py-10">
-                        <div class="text-gray-600 fs-5">{{ __("pagination.cart_empty") }}</div>
-                    </td>
-                `;
-                cartTable.appendChild(emptyRow);
-            }
-        } else {
-            if (emptyState) emptyState.remove();
-        }
-    }
-
-    // Initialize cart on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        updateCartTotal();
-        
-        // Add event listener to clear all button
-        document.querySelector('[onclick="clearCart()"]').addEventListener('click', function(e) {
-            e.preventDefault();
-            clearCart();
-        });
-    });
-
-    // Calculate cart summary (subtotal, discount, tax, grand total)
+    // === Totals ===
     function calculateCartSummary() {
-        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const discount = 0; // 0% discount for now
-        const taxRate = 0; // 0% tax for now
-        const tax = subtotal * (taxRate / 100);
+        const subtotal = cart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+        const tax = cart.reduce((sum, i) => sum + computeItemTax(i), 0);
+        const discount = 0; // promotions come later
         const grandTotal = subtotal - discount + tax;
-        
-        // Update summary display
+
         document.querySelector('[data-kt-pos-element="total"]').textContent = `$${subtotal.toFixed(2)}`;
         document.querySelector('[data-kt-pos-element="discount"]').textContent = `-$${discount.toFixed(2)}`;
         document.querySelector('[data-kt-pos-element="tax"]').textContent = `$${tax.toFixed(2)}`;
         document.querySelector('[data-kt-pos-element="grant-total"]').textContent = `$${grandTotal.toFixed(2)}`;
     }
 
-    // Update the updateCartTotal function to also calculate summary
     function updateCartTotal() {
         calculateCartSummary();
+        // Handle empty state if needed...
     }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        updateCartTotal();
+        const clearBtn = document.querySelector('[onclick="clearCart()"]');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                clearCart();
+            });
+        }
+    });
 </script>
+
+
 
 
 <script>

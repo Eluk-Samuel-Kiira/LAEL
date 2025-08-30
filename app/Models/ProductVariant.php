@@ -53,4 +53,9 @@ class ProductVariant extends Model
                     ->withTimestamps();
     }
 
+    public function Variantpromotions()
+    {
+        return $this->belongsToMany(Promotion::class, 'promotion_products', 'variant_id', 'promotion_id');
+    }
+
 }

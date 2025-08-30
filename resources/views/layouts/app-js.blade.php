@@ -432,17 +432,33 @@
     }
 
     function updateVariantTaxStatus(productId, status) {
-        // Update label immediately
-        const label = document.getElementById('variant-tax-label-' + productId);
+        // Update label instantly
+        const label = document.getElementById('tax-label-' + productId);
         if (label) {
             label.innerText = status == 1 ? '{{ __("pagination._yes") }}' : '{{ __("pagination._no") }}';
+        }
+
+        // Toggle checkboxes / alert
+        const taxOptions = document.querySelector('#variant-assign-tax-' + productId + ' .tax-options');
+        const notTaxable = document.querySelector('#variant-assign-tax-' + productId + ' .not-taxable-msg');
+
+        if (taxOptions && notTaxable) {
+            if (status == 1) {
+                taxOptions.style.display = '';
+                notTaxable.style.display = 'none';
+            } else {
+                taxOptions.style.display = 'none';
+                notTaxable.style.display = '';
+            }
         }
 
         // Send update to backend
         const updateRoute = '/variant-tax-status/' + productId;
         LiveBlade.loopUpdateStatus(updateRoute, status);
     }
-    
+
+
+
     function updateVariantStatus(uniqueId, selectedStatus) {
         // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
         const updateRoute = '/variant-status/' + uniqueId;
@@ -480,6 +496,20 @@
         const label = document.getElementById('tax-label-' + productId);
         if (label) {
             label.innerText = status == 1 ? '{{ __("pagination._yes") }}' : '{{ __("pagination._no") }}';
+        }
+
+        // Toggle checkboxes / alert
+        const taxOptions = document.querySelector('#product-assign-tax-' + productId + ' .tax-options');
+        const notTaxable = document.querySelector('#product-assign-tax-' + productId + ' .not-taxable-msg');
+
+        if (taxOptions && notTaxable) {
+            if (status == 1) {
+                taxOptions.style.display = '';
+                notTaxable.style.display = 'none';
+            } else {
+                taxOptions.style.display = 'none';
+                notTaxable.style.display = '';
+            }
         }
 
         // Send update to backend

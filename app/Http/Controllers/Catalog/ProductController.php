@@ -276,11 +276,19 @@ class ProductController extends Controller
         // Sync locations
         $product->locations()->sync($validated['locations'] ?? []);
         
+
+        // Sync promotions
+        $product->promotions()->sync($validated['promotions'] ?? []);
+
+        if ($product->is_taxable == 0) {
+            session()->flash('toast', [
+                'type' => 'warning',
+                'message' => __('pagination.product_not_taxable_now'),
+            ]);
+            return redirect()->back();
+        }
         // Sync taxes
         $product->taxes()->sync($validated['taxes'] ?? []);
-
-        // Sync taxes
-        $product->promotions()->sync($validated['promotions'] ?? []);
 
         session()->flash('toast', [
             'type' => 'success',

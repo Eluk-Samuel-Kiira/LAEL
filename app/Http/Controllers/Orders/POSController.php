@@ -21,28 +21,84 @@ use App\Models\OrderTax;
 
 class POSController extends Controller
 {
-
+    // POSController.php
     public function index(Request $request)
     {
-        Artisan::call('optimize:clear');
+        // Consider removing this in production; it's heavy for every request
+        // Artisan::call('optimize:clear');
+
         $user = Auth::user();
-        
-        // fetch departments assigned to this user
+
         $user_departments = $user->departments()->get();
         $departments_id = $user_departments->pluck('id')->toArray();
 
-        // Fetch only products allocated to those departments (with variants AND their inventory)
-        $products = Product::with(['variants.inventory', 'departments'])
-            ->whereHas('departments', function ($query) use ($departments_id) {
-                $query->whereIn('departments.id', $departments_id);
-            })
+        $products = Product::with([
+                'departments',
+                'taxes' => fn($q) => $q->where('is_active', 1),
+                'variants.inventory',
+                'variants.variantTaxes' => fn($q) => $q->where('is_active', 1),
+            ])
+            ->whereHas('departments', fn($q) => $q->whereIn('departments.id', $departments_id))
             ->where('is_active', 1)
             ->latest()
             ->get();
-            
+
+        // Compute applicable taxes per variant following your rules
+        foreach ($products as $product) {
+            foreach ($product->variants as $variant) {
+                $applicable = collect();
+
+                if ((int)$variant->is_taxable === 0) {
+                    $applicable = collect(); // force no tax
+                } elseif ($variant->variantTaxes->isNotEmpty()) {
+                    // Variant overrides parent set
+                    $applicable = $variant->variantTaxes;
+                } elseif ((int)$product->is_taxable === 1) {
+                    // Fallback to product taxes when product is taxable
+                    $applicable = $product->taxes;
+                } else {
+                    $applicable = collect();
+                }
+
+                // flatten to a minimal array for the frontend
+                $variant->applicable_taxes = $applicable->map(function ($t) {
+                    return [
+                        'id'   => (int)$t->id,
+                        'name' => $t->name,
+                        'rate' => (float)$t->rate,   // e.g. 0.18 for 18%
+                        'type' => $t->type,          // 'percentage' | 'fixed'
+                    ];
+                })->values();
+            }
+        }
+        
         // \Log::info($products->toArray());
+
         return view('orders.pos-index', compact('user_departments', 'products'));
     }
+
+
+    // public function index(Request $request)
+    // {
+    //     Artisan::call('optimize:clear');
+    //     $user = Auth::user();
+        
+    //     // fetch departments assigned to this user
+    //     $user_departments = $user->departments()->get();
+    //     $departments_id = $user_departments->pluck('id')->toArray();
+
+    //     // Fetch only products allocated to those departments (with variants AND their inventory)
+    //     $products = Product::with(['variants.inventory', 'departments'])
+    //         ->whereHas('departments', function ($query) use ($departments_id) {
+    //             $query->whereIn('departments.id', $departments_id);
+    //         })
+    //         ->where('is_active', 1)
+    //         ->latest()
+    //         ->get();
+            
+    //     // \Log::info($products->toArray());
+    //     return view('orders.pos-index', compact('user_departments', 'products'));
+    // }
 
     public function processPayment(Request $request)
     {

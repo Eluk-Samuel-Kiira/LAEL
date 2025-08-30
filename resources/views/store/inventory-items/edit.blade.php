@@ -34,7 +34,7 @@
 
                             <div class="d-flex flex-column mb-8 fv-row col-md-6">
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
-                                    <span class="required">{{ __('auth._location') }}</span>
+                                    <span class="required">{{ __('pagination._location') }}</span>
                                 </label>
                                 <select name="location_id" class="form-select" data-control="select2" data-close-on-select="false" data-placeholder="{{__('auth._select')}}" data-allow-clear="true">
                                     <option value="" disabled {{ is_null($item->location_id) ? 'selected' : '' }}></option>
