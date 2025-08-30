@@ -251,10 +251,22 @@ class ProductVariantController extends Controller
                 'tenant_id' => ['required', 'exists:tenants,id'],
                 'taxes' => ['nullable', 'array'],
                 'taxes.*' => ['exists:taxes,id'],
+                'promotions' => ['nullable', 'array'],
+                'promotions.*' => ['exists:promotions,id'],
             ]);
 
             // Get the variant
             $product = ProductVariant::findOrFail($id);
+
+            if ($product->is_taxable == 0) {
+                session()->flash('toast', [
+                    'type' => 'warning',
+                    'message' => __('pagination.variant_not_taxable_now'),
+                ]);
+
+                return redirect()->back();
+            }
+
             $pivotData = [];
             if (!empty($validated['taxes'])) {
                 foreach ($validated['taxes'] as $taxId) {
@@ -267,8 +279,11 @@ class ProductVariantController extends Controller
             } else {
                 $product->variantTaxes()->detach();
             }
+            
+            // Sync promotions to product variant
+            $product->Variantpromotions()->sync($validated['promotions'] ?? []);
 
-            \Log::info('Taxes synced for variant ' . $id, ['taxes' => $validated['taxes'] ?? []]);
+            // \Log::info('Taxes synced for variant ' . $id, ['taxes' => $validated['taxes'] ?? []]);
 
             session()->flash('toast', [
                 'type' => 'success',

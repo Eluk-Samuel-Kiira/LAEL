@@ -18,36 +18,35 @@
                     <input type="hidden" name="created_by" value="{{ auth()->id() }}">
                     <input type="hidden" name="tenant_id" value="1">
 
+        
                     <!-- TAX ASSIGNMENT -->
-                    <div class="mb-5">
+                    <div class="mb-5" id="variant-assign-tax-{{ $product->id }}">
                         <h6 class="fw-bold mb-3">{{ __('pagination.assign_tax') }}</h6>
 
-                        @if ($product->is_taxable == 1)
-                            <div class="row g-3">
-                                @foreach($taxes as $tax)
-                                    <div class="col-md-6">
-                                        <div class="form-check">
-                                            <input type="checkbox" 
-                                                class="form-check-input @error('taxes.*') is-invalid @enderror"
-                                                name="taxes[]" 
-                                                value="{{ $tax->id }}"
-                                                {{ in_array($tax->id, old('taxes', $product->variantTaxes->pluck('id')->toArray() ?? [])) ? 'checked' : '' }}>
-                                            <label class="form-check-label">
-                                                {{ ucwords(str_replace('_', ' ', $tax->name)) }}
-                                            </label>
-                                        </div>
+                        {{-- Tax options --}}
+                        <div class="row g-3 tax-options" style="{{ $product->is_taxable == 1 ? '' : 'display:none;' }}">
+                            @foreach($taxes as $tax)
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input type="checkbox" 
+                                            class="form-check-input"
+                                            name="taxes[]" 
+                                            value="{{ $tax->id }}"
+                                            {{ in_array($tax->id, old('taxes', $product->variantTaxes->pluck('id')->toArray() ?? [])) ? 'checked' : '' }}>
+                                        <label class="form-check-label">
+                                            {{ ucwords(str_replace('_', ' ', $tax->name)) }} - {{ $tax->code }}
+                                        </label>
                                     </div>
-                                @endforeach
-                            </div>
-                            @error('taxes.*')
-                                <div class="text-danger mt-2">{{ $message }}</div>
-                            @enderror
-                        @else
-                            <div class="alert alert-secondary py-2">
-                                {{ __('pagination.not_taxable') }}
-                            </div>
-                        @endif
+                                </div>
+                            @endforeach
+                        </div>
+
+                        {{-- Not taxable message --}}
+                        <div class="alert alert-warning py-2 not-taxable-msg" style="{{ $product->is_taxable == 1 ? 'display:none;' : '' }}">
+                            {{ __('pagination.not_taxable') }}
+                        </div>
                     </div>
+
 
                     <!-- PROMOTIONS ASSIGNMENT -->
                     <div class="mb-5">
@@ -60,7 +59,7 @@
                                             class="form-check-input @error('promotions.*') is-invalid @enderror"
                                             name="promotions[]" 
                                             value="{{ $promotion->id }}"
-                                            {{--{{ in_array($promotion->id, old('promotions', $product->promotions->pluck('id')->toArray() ?? [])) ? 'checked' : '' }}--}}>
+                                            {{ in_array($promotion->id, old('promotions', $product->Variantpromotions->pluck('id')->toArray() ?? [])) ? 'checked' : '' }}>
                                         <label class="form-check-label">
                                             {{ ucwords(str_replace('_', ' ', $promotion->name)) }}
                                         </label>
