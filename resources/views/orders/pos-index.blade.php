@@ -49,9 +49,9 @@
             <div id="kt_app_content_container" class="app-container container-xxl">
                 <div id="status"></div>
                 
-                <!--begin::Content-->
-                @include('orders.pos.component')
-                <!--end::Content-->
+                    <!--begin::Content-->
+                    @include('orders.pos.component')
+                    <!--end::Content-->
                 
             </div>
         </div>

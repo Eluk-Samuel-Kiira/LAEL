@@ -164,6 +164,7 @@
 
 <!-- App/Dashboard Js Defind functions  -->
 @include('layouts.app-js')
+@include('layouts.pos-js')
 
 
 <script>

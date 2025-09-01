@@ -182,15 +182,15 @@ return [
     'enter_customer_name' => 'Please enter customer name',
     'choose_customer' => 'Choose a customer',
     'customer_name_placeholder' => 'Enter customer name',
-    'please_enter_customer' => '⚠️ Please enter a new customer name.',
-    'please_select_existing_customer' => '⚠️ Please select an existing customer',
-    'please_select_existing_customer' => 'Insufficient Amount Entered',
+    'please_enter_customer' => 'Please enter a new customer name.',
+    'please_select_existing_customer' => 'Please select an existing customer',
     
 
 
 
     // Taxes and Promotion
     '_tax' => 'Tax',
+    '_disc' => 'Disc.',
     'tax_index' => 'Tax Index',
     'tax_table' => 'Tax Table',
     '_taxes' => 'Taxes',

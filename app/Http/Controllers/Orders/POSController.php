@@ -25,53 +25,90 @@ class POSController extends Controller
     public function index(Request $request)
     {
         // Consider removing this in production; it's heavy for every request
-        // Artisan::call('optimize:clear');
+        Artisan::call('optimize:clear');
 
         $user = Auth::user();
 
         $user_departments = $user->departments()->get();
         $departments_id = $user_departments->pluck('id')->toArray();
 
+        $now = now();
+
         $products = Product::with([
                 'departments',
                 'taxes' => fn($q) => $q->where('is_active', 1),
+                'promotions' => fn($q) => $q
+                    ->where('is_active', 1)
+                    ->where('start_date', '<=', $now)
+                    ->where('end_date', '>=', $now),
                 'variants.inventory',
                 'variants.variantTaxes' => fn($q) => $q->where('is_active', 1),
+                'variants.variantPromotions' => fn($q) => $q
+                    ->where('is_active', 1)
+                    ->where('start_date', '<=', $now)
+                    ->where('end_date', '>=', $now),
             ])
             ->whereHas('departments', fn($q) => $q->whereIn('departments.id', $departments_id))
             ->where('is_active', 1)
             ->latest()
             ->get();
 
+
         // Compute applicable taxes per variant following your rules
         foreach ($products as $product) {
             foreach ($product->variants as $variant) {
-                $applicable = collect();
-
+                /** ---------------- Taxes ---------------- */
+                $applicableTaxes = collect();
                 if ((int)$variant->is_taxable === 0) {
-                    $applicable = collect(); // force no tax
-                } elseif ($variant->variantTaxes->isNotEmpty()) {
-                    // Variant overrides parent set
-                    $applicable = $variant->variantTaxes;
-                } elseif ((int)$product->is_taxable === 1) {
-                    // Fallback to product taxes when product is taxable
-                    $applicable = $product->taxes;
+                    $applicableTaxes = collect();
                 } else {
-                    $applicable = collect();
+                    if ((int)$product->is_taxable === 1 && $product->taxes->isNotEmpty()) {
+                        $applicableTaxes = $product->taxes->keyBy('id');
+                    }
+                    if ($variant->variantTaxes->isNotEmpty()) {
+                        foreach ($variant->variantTaxes as $vtax) {
+                            $applicableTaxes[$vtax->id] = $vtax; // override if same id
+                        }
+                    }
                 }
 
-                // flatten to a minimal array for the frontend
-                $variant->applicable_taxes = $applicable->map(function ($t) {
+                $variant->applicable_taxes = $applicableTaxes->map(function ($t) {
                     return [
                         'id'   => (int)$t->id,
                         'name' => $t->name,
-                        'rate' => (float)$t->rate,   // e.g. 0.18 for 18%
-                        'type' => $t->type,          // 'percentage' | 'fixed'
+                        'rate' => (float)$t->rate,
+                        'type' => $t->type,
+                    ];
+                })->values();
+
+                /** ---------------- Promotions ---------------- */
+                $applicablePromos = collect();
+
+                // Start with product-level promos
+                if ($product->promotions->isNotEmpty()) {
+                    $applicablePromos = $product->promotions->keyBy('id');
+                }
+
+                // Merge variant promos (override if same id)
+                if ($variant->variantPromotions->isNotEmpty()) {
+                    foreach ($variant->variantPromotions as $vpromo) {
+                        $applicablePromos[$vpromo->id] = $vpromo;
+                    }
+                }
+
+                $variant->applicable_promotions = $applicablePromos->map(function ($p) {
+                    return [
+                        'id'          => (int)$p->id,
+                        'name'        => $p->name,
+                        'type'        => $p->discount_type,   // 'percentage' | 'fixed' | 'buy_x_get_y'
+                        'value'       => (float)$p->discount_value,
+                        'start_date'  => $p->start_date,
+                        'end_date'    => $p->end_date,
                     ];
                 })->values();
             }
         }
-        
+
         // \Log::info($products->toArray());
 
         return view('orders.pos-index', compact('user_departments', 'products'));
@@ -161,7 +198,9 @@ class POSController extends Controller
                     'sku' => $variant->sku,
                     'unit_price' => $item['price'],
                     'quantity' => $item['quantity'],
-                    'total_price' => $item['price'] * $item['quantity'],
+                    'tax_amount' => $item['tax_total'],
+                    'discount' => $item['discount'],
+                    'total_price' => $item['total'],
                     'inventory_data' => json_encode([
                         'initial_stock' => $variant->inventory->quantity_on_hand,
                         'current_stock' => $variant->inventory->quantity_on_hand - $item['quantity']
