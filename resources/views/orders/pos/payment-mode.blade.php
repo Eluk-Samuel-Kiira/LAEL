@@ -1,7 +1,7 @@
 <!-- Cash Payment Modal -->
 <div class="modal fade" id="cashModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered mw-750px"><!-- wider -->
-        <div class="modal-content" style="font-size: 1.4rem;"> <!-- scale font globally -->
+    <div class="modal-dialog modal-dialog-centered mw-750px">
+        <div class="modal-content" style="font-size: 1.4rem;">
             <div class="modal-header">
                 <h2 class="modal-title fw-bold text-gray-800" style="font-size: 2rem;">
                     {{__('pagination.cash_payment')}}
@@ -50,7 +50,7 @@
                         placeholder="0.00" 
                         step="0.01" 
                         min="0" 
-                        oninput="calculateChange()"
+                        oninput="calculateChange(this)"
                         style="font-size: 2.5rem; height: 90px; line-height: 90px;">
                 </div>
 

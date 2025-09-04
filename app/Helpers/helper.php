@@ -126,6 +126,30 @@ if (!function_exists('getFaviconImage')) {
 }
 
 
+// Auto currency converter
+if (! function_exists('formatCurrency')) {
+    function formatCurrency($amountUSD, $currencyCode = null)
+    {
+        // Get system default currency from settings if not passed
+        $systemCurrency = $currencyCode ?? getMailOptions('currency');
+
+        // Fetch currency from DB
+        $currency = Currency::where('code', $systemCurrency)->first();
+
+        if (! $currency) {
+            // fallback to USD if not found
+            $currency = Currency::where('isBaseCurrency', true)->first();
+        }
+
+        // Convert from USD → target currency
+        $converted = $amountUSD * $currency->exchange_rate;
+
+        // Return formatted number with symbol after value
+        return number_format($converted, 2) . ' ' . $currency->symbol;
+    }
+}
+
+
 
 
 function getMailOptions($option_key){

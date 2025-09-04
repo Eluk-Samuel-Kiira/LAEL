@@ -190,6 +190,7 @@ return [
 
     // Taxes and Promotion
     '_tax' => 'Tax',
+    '_qty' => 'Qty',
     '_disc' => 'Disc.',
     'tax_index' => 'Tax Index',
     'tax_table' => 'Tax Table',

@@ -1,5 +1,13 @@
 
 <script>
+    function formatCurrency(value) {
+        return Number(value).toLocaleString('en-US', { 
+            minimumFractionDigits: 2, 
+            maximumFractionDigits: 2 
+        });
+    }
+
+
     let cart = [];
 
     function addToCart(variant) {
@@ -41,8 +49,8 @@
     function renderCartItem(item) {
         const cartTable = document.querySelector('#kt_pos_form tbody');
         const newRow = document.createElement('tr');
-        newRow.setAttribute('data-kt-pos-element', 'item');
-        newRow.setAttribute('data-kt-pos-item-price', item.price);
+        newRow.setAttribute('data-kt-pos-element', '{{ __("pagination._item") }}');
+        newRow.setAttribute('data-kt-pos-item-price', formatCurrency(item.price));
         newRow.setAttribute('data-item-id', item.id);
 
         const lineSubtotal = (item.price * item.quantity);
@@ -69,7 +77,7 @@
             <td class="text-end">
                 <div class="d-flex align-items-center justify-content-end">
                     <div class="d-flex flex-column text-end">
-                        <span class="fw-bold text-primary fs-2 item-total">$${lineSubtotal.toFixed(2)}</span>
+                        <span class="fw-bold text-primary fs-2 item-total">${formatCurrency(lineSubtotal)}</span>
                         <small class="text-muted item-tax-line" style="display:none;"></small>
                         <small class="text-success item-discount-line" style="display:none;"></small>
                     </div>
@@ -96,7 +104,7 @@
 
         if (tax > 0) {
             taxEl.style.display = '';
-            taxEl.textContent = `+ {{ __("pagination._tax") }} $${tax.toFixed(2)}`;
+            taxEl.textContent = `+ {{ __("pagination._tax") }} ${formatCurrency(tax)}`;
         } else {
             taxEl.style.display = 'none';
             taxEl.textContent = '';
@@ -104,7 +112,7 @@
 
         if (discount > 0) {
             discEl.style.display = '';
-            discEl.textContent = `- {{ __("pagination._disc") }} $${discount.toFixed(2)}`;
+            discEl.textContent = `- {{ __("pagination._disc") }} ${formatCurrency(discount)}`;
         } else {
             discEl.style.display = 'none';
             discEl.textContent = '';
@@ -113,7 +121,7 @@
         // refresh subtotal display (base only)
         const itemTotalEl = row.querySelector('.item-total');
         const lineSubtotal = item.price * item.quantity;
-        itemTotalEl.textContent = `$${lineSubtotal.toFixed(2)}`;
+        itemTotalEl.textContent = `${formatCurrency(lineSubtotal)}`;
 
         calculateCartSummary();
     }
@@ -230,10 +238,10 @@
         const discount = cart.reduce((sum, i) => sum + computeItemDiscount(i), 0);
         const grandTotal = subtotal - discount + tax;
 
-        document.querySelector('[data-kt-pos-element="total"]').textContent = `$${subtotal.toFixed(2)}`;
-        document.querySelector('[data-kt-pos-element="discount"]').textContent = `-$${discount.toFixed(2)}`;
-        document.querySelector('[data-kt-pos-element="tax"]').textContent = `$${tax.toFixed(2)}`;
-        document.querySelector('[data-kt-pos-element="grant-total"]').textContent = `$${grandTotal.toFixed(2)}`;
+        document.querySelector('[data-kt-pos-element="total"]').textContent = `${formatCurrency(subtotal)}`;
+        document.querySelector('[data-kt-pos-element="discount"]').textContent = `-${formatCurrency(discount)}`;
+        document.querySelector('[data-kt-pos-element="tax"]').textContent = `${formatCurrency(tax)}`;
+        document.querySelector('[data-kt-pos-element="grant-total"]').textContent = `${formatCurrency(grandTotal)}`;
     }
 
     function updateCartTotal() {
@@ -464,7 +472,7 @@
 
     // Cash Modal Functions
     function openCashModal(cartData) {
-        document.getElementById('cashTotalAmount').textContent = `$${cartData.total}`;
+        document.getElementById('cashTotalAmount').textContent = `${formatCurrency(cartData.total)}`;
         document.getElementById('cashAmountInput').value = '';
         document.getElementById('cashAmountTendered').textContent = '$0.00';
         document.getElementById('cashChangeDue').textContent = '$0.00';
@@ -478,8 +486,8 @@
         const tendered = parseFloat(document.getElementById('cashAmountInput').value) || 0;
         const change = tendered - total;
         
-        document.getElementById('cashAmountTendered').textContent = `$${tendered}`;
-        document.getElementById('cashChangeDue').textContent = `$${Math.max(0, change)}`;
+        document.getElementById('cashAmountTendered').textContent = `${formatCurrency(tendered)}`;
+        document.getElementById('cashChangeDue').textContent = `${formatCurrency(Math.max(0, change))}`;
     }
 
     function completeCashPayment() {
@@ -504,7 +512,7 @@
 
     // Mobile Money Modal Functions
     function openMobileMoneyModal(cartData) {
-        document.getElementById('mobileTotalAmount').textContent = `$${cartData.total}`;
+        document.getElementById('mobileTotalAmount').textContent = `${formatCurrency(cartData.total)}`;
         document.getElementById('mobilePhoneNumber').value = '';
         document.getElementById('mobileTransactionId').value = '';
         
@@ -529,7 +537,7 @@
 
     // Card Modal Functions
     function openCardModal(cartData) {
-        document.getElementById('cardTotalAmount').textContent = `$${cartData.total}`;
+        document.getElementById('cardTotalAmount').textContent = `${formatCurrency(cartData.total)}`;
         document.getElementById('cardLastDigits').value = '';
         document.getElementById('cardAuthCode').value = '';
         
@@ -577,11 +585,10 @@
         .then(res => res.json().then(data => ({ status: res.status, ok: res.ok, body: data })))
         .then(response => {
             if (!response.ok) {
-                // Laravel usually returns { message: "...", errors: {...} }
                 throw new Error(response.body.message || '{{ __("pagination.order_saved_error") }}');
             }
             toastr['success']('{{ __("pagination.order_saved") }}');
-            console.log("Order saved:", response.body);
+            // console.log("Order saved:", response.body);
 
             setTimeout(() => {
                 generateReceipt(order.payment_method, order);
@@ -605,6 +612,7 @@
     function generateReceipt(paymentMethod, paymentDetails) {
         const receiptContent = document.getElementById('receiptContent');
         const order = window.currentOrder;
+        console.log(order)
 
         // Determine customer display: use customerName if available
         let customerInfo = '{{ __("pagination.customer") }}: N/A';
@@ -619,10 +627,11 @@
             <table style="width:100%; border-collapse: collapse; margin-bottom: 10px;">
                 <thead>
                     <tr>
-                        <th style="border-bottom: 1px solid #ddd; text-align:left;">Item</th>
-                        <th style="border-bottom: 1px solid #ddd; text-align:center;">Qty</th>
-                        <th style="border-bottom: 1px solid #ddd; text-align:right;">Price</th>
-                        <th style="border-bottom: 1px solid #ddd; text-align:right;">Total</th>
+                        <th style="border-bottom: 1px solid #ddd; text-align:left;">{{ __("pagination._item") }}</th>
+                        <th style="border-bottom: 1px solid #ddd; text-align:center;">{{ __("pagination._qty") }}</th>
+                        <th style="border-bottom: 1px solid #ddd; text-align:right;">{{ __("pagination._price") }}</th>
+                        <th style="border-bottom: 1px solid #ddd; text-align:right;">{{ __("pagination._discount") }}</th>
+                        <th style="border-bottom: 1px solid #ddd; text-align:right;">{{ __("pagination._total") }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -630,8 +639,9 @@
                         <tr>
                             <td>${item.name}</td>
                             <td style="text-align:center;">${item.quantity}</td>
-                            <td style="text-align:right;">$${item.price}</td>
-                            <td style="text-align:right;">$${(item.price * item.quantity).toFixed(2)}</td>
+                            <td style="text-align:right;">${formatCurrency(item.price)}</td>
+                            <td style="text-align:right;">${formatCurrency(item.discount)}</td>
+                            <td style="text-align:right;">${formatCurrency(item.price * item.quantity)}</td>
                         </tr>
                     `).join('')}
                 </tbody>
@@ -651,15 +661,19 @@
                 ${itemsHtml}
                 <div class="d-flex justify-content-between mb-2">
                     <span>{{__('pagination.subtotal')}}:</span>
-                    <span>$${order.subtotal}</span>
+                    <span>${formatCurrency(order.subtotal)}</span>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
                     <span>{{__('pagination.tax')}}:</span>
-                    <span>$${order.tax_total ?? order.tax}</span>
+                    <span>${formatCurrency(order.tax)}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>{{__('pagination._discount')}}:</span>
+                    <span>${formatCurrency(order.discount)}</span>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
                     <span>{{__('pagination.total')}}:</span>
-                    <span class="fw-bold">$${order.total}</span>
+                    <span class="fw-bold">${formatCurrency(order.total)}</span>
                 </div>
             </div>
 
@@ -672,11 +686,11 @@
                 ${paymentMethod === 'cash' ? `
                     <div class="d-flex justify-content-between mb-2">
                         <span>{{__('pagination.amount_tendered')}}:</span>
-                        <span>$${paymentDetails.payment_details.amount_tendered}</span>
+                        <span>${formatCurrency(paymentDetails.payment_details.amount_tendered)}</span>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
                         <span>{{__('pagination.change_due')}}:</span>
-                        <span>$${paymentDetails.payment_details.change_due}</span>
+                        <span>${formatCurrency(paymentDetails.payment_details.change_due)}</span>
                     </div>
                 ` : ''}
             </div>

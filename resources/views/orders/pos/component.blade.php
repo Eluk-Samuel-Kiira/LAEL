@@ -89,7 +89,7 @@
                                                     </div>
                                                 </div>
                                                 <span class="text-success text-end fw-bold fs-1">
-                                                    {{ number_format($variant->price, 2) }}$
+                                                    {{ $variant->price }}
                                                 </span>
                                             </div>
                                         </div>
@@ -238,10 +238,10 @@
                     <!--end::Content-->
                     <!--begin::Content-->
                     <div class="fs-6 fw-bold text-white text-end">
-                        <span class="d-block lh-1 mb-2" data-kt-pos-element="total">$0.00</span>
-                        <span class="d-block mb-2" data-kt-pos-element="discount">-$0.00</span>
-                        <span class="d-block mb-9" data-kt-pos-element="tax">$11.20</span>
-                        <span class="d-block fs-2qx lh-1" data-kt-pos-element="grant-total">$0.00</span>
+                        <span class="d-block lh-1 mb-2" data-kt-pos-element="total">0.00</span>
+                        <span class="d-block mb-2" data-kt-pos-element="discount">-0.00</span>
+                        <span class="d-block mb-9" data-kt-pos-element="tax">0.20</span>
+                        <span class="d-block fs-2qx lh-1" data-kt-pos-element="grant-total">0.00</span>
                     </div>
                     <!--end::Content-->
                 </div>
