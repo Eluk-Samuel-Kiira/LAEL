@@ -612,7 +612,7 @@
     function generateReceipt(paymentMethod, paymentDetails) {
         const receiptContent = document.getElementById('receiptContent');
         const order = window.currentOrder;
-        console.log(order)
+        // console.log(order)
 
         // Determine customer display: use customerName if available
         let customerInfo = '{{ __("pagination.customer") }}: N/A';
@@ -691,6 +691,10 @@
                     <div class="d-flex justify-content-between mb-2">
                         <span>{{__('pagination.change_due')}}:</span>
                         <span>${formatCurrency(paymentDetails.payment_details.change_due)}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>{{__('pagination._currency')}}:</span>
+                        <span>{{ getMailOptions('currency') }} - {{ currencySymbol() }}</span>
                     </div>
                 ` : ''}
             </div>

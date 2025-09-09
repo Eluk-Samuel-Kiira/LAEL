@@ -169,6 +169,7 @@ return [
     'method' => 'Method',
     'subtotal' => 'Subtotal',
     'total' => 'Total',
+    '_currency' => 'Currency',
     'customer' => 'Customer',
     'order_saved' => '✅ Order saved',
     'order_saved_error' => '❌ Failed to complete payment',

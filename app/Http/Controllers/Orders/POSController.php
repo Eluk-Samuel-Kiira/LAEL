@@ -24,7 +24,6 @@ class POSController extends Controller
     // POSController.php
     public function index(Request $request)
     {
-        // Consider removing this in production; it's heavy for every request
         Artisan::call('optimize:clear');
 
         $user = Auth::user();
@@ -73,10 +72,14 @@ class POSController extends Controller
                 }
 
                 $variant->applicable_taxes = $applicableTaxes->map(function ($t) {
+                    $rate = (float) $t->rate;
+
                     return [
                         'id'   => (int)$t->id,
                         'name' => $t->name,
-                        'rate' => (float)$t->rate,
+                        'rate'  => $t->type === 'fixed'
+                                ? formatCurrency($rate) // convert & format if fixed amount
+                                : $rate,
                         'type' => $t->type,
                     ];
                 })->values();
@@ -97,15 +100,23 @@ class POSController extends Controller
                 }
 
                 $variant->applicable_promotions = $applicablePromos->map(function ($p) {
+                    $value = (float) $p->discount_value;
                     return [
                         'id'          => (int)$p->id,
                         'name'        => $p->name,
                         'type'        => $p->discount_type,   // 'percentage' | 'fixed' | 'buy_x_get_y'
-                        'value'       => (float)$p->discount_value,
+                        'value'       => $p->discount_type === 'fixed'
+                                        ? formatCurrency($value)   // show in system currency
+                                        : $value, 
                         'start_date'  => $p->start_date,
                         'end_date'    => $p->end_date,
                     ];
                 })->values();
+
+                /** ---------------- Currency Casting ---------------- */
+                // Always raw in USD
+                $variant->price      = formatCurrency($variant->price);
+                $variant->cost_price = formatCurrency($variant->cost_price);
             }
         }
 
@@ -169,10 +180,10 @@ class POSController extends Controller
                 'order_number' => $orderNumber,
                 'type' => 'sale',
                 'status' => 'confirmed',
-                'subtotal' => $cartData['subtotal'],
-                'discount_total' => $cartData['discount'],
-                'tax_total' => $cartData['tax'],
-                'total' => $cartData['total'],
+                'subtotal' => toUSD($cartData['subtotal']),
+                'discount_total' => toUSD($cartData['discount']),
+                'tax_total' => toUSD($cartData['tax']),
+                'total' => toUSD($cartData['total']),
                 'paid_amount' => 0, // Will be updated after payment
                 'balance_due' => 0,
                 'source' => 'pos',
@@ -196,11 +207,11 @@ class POSController extends Controller
                     'variant_id' => $variant->id,
                     'item_name' => $item['name'],
                     'sku' => $variant->sku,
-                    'unit_price' => $item['price'],
+                    'unit_price' => toUSD($item['price']),
                     'quantity' => $item['quantity'],
-                    'tax_amount' => $item['tax_total'],
-                    'discount' => $item['discount'],
-                    'total_price' => $item['total'],
+                    'tax_amount' => toUSD($item['tax_total']),
+                    'discount' => toUSD($item['discount']),
+                    'total_price' => toUSD($item['total']),
                     'inventory_data' => json_encode([
                         'initial_stock' => $variant->inventory->quantity_on_hand,
                         'current_stock' => $variant->inventory->quantity_on_hand - $item['quantity']
@@ -236,8 +247,8 @@ class POSController extends Controller
 
         $order = Order::findOrFail($request->order_id);
         $order->update([
-            'paid_amount' => $paymentDetails['amount_tendered'] ?? 0,
-            'balance_due' => $paymentDetails['change_due'] ?? 0,
+            'paid_amount' => toUSD($paymentDetails['amount_tendered']) ?? 0,
+            'balance_due' => toUSD($paymentDetails['change_due']) ?? 0,
             'notes'       => __('pagination.payment_completed'),
             'status' => 'completed',
         ]);
@@ -251,7 +262,7 @@ class POSController extends Controller
         OrderPayment::updateOrCreate(
             ['order_id' => $order->id],
             [
-                'amount'          => $request->total ?? 0,
+                'amount'          => toUSD($request->total) ?? 0,
                 'payment_method'  => $request->payment_method, // Fixed this line too
                 'transaction_id'  => $transactionId,
                 'status'          => 'completed',
@@ -268,8 +279,8 @@ class POSController extends Controller
             ],
             [
                 'tax_name'   => 'VAT',
-                'tax_rate'    => (($request->total - $request->subtotal) / $request->total) * 100,
-                'tax_amount'  => $request->tax,
+                'tax_rate'    => toUSD((($request->total - $request->subtotal) / $request->total) * 100),
+                'tax_amount'  => toUSD($request->tax),
                 'is_compound' => 1,
                 'created_by'  => auth()->id(),
             ]

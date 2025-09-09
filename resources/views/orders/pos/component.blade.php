@@ -89,7 +89,7 @@
                                                     </div>
                                                 </div>
                                                 <span class="text-success text-end fw-bold fs-1">
-                                                    {{ $variant->price }}
+                                                    {{ displayFormatedCurrency($variant->price) }} {{ currencySymbol() }}
                                                 </span>
                                             </div>
                                         </div>
