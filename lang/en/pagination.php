@@ -219,5 +219,6 @@ return [
     'assign_promotions'  => 'Apply Promotions',
     'variant_not_taxable_now'  => 'Product variant nolonger Taxable, activate tax status to apply taxes',
     'product_not_taxable_now'  => 'Product nolonger Taxable, activate tax status to apply taxes',
+    'Payment_method_coming_soon'  => 'Payment method coming soon, please use cash as per now!!',
 
 ];

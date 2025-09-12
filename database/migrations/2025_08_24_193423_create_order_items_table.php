@@ -24,6 +24,8 @@ return new class extends Migration
             $table->decimal('tax_amount', 12, 2)->default(0);
             $table->decimal('total_price', 12, 2);
             $table->json('inventory_data')->nullable(); 
+            $table->json('tax_data')->nullable(); 
+            $table->json('promotion_data')->nullable(); 
             $table->timestampsTz();
         });
     }

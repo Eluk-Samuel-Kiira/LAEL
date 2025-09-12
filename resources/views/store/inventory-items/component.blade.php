@@ -78,6 +78,7 @@
                                             <i class="bi bi-pencil-square me-1 fs-5"></i> <span>{{ __('auth._update') }}</span>
                                         </button>
                                     @endcan
+                                    {{--
                                     @can('delete inventory')
                                         <button type="button" 
                                         class="btn btn-sm btn-light btn-active-color-danger d-flex align-items-center px-3 py-2" 
@@ -85,7 +86,8 @@
                                             data-bs-target="#deleteItemModal{{$item->id}}">
                                             <i class="bi bi-trash me-1 fs-5"></i> <span>{{ __('auth._delete') }}</span>                                
                                         </button>
-                                    @endcan 
+                                    @endcan
+                                    --}} 
                                 </div>
 
 

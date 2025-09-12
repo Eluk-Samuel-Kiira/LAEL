@@ -109,9 +109,9 @@
                                         <div class="badge badge-light fw-bold">{{ $product->sku }}</div>
                                     </td>
                                     <td>{{ $product->barcode }}</td>
-                                    <td>{{ $product->price }}</td>
+                                    <td class="fw-bold text-primary ms-3"> {{ displayFormatedCurrency($product->price) }} {{ currencySymbol() }}</td>
                                     <td>
-                                        <div class="badge badge-light fw-bold">{{ $product->cost_price }}</div>
+                                        <div class="badge badge-light fw-bold text-success">{{ displayFormatedCurrency($product->cost_price) }} {{ currencySymbol() }}</div>
                                     </td>
                                     <td>{{ $product->weight }}</td>
                                     <td>

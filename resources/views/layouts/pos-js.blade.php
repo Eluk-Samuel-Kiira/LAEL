@@ -307,6 +307,10 @@
         const selectedMethod = document.querySelector('input[name="method"]:checked');
         const paymentMethod = selectedMethod ? selectedMethod.value : '1';
         // console.log(paymentMethod);
+        if (paymentMethod == 3 || paymentMethod == 2) {
+            toastr['warning']('{{ __("pagination.Payment_method_coming_soon") }}');
+            return;
+        }
 
         const cartData = {
             items: cart.map(item => {
@@ -714,6 +718,7 @@
 
     // --- Print Receipt ---
     function printReceipt() {
+        window.location.href = "{{ url()->current() }}";
         const receiptContent = document.getElementById('receiptContent').innerHTML;
         const printWindow = window.open('', '_blank');
 

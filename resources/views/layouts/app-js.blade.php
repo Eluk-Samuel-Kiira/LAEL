@@ -200,6 +200,26 @@
  
 
 
+<!-- Order Management -->
+<script>
+    function printOrder(orderId) {
+        const content = document.getElementById('printableOrder' + orderId).innerHTML;
+        const printWindow = window.open('', '', 'height=800,width=1000');
+        printWindow.document.write('<html><head><title>Order Invoice</title>');
+        printWindow.document.write('<style>body{font-family: Arial,sans-serif;} table{border-collapse: collapse;} th, td{padding: 5px;}</style>');
+        printWindow.document.write('</head><body >');
+        printWindow.document.write(content);
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.print();
+        printWindow.close();
+    }
+
+</script>
+
+
+
 <!-- Taxes and Promotions -->
 <script>
 

@@ -30,10 +30,31 @@ class Order extends Model
         'created_by',
     ];
 
+    // 👇 Accessors to format currency
+    public function getSubtotalAttribute($value) {
+        return formatCurrency($value);
+    }
+    public function getDiscountTotalAttribute($value) {
+        return formatCurrency($value);
+    }
+    public function getTaxTotalAttribute($value) {
+        return formatCurrency($value);
+    }
+    public function getTotalAttribute($value) {
+        return formatCurrency($value);
+    }
+    public function getPaidAmountAttribute($value) {
+        return formatCurrency($value);
+    }
+    public function getBalanceDueAttribute($value) {
+        return formatCurrency($value);
+    }
+
     // Relationships
     public function tenant() { return $this->belongsTo(Tenant::class); }
     public function customer() { return $this->belongsTo(Customer::class); }
     public function location() { return $this->belongsTo(Location::class); }
+    public function department() { return $this->belongsTo(Department::class); }
     public function orderCreater() { return $this->belongsTo(User::class, 'created_by'); }
 
     public function orderItems()

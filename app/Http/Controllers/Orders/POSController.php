@@ -18,6 +18,8 @@ use App\Models\InventoryLog;
 use App\Models\Customer;
 use App\Models\Inventory;
 use App\Models\OrderTax;
+use App\Models\InventoryAdjustments;
+use App\Models\InventoryTransactions;
 
 class POSController extends Controller
 {
@@ -190,9 +192,9 @@ class POSController extends Controller
                 'created_by' => $user->id,
             ]);
 
-            // \Log::info($order);
+            // \Log::info($cartData['items']);
 
-            // Create order items and update inventory
+            // Create order items 
             foreach ($cartData['items'] as $item) {
                 // Get product variant with inventory
                 $variant = ProductVariant::with('inventory')->find($item['variant_id']);
@@ -212,10 +214,17 @@ class POSController extends Controller
                     'tax_amount' => toUSD($item['tax_total']),
                     'discount' => toUSD($item['discount']),
                     'total_price' => toUSD($item['total']),
+
+                    // keep inventory data
                     'inventory_data' => json_encode([
                         'initial_stock' => $variant->inventory->quantity_on_hand,
                         'current_stock' => $variant->inventory->quantity_on_hand - $item['quantity']
-                    ])
+                    ]),
+                    // dump the raw taxes array into JSON
+                    'tax_data'       => json_encode($item['taxes'] ?? []),
+
+                    // dump the raw promotions array into JSON
+                    'promotion_data' => json_encode($item['promotions'] ?? []),
                 ]);
             }
 
@@ -250,7 +259,7 @@ class POSController extends Controller
             'paid_amount' => toUSD($paymentDetails['amount_tendered']) ?? 0,
             'balance_due' => toUSD($paymentDetails['change_due']) ?? 0,
             'notes'       => __('pagination.payment_completed'),
-            'status' => 'completed',
+            'status'      => 'completed',
         ]);
 
         // Payment Details - FIXED: Access payment_method from $request, not $cartData
@@ -285,6 +294,49 @@ class POSController extends Controller
                 'created_by'  => auth()->id(),
             ]
         );
+
+        // Finally update the inventory
+        foreach ($cartData as $item) {
+            // Get product variant with inventory
+            $variant = ProductVariant::with('inventory')->find($item['variant_id']);
+
+            if (!$variant || !$variant->inventory) {
+                continue;
+            }
+
+            $inventory = $variant->inventory;
+
+            $beforeQty = $inventory->quantity_on_hand;
+            $afterQty  = $beforeQty - $item['quantity'];
+
+            // ✅ 1. Update stock
+            $inventory->quantity_on_hand = $afterQty;
+            $inventory->save();
+
+            // ✅ 2. Record adjustment (audit trail)
+            InventoryAdjustments::create([
+                'quantity_before' => $beforeQty,
+                'quantity_after'  => $afterQty,
+                'reason'          => 'order_sale', // can be enum/string
+                'notes'           => 'Stock reduced due to order #' . $order->id,
+                'inventory_id'    => $inventory->id,
+                'created_by'      => auth()->id() ?? null,
+                'tenant_id'       => $order->tenant_id,
+            ]);
+
+            // ✅ 3. Record transaction (movement)
+            InventoryTransactions::create([
+                'quantity'       => -$item['quantity'], // negative for outflow
+                'reference_id'   => $order->id,
+                'reference_type' => 'order',
+                'type'           => 'sale', // e.g., sale, return, transfer
+                'notes'          => 'Sold ' . $item['quantity'] . ' units of ' . $variant->sku,
+                'inventory_id'   => $inventory->id,
+                'created_by'     => auth()->id() ?? null,
+                'tenant_id'      => $order->tenant_id,
+            ]);
+
+        }
 
         return response()->json([
             'success' => true,

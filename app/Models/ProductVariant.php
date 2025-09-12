@@ -26,6 +26,17 @@ class ProductVariant extends Model
         'is_taxable',
     ];
 
+    // 👇 Accessors to format currency automatically
+    public function getPriceAttribute($value)
+    {
+        return formatCurrency($value);
+    }
+
+    public function getCostPriceAttribute($value)
+    {
+        return formatCurrency($value);
+    }
+
     public function product()
     {
         return $this->belongsTo(Product::class, 'product_id', 'id');

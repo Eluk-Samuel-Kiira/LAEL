@@ -49,6 +49,9 @@ class ProductVariantController extends Controller
             $variantData['product_id'] = $request->product_id;
             $variantData['created_by'] = Auth::id();
             $variantData['tenant_id'] = 1;
+            
+            $variantData['cost_price'] = toUSD($data['cost_price']);
+            $variantData['price'] = toUSD($data['price']);
 
             if (isset($variantData['image'])) {
                 $variantData['image_url'] = $variantData['image'];
@@ -111,6 +114,8 @@ class ProductVariantController extends Controller
 
         $data['created_by'] = Auth::id();
         $data['tenant_id'] = 1;
+        $data['cost_price'] = toUSD($data['cost_price']);
+        $data['price'] = toUSD($data['price']);
 
 
         $product->update($data);
