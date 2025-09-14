@@ -20,6 +20,7 @@ return new class extends Migration
             $table->decimal('cost_price', 12, 2)->nullable();
             $table->decimal('weight', 15, 2)->nullable();
             $table->boolean('is_active')->default(true);
+            $table->integer('overal_quantity_at_hand')->default(0);
             $table->string('image_url', 255)->nullable();
             $table->boolean('is_taxable')->default(true);
             

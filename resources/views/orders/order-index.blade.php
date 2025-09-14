@@ -27,7 +27,10 @@
             </div>
             <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-2 gap-lg-3">
                 <!-- Search Bar -->
-                
+                <div class="px-7 py-5">
+                    <input type="text" id="searchInput" class="form-control" placeholder="{{__('auth._search')}} {{__('passwords.orders')}}"
+                        onkeyup="searchTable(this.value, 'kt_table_users')">
+                </div>
             </div>
         </div>
     </div>

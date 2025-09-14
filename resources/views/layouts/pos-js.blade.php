@@ -511,7 +511,6 @@
             change_due: tendered - window.currentOrder.total
         });
 
-        LiveBlade.toggleButtonLoading(submitButton, false);
     }
 
     // Mobile Money Modal Functions
@@ -566,10 +565,7 @@
 
     // Final Payment Processing
     function processFinalPayment(method, paymentDetails) {
-        // Close current modal
-        bootstrap.Modal.getInstance(document.getElementById('cashModal'))?.hide();
-        bootstrap.Modal.getInstance(document.getElementById('mobileMoneyModal'))?.hide();
-        bootstrap.Modal.getInstance(document.getElementById('cardModal'))?.hide();
+        const submitButton = document.getElementById('cashCheckout');
 
         const order = window.currentOrder;
         order.payment_method = method;
@@ -594,6 +590,11 @@
             toastr['success']('{{ __("pagination.order_saved") }}');
             // console.log("Order saved:", response.body);
 
+            // Close current modal
+            bootstrap.Modal.getInstance(document.getElementById('cashModal'))?.hide();
+            // bootstrap.Modal.getInstance(document.getElementById('mobileMoneyModal'))?.hide();
+            // bootstrap.Modal.getInstance(document.getElementById('cardModal'))?.hide();
+
             setTimeout(() => {
                 generateReceipt(order.payment_method, order);
                 openReceiptModal(window.currentOrder);
@@ -603,6 +604,7 @@
             
             // Clear cart after successful payment
             clearCart();
+            LiveBlade.toggleButtonLoading(submitButton, false);
         })
         .catch(err => {
             console.error("❌ Error saving order:", err);

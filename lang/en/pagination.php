@@ -17,7 +17,7 @@ return [
     'next' => 'Next &raquo;',
 
 
-    //Store  and Inventory
+    //Store  and Inventory 
     'store_catalog' => 'Store Catalog',
     '_category' => 'Category',
     '_category_index' => 'Category Index',
@@ -27,6 +27,7 @@ return [
     'category_id' => 'Category ID',
     '_description' => 'Description',
     '_inventory' => 'Inventory',
+    '_inventory_item' => 'Inventory Item',
     'store_inventory' => 'Store Inventory',
     'product_category' => 'Product Category',
     'product_category_index' => 'Product Category Index',
@@ -48,11 +49,13 @@ return [
     'preferred_stock_level' => 'Expected Stock Level',
     'batch_number' => 'Batch Number',
     'expiry_date' => 'Expiry Date',
-    'allocated_not_greater_than_at_hand' => 'Allocated quantity cannot be greater than quantity on hand.',
+    'allocated_not_greater_than_at_hand' => 'Allocated quantity cannot be greater than the quantity on hand.',
+    'variant_already_exists_in_department_location' => 'This variant already exists in the selected department and location.',
 
 
     // Catalog &Products
     'product_index' => 'Product Index',
+    'overall_quantity' => 'Overall Quantity',
     '_products' => 'Products',
     'product_catalog' => 'Product Catalog',
     '_allocation' => 'Allocate',

@@ -336,7 +336,46 @@
 
 
 <!-- Inventory Mgt -->
+
 <script>
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Wait for Select2 to initialize
+        setTimeout(function() {
+            const variantSelect = document.getElementById('variant-select');
+            const quantityInput = document.querySelector('input[name="quantity_on_hand"]');
+            const allocatedInput = document.querySelector('input[name="quantity_allocated"]');
+            
+            if (!variantSelect || !quantityInput || !allocatedInput) return;
+            
+            function updateAvailableQuantity() {
+                const selectedOption = variantSelect.options[variantSelect.selectedIndex];
+                if (selectedOption && selectedOption.value !== '') {
+                    const variantQuantity = selectedOption.getAttribute('data-quantity') || 0;
+                    const allocated = parseInt(allocatedInput.value) || 0;
+                    const available = Math.max(0, parseInt(variantQuantity) - allocated);
+                    
+                    quantityInput.value = available;
+                } else {
+                    quantityInput.value = 0;
+                }
+            }
+            
+            // Update when variant changes
+            if (typeof jQuery !== 'undefined' && jQuery.fn.select2) {
+                jQuery(variantSelect).on('change', updateAvailableQuantity);
+            } else {
+                variantSelect.addEventListener('change', updateAvailableQuantity);
+            }
+            
+            // Update when allocated quantity changes
+            allocatedInput.addEventListener('input', updateAvailableQuantity);
+            
+            // Initialize on page load
+            updateAvailableQuantity();
+        }, 300);
+    });
+
 
     function editItemInstanceLoop(uniqueId) {
         const submitButton = document.getElementById('updateItemButton' + uniqueId);
@@ -376,7 +415,6 @@
         // Pass handling + data to reusable handler
         handleFormSubmission(formData, submitButton, discardButtonId);
     }
-
 
 
     document.addEventListener("change", function (e) {
@@ -643,51 +681,51 @@
 
 <!-- Human Resource -->
  
- <script>
+<script>
 
-    function submitEmployeeForm(formId, submitButtonId, url, method = 'POST', discardButtonId = 'discardButton') {
-        const form = document.getElementById(formId);
-        const submitButton = document.getElementById(submitButtonId);
+function submitEmployeeForm(formId, submitButtonId, url, method = 'POST', discardButtonId = 'discardButton') {
+    const form = document.getElementById(formId);
+    const submitButton = document.getElementById(submitButtonId);
 
-        if (!form || !submitButton) {
-            console.error('Form or button not found:', formId, submitButtonId);
-            return;
-        }
-
-        // Collect form data
-        const formData = Object.fromEntries(new FormData(form));
-        formData._method = method;
-        formData.routeName = url;
-
-        // Start loading
-        LiveBlade.toggleButtonLoading(submitButton, true);
-
-        // Pass handling + data to reusable handler
-        handleFormSubmission(formData, submitButton, discardButtonId);
+    if (!form || !submitButton) {
+        console.error('Form or button not found:', formId, submitButtonId);
+        return;
     }
 
-    function editEmployeeInstanceLoop(uniqueId) {
-        const submitButton = document.getElementById('submitEmplButton' + uniqueId);
-        LiveBlade.toggleButtonLoading(submitButton, true);
+    // Collect form data
+    const formData = Object.fromEntries(new FormData(form));
+    formData._method = method;
+    formData.routeName = url;
 
-        var form = document.getElementById('edit_user_form' + uniqueId);
-        var formData = new FormData(form);
+    // Start loading
+    LiveBlade.toggleButtonLoading(submitButton, true);
 
-        var data = Object.fromEntries(formData.entries());
-        // console.log(data);
-        var updateUrl = '{{ route('employee.update', ['employee' => ':id']) }}'.replace(':id', uniqueId);
+    // Pass handling + data to reusable handler
+    handleFormSubmission(formData, submitButton, discardButtonId);
+}
 
-        handleEditResponse(data, updateUrl, uniqueId, submitButton);
-    }
+function editEmployeeInstanceLoop(uniqueId) {
+    const submitButton = document.getElementById('submitEmplButton' + uniqueId);
+    LiveBlade.toggleButtonLoading(submitButton, true);
+
+    var form = document.getElementById('edit_user_form' + uniqueId);
+    var formData = new FormData(form);
+
+    var data = Object.fromEntries(formData.entries());
+    // console.log(data);
+    var updateUrl = '{{ route('employee.update', ['employee' => ':id']) }}'.replace(':id', uniqueId);
+
+    handleEditResponse(data, updateUrl, uniqueId, submitButton);
+}
 
 
-    function updateEmployeeStatus(uniqueId, selectedStatus) {
-        // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
-        const updateRoute = '/employee-status/' + uniqueId;
-        LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
-    }
+function updateEmployeeStatus(uniqueId, selectedStatus) {
+    // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
+    const updateRoute = '/employee-status/' + uniqueId;
+    LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
+}
 
- </script>
+</script>
 
 
 <!-- User Profile  -->
@@ -1148,4 +1186,57 @@
                 LiveBlade.toggleButtonLoading(deleteButton, false);
             });
     }
+</script>
+
+
+<!-- Reusable for modal search -->
+ <script>
+    $(document).ready(function() {
+        // Initialize Select2 dropdowns with proper modal configuration
+        function initSelect2ForModal(modalSelector) {
+            $(modalSelector).find('select[data-control="select2"]').each(function() {
+                // Check if Select2 is already initialized
+                if ($(this).hasClass('select2-hidden-accessible')) {
+                    $(this).select2('destroy');
+                }
+                
+                $(this).select2({
+                    dropdownParent: $(modalSelector),
+                    placeholder: $(this).data('placeholder') || "Select an option",
+                    allowClear: $(this).data('allow-clear') || false,
+                    closeOnSelect: $(this).data('close-on-select') !== false
+                });
+            });
+        }
+        
+        // Initialize for all modals when shown
+        $('.modal').on('shown.bs.modal', function() {
+            initSelect2ForModal('#' + $(this).attr('id'));
+        });
+        
+        // Initialize for any already open modals on page load
+        $('.modal.show').each(function() {
+            initSelect2ForModal('#' + $(this).attr('id'));
+        });
+        
+        // Additional z-index fix for dropdown containers
+        $(document).on('select2:open', function(e) {
+            // Find the parent modal of the opened select2
+            const $select = $(e.target);
+            const $modal = $select.closest('.modal');
+            
+            if ($modal.length) {
+                $(".select2-container--open").css('z-index', 999999);
+            }
+        });
+        
+        // Cleanup Select2 when modal is hidden to prevent memory leaks
+        $('.modal').on('hidden.bs.modal', function() {
+            $(this).find('select[data-control="select2"]').each(function() {
+                if ($(this).hasClass('select2-hidden-accessible')) {
+                    $(this).select2('destroy');
+                }
+            });
+        });
+    });
 </script>

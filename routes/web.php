@@ -81,9 +81,10 @@ Route::middleware('auth')->group(function () {
     Route::put('/update-permissions/{id}', [RoleController::class, 'updatePermission'])->name('permission.update');
     Route::put('/revoke-permissions/{id}', [RoleController::class, 'revokePermission'])->name('permission.revoke');
 
-    // Inventory
+    // Inventory - Category
     Route::resource('category', CategoryController::class);
     Route::post('/category-status/{id}', [CategoryController::class, 'changeCategoryStatus'])->name('category.status');
+
 
     Route::resource('product-category', ProductCategoryController::class);
     Route::post('/product-category-status/{id}', [ProductCategoryController::class, 'changeProductCategoryStatus'])->name('product.category.status');
@@ -102,10 +103,11 @@ Route::middleware('auth')->group(function () {
         ->name('assign.product');
     Route::put('/assignment/{product}', [ProductVariantController::class, 'updateVariantAssignments'])
         ->name('assign.variant');
-
+        
 
     // Stores and Inventory
     Route::resource('items', InventoryItemController::class);
+
 
     
     // Location

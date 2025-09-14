@@ -53,4 +53,6 @@ return [
     '_print' => 'Print',
     'order_invoice' => 'Order Invoice',
     '_print' => 'Print',
+    '_tax' => 'Tax',
+    '_promo' => 'Promo',
 ];

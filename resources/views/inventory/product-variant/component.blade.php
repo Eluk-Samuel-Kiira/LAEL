@@ -1,6 +1,9 @@
 <div class="row g-9 mb-8">
-    <div class="d-flex col-md-4">
-        <div class="card card-flush py-4">
+    <div class="d-flex col-md-4 position-relative thumbnail-col">
+        <div class="card card-flush py-4 w-100">
+            <button type="button" class="btn btn-sm btn-icon btn-danger position-absolute top-0 end-0 m-2 remove-thumbnail-btn" title="Remove Thumbnail">
+                &times;
+            </button>
             <div class="card-header">
                 <div class="card-title">
                     <h2>{{__('pagination._thumbnail')}}</h2>
@@ -49,7 +52,7 @@
         </div>
     </div>    
 
-    <div class="card card-flush col-md-8">
+    <div class="card card-flush col-md-8" id="variations-col">
         <div class="card-header align-items-center py-5 gap-2 gap-md-5">
             <div class="card-title">
                 <span class="page-heading d-flex text-gray-600">{{__('pagination._variations_of')}} {{ $product_variants->name }}</span>
@@ -69,6 +72,7 @@
                             <th class="min-w-125px">{{__('auth._name')}}</th> 
                             <th class="min-w-125px">{{__('pagination._sku')}}</th> 
                             <th class="min-w-125px">{{__('pagination._barcode')}}</th>
+                            <th class="min-w-125px">{{__('pagination.overall_quantity')}}</th>
                             <th class="min-w-125px">{{__('pagination._price')}}</th> 
                             <th class="min-w-125px">{{__('pagination.cost_price')}}</th>
                             <th class="min-w-125px">{{__('pagination._weight')}}</th> 
@@ -109,6 +113,7 @@
                                         <div class="badge badge-light fw-bold">{{ $product->sku }}</div>
                                     </td>
                                     <td>{{ $product->barcode }}</td>
+                                    <td class="fw-bold text-warning ms-3">{{ $product->overal_quantity_at_hand }}</td>
                                     <td class="fw-bold text-primary ms-3"> {{ displayFormatedCurrency($product->price) }} {{ currencySymbol() }}</td>
                                     <td>
                                         <div class="badge badge-light fw-bold text-success">{{ displayFormatedCurrency($product->cost_price) }} {{ currencySymbol() }}</div>
@@ -213,6 +218,29 @@
         </div>
     </diiv>
 </div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.remove-thumbnail-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const thumbnailCol = btn.closest('.thumbnail-col');
+                if (thumbnailCol) {
+                    // Completely remove the column from DOM
+                    thumbnailCol.remove();
+                    
+                    // Expand variations column
+                    const variationsCol = document.getElementById('variations-col');
+                    if (variationsCol) {
+                        variationsCol.classList.remove('col-md-8');
+                        variationsCol.classList.add('col-md-12');
+                    }
+                }
+            });
+        });
+    });
+</script>
+
 
 <script>
     // Trigger hidden file input when image is clicked

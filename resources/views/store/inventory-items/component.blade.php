@@ -10,7 +10,8 @@
                     </th>
                     <th class="min-w-125px">{{__('pagination._sku')}}</th>
                     <th class="min-w-125px">{{__('auth._name')}}</th> 
-                    <th class="min-w-125px">{{__('auth._department')}}</th>  
+                    <th class="min-w-125px">{{__('auth._department')}}</th> 
+                    <th class="min-w-125px">{{__('pagination._location')}}</th>  
                     <th class="min-w-125px">{{__('pagination.batch_number')}}</th> 
                     <th class="min-w-125px">{{__('pagination.quantity_on_hand')}}</th>
                     <th class="min-w-125px">{{__('pagination.quantity_allocated')}}</th> 
@@ -19,7 +20,6 @@
                     <th class="min-w-125px">{{__('pagination.preferred_stock_level')}}</th>
                     <th class="min-w-125px">{{__('pagination.expiry_date')}}</th> 
                     <th class="min-w-125px">{{__('auth._creater')}}</th> 
-                    <th class="min-w-125px">{{__('pagination._location')}}</th> 
                     <th class="min-w-125px">{{__('auth.created_at')}}</th>
                     <th class="min-w-100px text-end">{{__('auth._actions')}}</th>
                 </tr>
@@ -54,6 +54,9 @@
                             <td>
                                 <div class="badge badge-light fw-bold">{{ ucwords(str_replace('_', ' ', $item->departmentItem->name)) ?? __('pagination._none') }}</div>
                             </td>
+                            <td>
+                                <div class="badge badge-light fw-bold">{{ $item->itemLocation->name ?? __('pagination._none')}}</div>
+                            </td>
                             <td class="fw-bold text-primary ms-3">{{ $item->batch_number ?? __('pagination._none')}}</td>
                             <td class="fw-bold text-success ms-3">{{ $item->quantity_on_hand ?? __('pagination._none')}}</td>
                             <td class="fw-bold text-warning ms-3">{{ $item->quantity_allocated ?? __('pagination._none')}}</td>
@@ -63,9 +66,6 @@
                             <td>{{ $item->expiry_date ?? __('pagination._none') }}</td>
                             <td>
                                 <div class="badge badge-light fw-bold">{{ $item->itemCreater->name ?? __('pagination._none')}}</div>
-                            </td>
-                            <td>
-                                <div class="badge badge-light fw-bold">{{ $item->itemLocation->name ?? __('pagination._none')}}</div>
                             </td>
                             <td>{{ $item->created_at->format('d M Y, h:i a') ?? __('pagination._none') }}</td>
                             <td>

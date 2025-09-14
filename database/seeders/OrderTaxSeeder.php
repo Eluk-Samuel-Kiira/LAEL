@@ -13,6 +13,6 @@ class OrderTaxSeeder extends Seeder
      */
     public function run(): void
     {
-        OrderTax::factory()->count(20)->create();
+        OrderTax::factory()->count(10)->create();
     }
 }

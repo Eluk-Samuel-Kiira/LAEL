@@ -54,7 +54,12 @@
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
                                     <span class="required">{{__('pagination.expiry_date')}} </span>
                                 </label>
-                                <input type="date" value="{{ $item->expiry_date }}" class="form-control form-control-solid" name="expiry_date" />
+                                <input 
+                                    type="date" 
+                                    value="{{ $item->expiry_date ? \Carbon\Carbon::parse($item->expiry_date)->format('Y-m-d') : '' }}" 
+                                    class="form-control form-control-solid" 
+                                    name="expiry_date" 
+                                />
                                 <div id="expiry_date{{ $item->id }}"></div>
                             </div>
                             <div class="d-flex flex-column mb-8 fv-row col-md-4">

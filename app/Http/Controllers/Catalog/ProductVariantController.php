@@ -40,6 +40,7 @@ class ProductVariantController extends Controller
             'variants.*.barcode' => 'nullable|string|max:255|unique:product_variants,barcode',
             'variants.*.price' => 'required|numeric|min:0',
             'variants.*.cost_price' => 'required|numeric|min:0',
+            'variants.*.overal_quantity_at_hand' => 'nullable|integer',
             'variants.*.weight' => 'required|numeric|min:0',
             'variants.*.weight_unit' => 'required|exists:unit_of_measures,id',
             'variants.*.image' => 'required|image|mimes:jpg,jpeg,png,gif|max:4048',
@@ -50,8 +51,8 @@ class ProductVariantController extends Controller
             $variantData['created_by'] = Auth::id();
             $variantData['tenant_id'] = 1;
             
-            $variantData['cost_price'] = toUSD($data['cost_price']);
-            $variantData['price'] = toUSD($data['price']);
+            $variantData['cost_price'] = toUSD($variantData['cost_price']);
+            $variantData['price'] = toUSD($variantData['price']);
 
             if (isset($variantData['image'])) {
                 $variantData['image_url'] = $variantData['image'];
@@ -108,6 +109,7 @@ class ProductVariantController extends Controller
             'barcode' => 'required|string',
             'price' => 'required|',
             'cost_price' => 'required|string',
+            'overal_quantity_at_hand' => 'required|integer|min:0',
             'weight' => 'required|string',
             'weight_unit' => 'required|integer',
         ]);
@@ -308,6 +310,10 @@ class ProductVariantController extends Controller
             return redirect()->back()->withInput();
         }
     }
+
+    
+
+
 
 
 }

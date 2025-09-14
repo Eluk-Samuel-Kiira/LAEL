@@ -59,7 +59,7 @@
                             <div class="tab-pane fade {{ $firstTab ? 'show active' : '' }}" id="kt_pos_{{ $product->id }}">
                                 <div class="d-flex flex-wrap d-grid gap-5 gap-xxl-9 variant-container">
                                     @foreach ($product->variants as $variant)
-                                        <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100 variant-item" 
+                                        <div class="card card-flush flex-row-fluid p-6 pb-5 mw-100 variant-item position-relative" 
                                             data-name="{{ strtolower($variant->name ?? $product->name) }}"
                                             data-product="{{ $product->id }}"
                                             onclick="addToCart({{ json_encode([
@@ -67,15 +67,31 @@
                                                 'name' => $variant->name ?? $product->name,
                                                 'price' => $variant->price,
                                                 'image' => productVariantImage($variant->image_url ?? $product->image_url),
-                                                'quantity_available' => $variant->inventory->quantity_on_hand ?? 0,
+                                                'quantity_available' => $variant->inventory->quantity_allocated ?? 0,
                                                 'taxes' => $variant->applicable_taxes ?? [],  
                                                 'promotions' => $variant->applicable_promotions ?? []  
                                             ]) }})"
                                             style="cursor: pointer;">
+
+                                            {{-- ✅ Top-left Green Tag for Taxes --}}
+                                            @if (!empty($variant->applicable_taxes) && count($variant->applicable_taxes) > 0)
+                                                <span class="badge bg-danger text-white position-absolute top-0 start-0 m-2 px-3 py-2 shadow-sm">
+                                                    {{ __('passwords._tax') }}
+                                                </span>
+                                            @endif
+
+                                            {{-- ✅ Top-right Red Tag for Promotions --}}
+                                            @if (!empty($variant->applicable_promotions) && count($variant->applicable_promotions) > 0)
+                                                <span class="badge bg-success text-white position-absolute top-0 end-0 m-2 px-3 py-2 shadow-sm">
+                                                    {{ __('passwords._promo') }}
+                                                </span>
+                                            @endif
+
                                             <div class="card-body text-center">
                                                 <img src="{{ productVariantImage($variant->image_url ?? $product->image_url) }}" 
                                                     class="rounded-3 mb-4 w-150px h-150px w-xxl-200px h-xxl-200px" 
                                                     alt="{{ $variant->name ?? $product->name }}" />
+
                                                 <div class="mb-2">
                                                     <div class="text-center">
                                                         <span class="fw-bold text-gray-800 cursor-pointer text-hover-primary fs-3 fs-xl-1"
@@ -84,10 +100,11 @@
                                                             {{ \Illuminate\Support\Str::words($variant->name ?? $product->name, 2, '...') }}
                                                         </span>
                                                         <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">
-                                                            {{ $variant->inventory->quantity_on_hand ?? 0 }} {{__('pagination._available')}}
+                                                            {{ $variant->inventory->quantity_allocated ?? 0 }} {{__('pagination._available')}}
                                                         </span>
                                                     </div>
                                                 </div>
+
                                                 <span class="text-success text-end fw-bold fs-1">
                                                     {{ displayFormatedCurrency($variant->price) }} {{ currencySymbol() }}
                                                 </span>

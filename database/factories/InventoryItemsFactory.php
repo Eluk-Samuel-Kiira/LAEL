@@ -31,7 +31,6 @@ class InventoryItemsFactory extends Factory
             'variant_id' => ProductVariant::where('is_active', true)
                 ->inRandomOrder()
                 ->pluck('id')
-                ->unique()
                 ->random(),
 
             'department_id' => Department::where('isActive', 1)->inRandomOrder()->value('id'),

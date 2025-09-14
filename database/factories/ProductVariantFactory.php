@@ -32,6 +32,7 @@ class ProductVariantFactory extends Factory
             'image_url' => $this->faker->imageUrl(640, 480, 'products', true),
             'weight' => $this->faker->randomFloat(2, 50, 2000),
             'weight_unit' => $this->faker->randomElement([1, 2, 4, 3, 5]),
+            'overal_quantity_at_hand' => $this->faker->randomElement([10, 22, 43, 35, 50, 300, 74, 100]),
             'is_active' => $this->faker->boolean(90),
             'is_taxable' => $this->faker->boolean(80),
             'tenant_id' => 1,

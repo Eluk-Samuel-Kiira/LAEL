@@ -44,12 +44,19 @@
                         </div>
 
                         <div class="row g-9 mb-8">
-                            <div class="d-flex flex-column mb-8 fv-row col-md-12">
+                            <div class="d-flex flex-column mb-8 fv-row col-md-6">
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
                                     <span class="required">{{__('pagination._barcode')}} </span>
                                 </label>
                                 <input type="text" value="{{ $product->barcode }}" class="form-control form-control-solid" name="barcode" />
                                 <div id="barcode{{ $product->id }}"></div>
+                            </div>
+                            <div class="d-flex flex-column mb-8 fv-row col-md-6">
+                                <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                    <span class="required">{{__('pagination.overall_quantity')}} </span>
+                                </label>
+                                <input type="text" value="{{ $product->overal_quantity_at_hand }}" class="form-control form-control-solid" name="overal_quantity_at_hand" />
+                                <div id="overal_quantity_at_hand{{ $product->id }}"></div>
                             </div>
                         </div>
                         

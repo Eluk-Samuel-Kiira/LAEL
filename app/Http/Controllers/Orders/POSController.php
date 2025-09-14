@@ -306,11 +306,11 @@ class POSController extends Controller
 
             $inventory = $variant->inventory;
 
-            $beforeQty = $inventory->quantity_on_hand;
+            $beforeQty = $inventory->quantity_allocated;
             $afterQty  = $beforeQty - $item['quantity'];
 
             // ✅ 1. Update stock
-            $inventory->quantity_on_hand = $afterQty;
+            $inventory->quantity_allocated = $afterQty;
             $inventory->save();
 
             // ✅ 2. Record adjustment (audit trail)
