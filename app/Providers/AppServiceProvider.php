@@ -34,12 +34,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $variants = ProductVariant::where('is_active', 1)
-            ->whereNotIn('id', function ($query) {
-                $query->select('variant_id')->from('inventory_items');
-            })
-            ->get();
+        // $variants = ProductVariant::where('is_active', 1)
+        //     ->whereNotIn('id', function ($query) {
+        //         $query->select('variant_id')->from('inventory_items');
+        //     })
+        //     ->get();
 
+            
+        $variants = ProductVariant::where('is_active', 1)->get();
         $taxes = Tax::where('is_active', 1)->get();
         $promotions = Promotion::where('is_active', 1)->get();
         $customers = Customer::where('is_active', 1)->get();

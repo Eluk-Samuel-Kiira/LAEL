@@ -1,5 +1,5 @@
 <x-app-layout>
-    @section('title', __('pagination.product_index'))
+    @section('title', __('pagination._inventory_item'))
     @section('content')
     
     <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">

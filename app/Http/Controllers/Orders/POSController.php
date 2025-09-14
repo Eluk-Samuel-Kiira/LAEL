@@ -18,60 +18,110 @@ use App\Models\InventoryLog;
 use App\Models\Customer;
 use App\Models\Inventory;
 use App\Models\OrderTax;
+use App\Models\InventoryAdjustments;
+use App\Models\InventoryTransactions;
 
 class POSController extends Controller
 {
     // POSController.php
     public function index(Request $request)
     {
-        // Consider removing this in production; it's heavy for every request
-        // Artisan::call('optimize:clear');
+        Artisan::call('optimize:clear');
 
         $user = Auth::user();
 
         $user_departments = $user->departments()->get();
         $departments_id = $user_departments->pluck('id')->toArray();
 
+        $now = now();
+
         $products = Product::with([
                 'departments',
                 'taxes' => fn($q) => $q->where('is_active', 1),
+                'promotions' => fn($q) => $q
+                    ->where('is_active', 1)
+                    ->where('start_date', '<=', $now)
+                    ->where('end_date', '>=', $now),
                 'variants.inventory',
                 'variants.variantTaxes' => fn($q) => $q->where('is_active', 1),
+                'variants.variantPromotions' => fn($q) => $q
+                    ->where('is_active', 1)
+                    ->where('start_date', '<=', $now)
+                    ->where('end_date', '>=', $now),
             ])
             ->whereHas('departments', fn($q) => $q->whereIn('departments.id', $departments_id))
             ->where('is_active', 1)
             ->latest()
             ->get();
 
+
         // Compute applicable taxes per variant following your rules
         foreach ($products as $product) {
             foreach ($product->variants as $variant) {
-                $applicable = collect();
-
+                /** ---------------- Taxes ---------------- */
+                $applicableTaxes = collect();
                 if ((int)$variant->is_taxable === 0) {
-                    $applicable = collect(); // force no tax
-                } elseif ($variant->variantTaxes->isNotEmpty()) {
-                    // Variant overrides parent set
-                    $applicable = $variant->variantTaxes;
-                } elseif ((int)$product->is_taxable === 1) {
-                    // Fallback to product taxes when product is taxable
-                    $applicable = $product->taxes;
+                    $applicableTaxes = collect();
                 } else {
-                    $applicable = collect();
+                    if ((int)$product->is_taxable === 1 && $product->taxes->isNotEmpty()) {
+                        $applicableTaxes = $product->taxes->keyBy('id');
+                    }
+                    if ($variant->variantTaxes->isNotEmpty()) {
+                        foreach ($variant->variantTaxes as $vtax) {
+                            $applicableTaxes[$vtax->id] = $vtax; // override if same id
+                        }
+                    }
                 }
 
-                // flatten to a minimal array for the frontend
-                $variant->applicable_taxes = $applicable->map(function ($t) {
+                $variant->applicable_taxes = $applicableTaxes->map(function ($t) {
+                    $rate = (float) $t->rate;
+
                     return [
                         'id'   => (int)$t->id,
                         'name' => $t->name,
-                        'rate' => (float)$t->rate,   // e.g. 0.18 for 18%
-                        'type' => $t->type,          // 'percentage' | 'fixed'
+                        'rate'  => $t->type === 'fixed'
+                                ? formatCurrency($rate) // convert & format if fixed amount
+                                : $rate,
+                        'type' => $t->type,
                     ];
                 })->values();
+
+                /** ---------------- Promotions ---------------- */
+                $applicablePromos = collect();
+
+                // Start with product-level promos
+                if ($product->promotions->isNotEmpty()) {
+                    $applicablePromos = $product->promotions->keyBy('id');
+                }
+
+                // Merge variant promos (override if same id)
+                if ($variant->variantPromotions->isNotEmpty()) {
+                    foreach ($variant->variantPromotions as $vpromo) {
+                        $applicablePromos[$vpromo->id] = $vpromo;
+                    }
+                }
+
+                $variant->applicable_promotions = $applicablePromos->map(function ($p) {
+                    $value = (float) $p->discount_value;
+                    return [
+                        'id'          => (int)$p->id,
+                        'name'        => $p->name,
+                        'type'        => $p->discount_type,   // 'percentage' | 'fixed' | 'buy_x_get_y'
+                        'value'       => $p->discount_type === 'fixed'
+                                        ? formatCurrency($value)   // show in system currency
+                                        : $value, 
+                        'start_date'  => $p->start_date,
+                        'end_date'    => $p->end_date,
+                    ];
+                })->values();
+
+                /** ---------------- Currency Casting ---------------- */
+                // Always raw in USD
+                $variant->price      = formatCurrency($variant->price);
+                $variant->cost_price = formatCurrency($variant->cost_price);
             }
         }
-        
+
         // \Log::info($products->toArray());
 
         return view('orders.pos-index', compact('user_departments', 'products'));
@@ -132,19 +182,19 @@ class POSController extends Controller
                 'order_number' => $orderNumber,
                 'type' => 'sale',
                 'status' => 'confirmed',
-                'subtotal' => $cartData['subtotal'],
-                'discount_total' => $cartData['discount'],
-                'tax_total' => $cartData['tax'],
-                'total' => $cartData['total'],
+                'subtotal' => toUSD($cartData['subtotal']),
+                'discount_total' => toUSD($cartData['discount']),
+                'tax_total' => toUSD($cartData['tax']),
+                'total' => toUSD($cartData['total']),
                 'paid_amount' => 0, // Will be updated after payment
                 'balance_due' => 0,
                 'source' => 'pos',
                 'created_by' => $user->id,
             ]);
 
-            // \Log::info($order);
+            // \Log::info($cartData['items']);
 
-            // Create order items and update inventory
+            // Create order items 
             foreach ($cartData['items'] as $item) {
                 // Get product variant with inventory
                 $variant = ProductVariant::with('inventory')->find($item['variant_id']);
@@ -159,13 +209,22 @@ class POSController extends Controller
                     'variant_id' => $variant->id,
                     'item_name' => $item['name'],
                     'sku' => $variant->sku,
-                    'unit_price' => $item['price'],
+                    'unit_price' => toUSD($item['price']),
                     'quantity' => $item['quantity'],
-                    'total_price' => $item['price'] * $item['quantity'],
+                    'tax_amount' => toUSD($item['tax_total']),
+                    'discount' => toUSD($item['discount']),
+                    'total_price' => toUSD($item['total']),
+
+                    // keep inventory data
                     'inventory_data' => json_encode([
                         'initial_stock' => $variant->inventory->quantity_on_hand,
                         'current_stock' => $variant->inventory->quantity_on_hand - $item['quantity']
-                    ])
+                    ]),
+                    // dump the raw taxes array into JSON
+                    'tax_data'       => json_encode($item['taxes'] ?? []),
+
+                    // dump the raw promotions array into JSON
+                    'promotion_data' => json_encode($item['promotions'] ?? []),
                 ]);
             }
 
@@ -197,10 +256,10 @@ class POSController extends Controller
 
         $order = Order::findOrFail($request->order_id);
         $order->update([
-            'paid_amount' => $paymentDetails['amount_tendered'] ?? 0,
-            'balance_due' => $paymentDetails['change_due'] ?? 0,
+            'paid_amount' => toUSD($paymentDetails['amount_tendered']) ?? 0,
+            'balance_due' => toUSD($paymentDetails['change_due']) ?? 0,
             'notes'       => __('pagination.payment_completed'),
-            'status' => 'completed',
+            'status'      => 'completed',
         ]);
 
         // Payment Details - FIXED: Access payment_method from $request, not $cartData
@@ -212,7 +271,7 @@ class POSController extends Controller
         OrderPayment::updateOrCreate(
             ['order_id' => $order->id],
             [
-                'amount'          => $request->total ?? 0,
+                'amount'          => toUSD($request->total) ?? 0,
                 'payment_method'  => $request->payment_method, // Fixed this line too
                 'transaction_id'  => $transactionId,
                 'status'          => 'completed',
@@ -229,12 +288,55 @@ class POSController extends Controller
             ],
             [
                 'tax_name'   => 'VAT',
-                'tax_rate'    => (($request->total - $request->subtotal) / $request->total) * 100,
-                'tax_amount'  => $request->tax,
+                'tax_rate'    => toUSD((($request->total - $request->subtotal) / $request->total) * 100),
+                'tax_amount'  => toUSD($request->tax),
                 'is_compound' => 1,
                 'created_by'  => auth()->id(),
             ]
         );
+
+        // Finally update the inventory
+        foreach ($cartData as $item) {
+            // Get product variant with inventory
+            $variant = ProductVariant::with('inventory')->find($item['variant_id']);
+
+            if (!$variant || !$variant->inventory) {
+                continue;
+            }
+
+            $inventory = $variant->inventory;
+
+            $beforeQty = $inventory->quantity_allocated;
+            $afterQty  = $beforeQty - $item['quantity'];
+
+            // ✅ 1. Update stock
+            $inventory->quantity_allocated = $afterQty;
+            $inventory->save();
+
+            // ✅ 2. Record adjustment (audit trail)
+            InventoryAdjustments::create([
+                'quantity_before' => $beforeQty,
+                'quantity_after'  => $afterQty,
+                'reason'          => 'order_sale', // can be enum/string
+                'notes'           => 'Stock reduced due to order #' . $order->id,
+                'inventory_id'    => $inventory->id,
+                'created_by'      => auth()->id() ?? null,
+                'tenant_id'       => $order->tenant_id,
+            ]);
+
+            // ✅ 3. Record transaction (movement)
+            InventoryTransactions::create([
+                'quantity'       => -$item['quantity'], // negative for outflow
+                'reference_id'   => $order->id,
+                'reference_type' => 'order',
+                'type'           => 'sale', // e.g., sale, return, transfer
+                'notes'          => 'Sold ' . $item['quantity'] . ' units of ' . $variant->sku,
+                'inventory_id'   => $inventory->id,
+                'created_by'     => auth()->id() ?? null,
+                'tenant_id'      => $order->tenant_id,
+            ]);
+
+        }
 
         return response()->json([
             'success' => true,

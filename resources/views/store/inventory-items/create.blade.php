@@ -19,10 +19,12 @@
                             <!-- Variant -->
                             <div class="col-md-6 fv-row">
                                 <label class="fs-6 fw-semibold mb-2 required">{{ __('pagination.product_variant') }}</label>
-                                <select name="variant_id" class="form-select" data-control="select2" data-placeholder="{{__('auth._select')}}">
+                                <select name="variant_id" class="form-select" id="variant-select" data-control="select2" data-placeholder="{{__('auth._select')}}">
                                     <option></option>
                                     @foreach ($variants as $variant)
-                                        <option value="{{ $variant->id }}">{{ $variant->name }}</option>
+                                        <option value="{{ $variant->id }}" data-quantity="{{ $variant->overal_quantity_at_hand }}">
+                                            {{ $variant->name }}
+                                        </option>
                                     @endforeach
                                 </select>
                                 <div id="variant_id"></div>
@@ -31,7 +33,7 @@
                             <!-- Quantity on hand -->
                             <div class="col-md-6 fv-row">
                                 <label class="fs-6 fw-semibold mb-2 required">{{ __('pagination.quantity_on_hand') }}</label>
-                                <input type="number" class="form-control form-control-solid" name="quantity_on_hand" min="0" value="0" />
+                                <input type="number" class="form-control form-control-solid" name="quantity_on_hand" min="0" value="0" readonly />
                                 <div id="quantity_on_hand"></div>
                             </div>
                         </div>
@@ -116,5 +118,4 @@
         </div>
     </div>
 </div>
-
 

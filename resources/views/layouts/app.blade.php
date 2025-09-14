@@ -105,6 +105,7 @@
 				</div>
 			</div>
 		</div>
+		@stack('scripts')
 
 		<script>
 			document.addEventListener("DOMContentLoaded", function() {

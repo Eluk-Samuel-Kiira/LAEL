@@ -126,6 +126,73 @@ if (!function_exists('getFaviconImage')) {
 }
 
 
+// Auto currency converter
+if (! function_exists('formatCurrency')) {
+    function formatCurrency($amountUSD, $currencyCode = null)
+    {
+        // Get system default currency from settings if not passed
+        $systemCurrency = $currencyCode ?? getMailOptions('currency');
+
+        // Fetch currency from DB
+        $currency = Currency::where('code', $systemCurrency)->first();
+
+        if (! $currency) {
+            // fallback to USD if not found
+            $currency = Currency::where('isBaseCurrency', true)->first();
+        }
+
+        // Convert from USD → target currency
+        $converted = $amountUSD * $currency->exchange_rate;
+
+        // Return formatted number with symbol after value
+        return $converted;
+    }
+}
+
+if (! function_exists('toUSD')) {
+    function toUSD($amount, $currencyCode = null)
+    {
+        // Get system default currency from settings if not passed
+        $systemCurrency = $currencyCode ?? getMailOptions('currency');
+
+        // Fetch currency from DB
+        $currency = Currency::where('code', $systemCurrency)->first();
+
+        if (! $currency) {
+            $currency = Currency::where('isBaseCurrency', true)->first();
+        }
+
+        // Convert from target currency → USD
+        return $amount / $currency->exchange_rate;
+    }
+}
+
+
+
+// Pretty display
+if (! function_exists('currencySymbol')) {
+    function currencySymbol()
+    {
+        // Get system default currency from settings if not passed
+        $systemCurrency = $currencyCode ?? getMailOptions('currency');
+
+        // Fetch currency from DB
+        $currency = Currency::where('code', $systemCurrency)->first();
+
+        return $currency->symbol;
+    }
+}
+
+// Pretty display
+if (! function_exists('displayFormatedCurrency')) {
+    function displayFormatedCurrency($amount)
+    {
+        // Return formatted number with symbol after value
+        return number_format($amount, 2);
+    }
+}
+
+
 
 
 function getMailOptions($option_key){

@@ -21,12 +21,12 @@ class InventoryItemController extends Controller
         
         // Retrieve only those items that have its variants is active
         $items = InventoryItems::with(['variant', 'itemCreater', 'itemLocation'])
-            ->whereHas('variant', function ($query) {
-            $query->where('is_active', 1);
-        })
-        ->orderBy('department_id', 'asc')
-        ->latest()
-        ->get();
+                ->whereHas('variant', function ($query) {
+                $query->where('is_active', 1);
+            })
+            ->orderBy('department_id', 'asc')
+            ->latest()
+            ->get();
 
 
         $bladeToReload = $request->query('bladeFileToReload');
@@ -55,24 +55,40 @@ class InventoryItemController extends Controller
      */
     public function store(Request $request)
     {
+        // Fetch the variant first
+        $variant = \DB::table('product_variants')
+            ->where('id', $request->variant_id)
+            ->first();
+
         $data = $request->validate([
-            'quantity_on_hand' => 'required|integer|min:0',
-            'quantity_allocated' => 'required|integer|min:0|lte:quantity_on_hand',
-            'preferred_stock_level' => 'required|integer|min:0',
-            'department_id' => 'required|integer|exists:departments,id',
-            'location_id' => 'required|integer|exists:locations,id',
-            'batch_number' => 'nullable|string|max:50',
-            'expiry_date' => 'nullable|date|after_or_equal:today',
-            
-            'variant_id' => [
+            'quantity_on_hand'     => 'required|integer|min:0',
+            'quantity_allocated'   => [
+                    'required',
+                    'integer',
+                    'min:0',
+                    // ✅ Custom rule to check DB stock
+                    function ($attribute, $value, $fail) use ($variant) {
+                        if ($value > $variant->overal_quantity_at_hand) {
+                            $fail(__('pagination.allocated_not_greater_than_at_hand'));
+                        }
+                    }
+                ],
+            'preferred_stock_level'=> 'required|integer|min:0',
+            'department_id'        => 'required|integer|exists:departments,id',
+            'location_id'          => 'required|integer|exists:locations,id',
+            'batch_number'         => 'nullable|string|max:50',
+            'expiry_date'          => 'nullable|date|after_or_equal:today',
+            'variant_id'           => [
                 'required',
                 'exists:product_variants,id',
                 Rule::unique('inventory_items')->where(fn ($q) => $q
-                    ->where('variant_id', $request->variant_id) 
-                    ->where('batch_number', $request->batch_number))
+                    ->where('variant_id', $request->variant_id)
+                    ->where('department_id', $request->department_id)
+                    ->where('location_id', $request->location_id)
+                ),
             ],
         ], [
-            'quantity_allocated.lte' => __('pagination.allocated_not_greater_than_at_hand'),
+            'variant_id.unique' => __('pagination.variant_already_exists_in_department_location'),
         ]);
 
         $data['created_by'] = Auth::id();
@@ -83,6 +99,15 @@ class InventoryItemController extends Controller
         }
 
         InventoryItems::create($data);
+
+        if ($variant) {
+            \DB::table('product_variants')
+                ->where('id', $data['variant_id'])
+                ->update([
+                    'overal_quantity_at_hand' => $variant->overal_quantity_at_hand - $data['quantity_allocated'],
+                ]);
+        }
+
 
         return response()->json([
             'success' => true,
@@ -115,18 +140,53 @@ class InventoryItemController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $item = InventoryItems::find($id);
+        $item = InventoryItems::with('variant')->findOrFail($id);
+
+        // Fetch live variant stock from DB
+        $variant = $item->variant;
+
+        // Validate request
         $validated = $request->validate([
-            'department_id'       => ['required','exists:departments,id'],
+            'department_id'       => ['required', 'exists:departments,id'],
             'location_id'         => ['required','integer','exists:locations,id'],
             'expiry_date'         => ['nullable','date','after_or_equal:today'],
             'quantity_on_hand'    => ['required','integer','min:0'],
-            'quantity_allocated'  => ['required','integer','min:0','lte:quantity_on_hand'],
+            'quantity_allocated'  => [
+                'required',
+                'integer',
+                'min:0',
+                // ✅ Validate against actual variant stock
+                function ($attribute, $value, $fail) use ($variant, $item) {
+                    // Calculate available stock including current item's allocation
+                    $available = $variant->overal_quantity_at_hand + $item->quantity_allocated;
+                    if ($value > $available) {
+                        $fail(__('pagination.allocated_not_greater_than_at_hand'));
+                    }
+                }
+            ],
+            // Uniqueness for variant + location + department
+            Rule::unique('inventory_items')
+                ->where(fn($q) => $q
+                    ->where('variant_id', $item->variant_id)
+                    ->where('department_id', $request->department_id)
+                    ->where('location_id', $request->location_id)
+                )
+                ->ignore($item->id),
         ], [
-            'quantity_allocated.lte' => __('pagination.allocated_not_greater_than_at_hand'),
+            'inventory_items_variant_id_unique' => __('pagination.variant_already_exists_in_department_location'),
         ]);
 
+        // Update inventory item
         $item->update($validated);
+
+        // Adjust variant stock manually
+        if ($variant) {
+            // Add back old allocation, then subtract new allocation
+            $variant->overal_quantity_at_hand = 
+                ($variant->overal_quantity_at_hand + $item->quantity_allocated) - $validated['quantity_allocated'];
+
+            $variant->save();
+        }
 
         return response()->json([
             'success' => true,
@@ -137,6 +197,7 @@ class InventoryItemController extends Controller
             'redirect' => route('items.index'),
         ]);
     }
+
 
     /**
      * Remove the specified resource from storage.

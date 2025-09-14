@@ -21,13 +21,17 @@ return new class extends Migration
             $table->string('batch_number', 50)->nullable();
             $table->date('expiry_date')->nullable();
 
-            $table->foreignId('variant_id')->unique()->constrained('product_variants')->cascadeOnDelete();
+            $table->foreignId('variant_id')->constrained('product_variants')->cascadeOnDelete();
             $table->foreignId('department_id')->constrained('departments')->cascadeOnDelete();
             $table->foreignId('location_id')->constrained('locations')->cascadeOnDelete();
             $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
             $table->foreignId('tenant_id')->constrained('tenants')->cascadeOnDelete();
             $table->timestampsTz();
+
+            // ✅ Enforce uniqueness only within department + location
+            $table->unique(['variant_id', 'department_id', 'location_id'], 'unique_variant_location_department');
         });
+
     }
 
     /**

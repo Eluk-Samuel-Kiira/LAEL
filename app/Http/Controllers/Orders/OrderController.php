@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Orders;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Order;
 
 class OrderController extends Controller
 {
@@ -12,7 +13,26 @@ class OrderController extends Controller
      */
     public function index(Request $request)
     {
-        // return view('orders.pos-index');
+        $orders = Order::with([
+            'orderItems',
+            'customer',
+            'orderCreater',
+            'location',
+            'department'
+        ])->latest()->get();
+
+
+        $bladeToReload = $request->query('bladeFileToReload');
+        switch ($bladeToReload) {
+            case 'ordersIndexTable':
+                return view('orders.order.component', [
+                    'orders' => $orders,
+                ]);
+            default:
+                return view('orders.order-index', [
+                    'orders' => $orders,
+                ]);
+        }
     }
 
     /**

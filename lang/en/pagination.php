@@ -17,7 +17,7 @@ return [
     'next' => 'Next &raquo;',
 
 
-    //Store  and Inventory
+    //Store  and Inventory 
     'store_catalog' => 'Store Catalog',
     '_category' => 'Category',
     '_category_index' => 'Category Index',
@@ -27,6 +27,7 @@ return [
     'category_id' => 'Category ID',
     '_description' => 'Description',
     '_inventory' => 'Inventory',
+    '_inventory_item' => 'Inventory Item',
     'store_inventory' => 'Store Inventory',
     'product_category' => 'Product Category',
     'product_category_index' => 'Product Category Index',
@@ -48,11 +49,13 @@ return [
     'preferred_stock_level' => 'Expected Stock Level',
     'batch_number' => 'Batch Number',
     'expiry_date' => 'Expiry Date',
-    'allocated_not_greater_than_at_hand' => 'Allocated quantity cannot be greater than quantity on hand.',
+    'allocated_not_greater_than_at_hand' => 'Allocated quantity cannot be greater than the quantity on hand.',
+    'variant_already_exists_in_department_location' => 'This variant already exists in the selected department and location.',
 
 
     // Catalog &Products
     'product_index' => 'Product Index',
+    'overall_quantity' => 'Overall Quantity',
     '_products' => 'Products',
     'product_catalog' => 'Product Catalog',
     '_allocation' => 'Allocate',
@@ -169,6 +172,7 @@ return [
     'method' => 'Method',
     'subtotal' => 'Subtotal',
     'total' => 'Total',
+    '_currency' => 'Currency',
     'customer' => 'Customer',
     'order_saved' => '✅ Order saved',
     'order_saved_error' => '❌ Failed to complete payment',
@@ -182,15 +186,16 @@ return [
     'enter_customer_name' => 'Please enter customer name',
     'choose_customer' => 'Choose a customer',
     'customer_name_placeholder' => 'Enter customer name',
-    'please_enter_customer' => '⚠️ Please enter a new customer name.',
-    'please_select_existing_customer' => '⚠️ Please select an existing customer',
-    'please_select_existing_customer' => 'Insufficient Amount Entered',
+    'please_enter_customer' => 'Please enter a new customer name.',
+    'please_select_existing_customer' => 'Please select an existing customer',
     
 
 
 
     // Taxes and Promotion
     '_tax' => 'Tax',
+    '_qty' => 'Qty',
+    '_disc' => 'Disc.',
     'tax_index' => 'Tax Index',
     'tax_table' => 'Tax Table',
     '_taxes' => 'Taxes',
@@ -217,5 +222,6 @@ return [
     'assign_promotions'  => 'Apply Promotions',
     'variant_not_taxable_now'  => 'Product variant nolonger Taxable, activate tax status to apply taxes',
     'product_not_taxable_now'  => 'Product nolonger Taxable, activate tax status to apply taxes',
+    'Payment_method_coming_soon'  => 'Payment method coming soon, please use cash as per now!!',
 
 ];

@@ -20,7 +20,9 @@ class OrderItem extends Model
             'discount',
             'tax_amount',
             'total_price',
-            'inventory_data'
+            'inventory_data',
+            'tax_data',
+            'promotion_data',
         ];
 
     /**
@@ -34,7 +36,24 @@ class OrderItem extends Model
         'tax_amount' => 'decimal:2',
         'total_price' => 'decimal:2',
         'inventory_data' => 'array', // Automatically cast JSON to array
+        'tax_data' => 'array', 
+        'promotion_data' => 'array',
     ];
+
+    // 👇 Accessors
+    public function getUnitPriceAttribute($value) {
+        return formatCurrency($value);
+    }
+    public function getDiscountAttribute($value) {
+        return formatCurrency($value);
+    }
+    public function getTaxAmountAttribute($value) {
+        return formatCurrency($value);
+    }
+    public function getTotalPriceAttribute($value) {
+        return formatCurrency($value);
+    }
+    
 
     /**
      * Get the order that owns the order item.
