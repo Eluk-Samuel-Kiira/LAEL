@@ -55,4 +55,29 @@ return [
     '_print' => 'Print',
     '_tax' => 'Tax',
     '_promo' => 'Promo',
+
+
+    // Stock Adjustments
+    'stock_adjustments' => 'Inv Adjustments',
+    'inv_adjustments' => 'Item/Inventory Adjustments',
+    '_adjust' => 'Adjust',
+    'adjust_stock_level' => 'Adjust Stock Level',
+    'current_stock_level' => 'Current Stock Level',
+    'adjustment_amount' => 'Adjustment Amount',
+    'new_stock_level' => 'New Stock Level',
+    'adjust_stock' => 'Adjust Stock',
+    'stock_adjusted' => 'Stock level adjusted successfully.',
+    '_confirm' => 'Confirm',
+    'transfer_to_loc_dept' => 'Transfer Stock/Item from one location department to another',
+    'please_wait' => 'Please wait...',
+    'are_you_sure' => 'Are you sure you want to proceed?',
+    'action_cannot' => 'This action cannot be undone.',
+    'overall_quantity_at_hand' => 'Inventory Quantity',
+    '_stock_adjusted' => 'Stock Adjusted Successfully',
+    '_transfer' => 'Transfer',
+    'transfer_quantity' => 'Qunatity to Transfer',
+    'create_inv_first' => 'Target inventory does not exist. Please create it first.',
+    'stock_already_present' => 'Stock is already in the selected location and department.',
+    'stock_transfer_success' => 'Item Transfer Successfully',
+
 ];

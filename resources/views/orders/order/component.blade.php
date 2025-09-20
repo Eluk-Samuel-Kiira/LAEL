@@ -36,29 +36,60 @@
                                 </a>
                             </td>
                             <td class="fw-bold text-warning ms-3">{{ $order->customer_name ?? __('passwords.none') }}</td>
-                            <td><div class="badge badge-light fw-bold">{{ $order->type }}</div></td>
-                            <td><div class="badge badge-light fw-bold">{{ $order->status }}</div></td>
-                            <td class="fw-bold text-primary ms-3">{{ $order->source }}</td>
+                            <td><div class="badge badge-light fw-bold">{{ ucwords($order->type) }}</div></td>
+                            <td><div class="badge badge-light fw-bold">{{ ucwords($order->status) }}</div></td>
+                            <td class="fw-bold text-primary ms-3">{{ ucwords($order->source) }}</td>
                             <td class="fw-bold text-primary ms-3">{{ displayFormatedCurrency($order->total) }} {{ currencySymbol() }}</td>
                             <td><div class="badge badge-light fw-bold">{{ $order->orderCreater->name ?? __('passwords.none') }}</div></td>
                             <td>
-                                <button 
-                                    class="btn btn-sm btn-light btn-active-color-primary d-flex align-items-center px-3 py-2"
-                                    onclick="printOrder({{ $order->id }})">
-                                    <i class="bi bi-printer me-1 fs-5"></i> 
-                                    <span>{{ __('passwords._print') }}</span>
-                                </button>
+                                <div class="d-flex gap-2">
+                                    @if ($order->status == 'confirmed' && $order->source == 'pos')
+                                        <button 
+                                            class="btn btn-sm btn-light btn-active-color-primary d-flex align-items-center px-3 py-2" 
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#completePayment{{$order->id}}">
+                                            <i class="bi bi-cash me-1 fs-5"></i> <span>{{__('pagination._complete')}}</span>
+                                        </button>
+                                    @endif
+                                    <button 
+                                        class="btn btn-sm btn-light btn-active-color-primary d-flex align-items-center px-3 py-2"
+                                        onclick="printOrder({{ $order->id }})">
+                                        <i class="bi bi-printer me-1 fs-5"></i> 
+                                        <span>{{ __('passwords._print') }}</span>
+                                    </button>
+
+                                    
+                                <!-- Delete User Modal -->
+                                <div class="modal fade" id="completePayment{{$order->id}}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">{{__('pagination.cash_payment')}}</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>{{ __('pagination.Payment_method_coming_soon') }}</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <!-- Discard Button -->
+                                                <button type="button" id="closeDeleteModal{{$order->id}}" class="btn btn-light me-3" data-bs-dismiss="modal">{{ __('auth._discard') }}</button>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                </div>
                             </td>
                         </tr>
 
                         <!-- Expanded row -->
                         <tr class="collapse bg-light" id="orderItems{{ $order->id }}">
                             <td colspan="9">
-                                <div class="p-4 border rounded bg-white shadow-sm">
+                                <div class="p-4 border rounded shadow-sm">
 
                                     <!-- Items table -->
                                     <div class="table-responsive mb-3">
-                                        <table class="table table-sm table-striped align-middle">
+                                        <table class="table align-middle table-row-dashed fs-6 gy-5">
                                             <thead>
                                                 <tr class="fw-bold text-muted">
                                                     <th>{{ __('passwords.item_name') }}</th>

@@ -174,6 +174,15 @@
                             </a>
                         </div>
 
+                        <div class="menu-item">
+                            <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('stocks.index') }}')">
+                                <span class="menu-bullet">
+                                    <span class="bullet bullet-dot"></span>
+                                </span>
+                                <span class="menu-title">{{ __('passwords.stock_adjustments') }}</span>
+                            </a>
+                        </div>
+
                     </div>
                 </div>
 

@@ -1,5 +1,5 @@
 <!-- Cash Payment Modal -->
-<div class="modal fade" id="cashModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="cashModal" tabindex="-1" aria-hidden="true"  data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered mw-750px">
         <div class="modal-content" style="font-size: 1.4rem;">
             <div class="modal-header">

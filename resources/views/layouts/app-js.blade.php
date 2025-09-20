@@ -336,6 +336,91 @@
 
 
 <!-- Inventory Mgt -->
+<script>
+    
+    function updateInventoryTransfer(uniqueId) {
+        const submitButton = document.getElementById('editInvTransferButton' + uniqueId);
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Select the form and create FormData from it
+        var form = document.getElementById('stockItemTransfer' + uniqueId);
+        var formData = new FormData(form);
+
+        var data = Object.fromEntries(formData.entries());
+        // console.log(data);
+
+        // Set up the URL dynamically
+        var updateUrl = '/transfer-stock/' + uniqueId;
+        // console.log(updateUrl);
+        handleEditResponse(data, updateUrl, uniqueId, submitButton);
+    }
+    
+    function initializeStockInputs() {
+        // Select all quantity inputs
+        document.querySelectorAll(".quantity-input").forEach(input => {
+            // Remove any existing listener first (optional, safer)
+            input.replaceWith(input.cloneNode(true));
+        });
+
+        // Re-select cloned inputs
+        document.querySelectorAll(".quantity-input").forEach(input => {
+            input.addEventListener("input", function () {
+                let itemId      = this.dataset.itemId;
+                let overallEl   = document.getElementById("overallQty" + itemId);
+                let newStockEl  = document.getElementById("newStock" + itemId);
+
+                let overallInit = parseInt(this.dataset.overall) || 0;
+                let current     = parseInt(this.dataset.current) || 0;
+                let adjust      = parseInt(this.value) || 0;
+
+                let newStock    = current;
+                let newOverall  = overallInit;
+
+                if (adjust > 0) {
+                    if (adjust > overallInit) {
+                        this.value = overallInit;
+                        adjust     = overallInit;
+                        toastr['warning']('{{ __("pagination.max_quantity_reached") }}');
+                    }
+                    newStock   = current + adjust;
+                    newOverall = overallInit - adjust;
+                } else if (adjust < 0) {
+                    let absAdjust = Math.abs(adjust);
+                    if (absAdjust > current) {
+                        this.value = -current;
+                        adjust     = -current;
+                        toastr['warning']('{{ __("pagination.max_quantity_reached") }}');
+                    }
+                    newStock   = current + adjust;
+                    newOverall = overallInit + Math.abs(adjust);
+                }
+
+                newStockEl.value  = newStock;
+                overallEl.value   = newOverall;
+            });
+        });
+    }
+
+    
+    function updateInventoryAdjustment(uniqueId) {
+        const submitButton = document.getElementById('editInvAdjustButton' + uniqueId);
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Select the form and create FormData from it
+        var form = document.getElementById('adjustStockForm' + uniqueId);
+        var formData = new FormData(form);
+
+        var data = Object.fromEntries(formData.entries());
+        // console.log(data);
+
+        // Set up the URL dynamically
+        var updateUrl = '{{ route('stocks.update', ['stock' => ':id']) }}'.replace(':id', uniqueId);
+
+        // console.log(updateUrl);
+        handleEditResponse(data, updateUrl, uniqueId, submitButton);
+    }
+
+</script>
 
 <script>
     
@@ -1086,6 +1171,9 @@ function updateEmployeeStatus(uniqueId, selectedStatus) {
 
     // Reintialize the datatables after submission
     function initializeComponentScripts() {
+        // initialize stock adjustment inputs
+        initializeStockInputs();
+
         const tableId = '#kt_table_users';
 
         // Destroy the existing DataTable instance if it exists

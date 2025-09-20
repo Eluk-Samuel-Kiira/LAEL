@@ -66,14 +66,14 @@
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
                                     <span class="required">{{__('pagination.quantity_on_hand')}} </span>
                                 </label>
-                                <input type="number" value="{{ $item->quantity_on_hand }}" class="form-control form-control-solid" name="quantity_on_hand" />
+                                <input type="number" value="{{ $item->quantity_on_hand }}" class="form-control form-control-solid" name="quantity_on_hand" readonly/>
                                 <div id="quantity_on_hand{{ $item->id }}"></div>
                             </div>
                             <div class="d-flex flex-column mb-8 fv-row col-md-4">
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
                                     <span class="required">{{__('pagination.quantity_allocated')}} </span>
                                 </label>
-                                <input type="number" value="{{ $item->quantity_allocated }}" class="form-control form-control-solid" name="quantity_allocated" />
+                                <input type="number" value="{{ $item->quantity_allocated }}" class="form-control form-control-solid" name="quantity_allocated" readonly/>
                                 <div id="quantity_allocated{{ $item->id }}"></div>
                             </div>
                         </div>              
