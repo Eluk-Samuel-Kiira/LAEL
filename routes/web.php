@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Tenant\DepartmentController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
-use App\Http\Controllers\Catalog\CategoryController;
+use App\Http\Controllers\Catalog\ {CategoryController, InventoryAdjustmentsController};
 use App\Http\Controllers\Catalog\ProductController;
 use App\Http\Controllers\Catalog\ProductCategoryController;
 use App\Http\Controllers\Catalog\ProductVariantController;
@@ -107,7 +107,9 @@ Route::middleware('auth')->group(function () {
 
     // Stores and Inventory
     Route::resource('items', InventoryItemController::class);
-
+    Route::resource('stocks', InventoryAdjustmentsController::class);
+    Route::put('/transfer-stock/{id}', [InventoryAdjustmentsController::class, 'transferStock'])
+        ->name('transfer.stock');
 
     
     // Location
