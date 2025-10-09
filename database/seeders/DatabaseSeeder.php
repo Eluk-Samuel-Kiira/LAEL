@@ -37,6 +37,9 @@ class DatabaseSeeder extends Seeder
             OrderSeeder::class,
             OrderTaxSeeder::class,
             OrderPaymentSeeder::class,
+            SupplierSeeder::class,
+            PurchaseOrderSeeder::class,
+            PurchaseReceiptSeeder::class,
         ]);
     }
 }

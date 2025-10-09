@@ -133,6 +133,13 @@ class UserSeeder extends Seeder
             'delete promotion',
             'update promotion',
 
+            // supplier Management
+            'create supplier',
+            'view supplier',
+            'edit supplier',
+            'delete supplier',
+            'update supplier',
+
             // Admin Management
             'admin only',
             'create role',

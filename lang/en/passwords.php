@@ -80,4 +80,18 @@ return [
     'stock_already_present' => 'Stock is already in the selected location and department.',
     'stock_transfer_success' => 'Item Transfer Successfully',
 
+
+    // Suppliers & Purchasing
+    'suppliers_purchase' => 'Procurement',
+    'supplier_index' => 'Suppliers Index',
+    'suppliers' => 'Suppliers',
+    'supl_create' => 'Suppliers Index',
+    'supl_table' => 'Suppliers Table',
+    'new_supplier' => 'New Supplier',
+    'contact_person' => 'Contact Person',
+    '_email' => 'Email',
+    '_phone' => 'Phone',
+    '_view' => 'View',
+
+
 ];
