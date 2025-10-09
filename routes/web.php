@@ -125,6 +125,7 @@ Route::middleware('auth')->group(function () {
 
     // Suppliers & Purchasing
     Route::resource('suppliers', SupplierController::class);
+    Route::post('/supplier-status/{id}', [SupplierController::class, 'updateSupplierStatus']);
     
 });
 

@@ -66,6 +66,7 @@ return [
     '_cancel' => 'Cancel',
     '_update' => 'Update',
     '_create' => 'Create',
+    '_days' => 'Days',
     '_uploaded' => 'Uploaded Successfully',
     'upload_failed' => 'Upload Failed',
     '_dashboard' => 'Dashboards',

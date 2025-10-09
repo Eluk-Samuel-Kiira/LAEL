@@ -35,9 +35,6 @@ class Supplier extends Model
         'updated_at' => 'datetime',
     ];
 
-    protected $attributes = [
-        'created_by' => 1,
-    ];
 
     public function supplierCreater()
     {

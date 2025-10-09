@@ -59,7 +59,7 @@
                                         onchange="updateSupplierStatus({{ $supplier->id }}, this.checked ? 1 : 0)"
                                         {{ $supplier->is_active ? 'checked' : '' }}
                                         @cannot('update tax') disabled @endcannot>
-                                    <span id="tax-label-{{ $supplier->id }}"
+                                    <span id="supplier-label-{{ $supplier->id }}"
                                         class="form-check-label ms-2 fw-bold fs-6 text-gray-700">
                                         {{ $supplier->is_active ? __('auth._active') : __('auth._inactive') }}
                                     </span>
@@ -79,7 +79,7 @@
                                         <button 
                                             class="btn btn-sm btn-light btn-active-color-primary d-flex align-items-center px-3 py-2" 
                                             data-bs-toggle="modal"
-                                            data-bs-target="#editTax{{$supplier->id}}">
+                                            data-bs-target="#editSupplier{{$supplier->id}}">
                                             <i class="bi bi-pencil-square me-1 fs-5"></i> <span>{{ __('auth._edit') }}</span>
                                         </button>
                                     @endcan
@@ -110,7 +110,7 @@
                                                 <button type="button" id="closeDeleteModal{{$supplier->id}}" class="btn btn-light me-3" data-bs-dismiss="modal">{{ __('auth._discard') }}</button>
                                                 <!-- Confirm Button -->
                                                 <button type="button" id="deleteButton{{$supplier->id}}" class="btn btn-danger" 
-                                                    data-item-url="{{ route('tax.destroy', $supplier->id) }}" 
+                                                    data-item-url="{{ route('suppliers.destroy', $supplier->id) }}" 
                                                     data-item-id="{{ $supplier->id }}"
                                                     onclick="deleteItem(this)">
                                                     <span class="indicator-label">{{ __('auth._confirm') }}</span>
@@ -123,7 +123,8 @@
                                         </div>
                                     </div>
                                 </div>
-                                @include('procurement.supplier.edit')                                
+                                @include('procurement.supplier.edit')   
+                                @include('procurement.supplier.view')                                
                             </td>
                         </tr>
                     @endforeach
