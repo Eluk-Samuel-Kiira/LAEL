@@ -213,11 +213,11 @@
                         </div>
 
                         <div class="menu-item">
-                            <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('stocks.index') }}')">
+                            <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('purchase_order.index') }}')">
                                 <span class="menu-bullet">
                                     <span class="bullet bullet-dot"></span>
                                 </span>
-                                <span class="menu-title">{{ __('passwords.stock_adjustments') }}</span>
+                                <span class="menu-title">{{ __('passwords.purchase_order') }}</span>
                             </a>
                         </div>
 

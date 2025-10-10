@@ -7,7 +7,7 @@ use App\Http\Controllers\Tenant\DepartmentController;
 use App\Http\Controllers\Catalog\ {CategoryController, InventoryItemController, ProductVariantController, InventoryAdjustmentsController, ProductController, ProductCategoryController};
 use App\Http\Controllers\Orders\{ OrderController, POSController};
 use App\Http\Controllers\Setting\{ TaxController,PromotionController };
-use App\Http\Controllers\Procurement\{ SupplierController };
+use App\Http\Controllers\Procurement\{ SupplierController, PurchaseOrderController };
 
     Route::get('/', function () {
         return view('welcome');
@@ -127,6 +127,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('suppliers', SupplierController::class);
     Route::post('/supplier-status/{id}', [SupplierController::class, 'updateSupplierStatus']);
     
+    
+    Route::get('/purchase-order', [PurchaseOrderController::class, 'index'])->name('purchase_order.index');
 });
 
 require __DIR__.'/auth.php';

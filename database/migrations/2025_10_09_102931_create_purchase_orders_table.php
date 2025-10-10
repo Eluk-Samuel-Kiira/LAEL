@@ -14,7 +14,7 @@ return new class extends Migration
             $table->foreignId('supplier_id')->constrained()->onDelete('restrict');
             $table->foreignId('location_id')->constrained()->onDelete('restrict');
             $table->string('po_number', 50);
-            $table->enum('status', ['draft', 'sent', 'partially_received', 'received', 'cancelled']);
+            $table->enum('status', ['draft', 'sent', 'pending_approval', 'approved', 'partially_received', 'received', 'cancelled']);
             $table->date('expected_delivery_date')->nullable();
             $table->decimal('subtotal', 12, 2);
             $table->decimal('tax_total', 12, 2)->default(0);

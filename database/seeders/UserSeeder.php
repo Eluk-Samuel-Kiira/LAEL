@@ -140,6 +140,14 @@ class UserSeeder extends Seeder
             'delete supplier',
             'update supplier',
 
+            // supplier Management
+            'create purchase_orders',
+            'view purchase_orders',
+            'edit purchase_orders',
+            'delete purchase_orders',
+            'update purchase_orders',
+            'approve purchase_orders',
+
             // Admin Management
             'admin only',
             'create role',
