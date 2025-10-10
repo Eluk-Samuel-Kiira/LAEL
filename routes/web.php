@@ -1,24 +1,13 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\Home\DashboardController;
-use App\Http\Controllers\Home\SettingsController;
-use App\Http\Controllers\Home\UnitOfMeasureController;
-use App\Http\Controllers\Home\CurrencyController;
+use App\Http\Controllers\{ ProfileController, UserController, RoleController};
+use App\Http\Controllers\Home\{ DashboardController, LocationController, SettingsController,  UnitOfMeasureController, CurrencyController};
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Tenant\DepartmentController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\RoleController;
-use App\Http\Controllers\Catalog\ {CategoryController, InventoryAdjustmentsController};
-use App\Http\Controllers\Catalog\ProductController;
-use App\Http\Controllers\Catalog\ProductCategoryController;
-use App\Http\Controllers\Catalog\ProductVariantController;
-use App\Http\Controllers\Catalog\InventoryItemController;
-use App\Http\Controllers\Home\LocationController;
-use App\Http\Controllers\Orders\OrderController;
-use App\Http\Controllers\Orders\POSController;
-use App\Http\Controllers\Setting\TaxController;
-use App\Http\Controllers\Setting\PromotionController;
+use App\Http\Controllers\Catalog\ {CategoryController, InventoryItemController, ProductVariantController, InventoryAdjustmentsController, ProductController, ProductCategoryController};
+use App\Http\Controllers\Orders\{ OrderController, POSController};
+use App\Http\Controllers\Setting\{ TaxController,PromotionController };
+use App\Http\Controllers\Procurement\{ SupplierController, PurchaseOrderController };
 
     Route::get('/', function () {
         return view('welcome');
@@ -128,11 +117,18 @@ Route::middleware('auth')->group(function () {
 
 
     // Taxes and Promotions
-    
     Route::resource('tax', TaxController::class);
     Route::post('/tax-status/{id}', [TaxController::class, 'updateTaxStatus']);
     Route::resource('promotion', PromotionController::class);
     Route::post('/promotion-status/{id}', [PromotionController::class, 'updatePromotionStatus']);
+
+
+    // Suppliers & Purchasing
+    Route::resource('suppliers', SupplierController::class);
+    Route::post('/supplier-status/{id}', [SupplierController::class, 'updateSupplierStatus']);
+    
+    
+    Route::get('/purchase-order', [PurchaseOrderController::class, 'index'])->name('purchase_order.index');
 });
 
 require __DIR__.'/auth.php';

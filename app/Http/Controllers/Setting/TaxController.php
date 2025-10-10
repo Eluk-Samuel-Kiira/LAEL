@@ -141,7 +141,7 @@ class TaxController extends Controller
             'reload' => true,
             'componentId' => 'reloadTaxComponent',
             'refresh' => false,
-            'message' => __('auth._updated'),
+            'message' => __('auth._deleted'),
             'redirect' => route('tax.index'),
         ]);
     }

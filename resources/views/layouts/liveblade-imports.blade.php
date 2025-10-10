@@ -164,6 +164,7 @@
 
 <!-- App/Dashboard Js Defind functions  -->
 @include('layouts.app-js')
+@include('layouts.procurement-js')
 @include('layouts.pos-js')
 
 
@@ -172,7 +173,7 @@
     
     function handleFormSubmiter(formData, submitButtonId) {
         
-        console.log(formData);
+        // console.log(formData);
 
         // This is the loader
         LiveBlade.toggleButtonLoading(submitButtonId, true);
