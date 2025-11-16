@@ -3,7 +3,7 @@
 use App\Http\Controllers\{ ProfileController, UserController, RoleController};
 use App\Http\Controllers\Home\{ DashboardController, LocationController, SettingsController,  UnitOfMeasureController, CurrencyController};
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Tenant\DepartmentController;
+use App\Http\Controllers\Tenant\{ DepartmentController, EmployeeController, EmployeePaymentController };
 use App\Http\Controllers\Catalog\ {CategoryController, InventoryItemController, ProductVariantController, InventoryAdjustmentsController, ProductController, ProductCategoryController};
 use App\Http\Controllers\Orders\{ OrderController, POSController};
 use App\Http\Controllers\Setting\{ TaxController,PromotionController };
@@ -59,6 +59,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/employee-status/{id}', [UserController::class, 'changeEmployeeStatus'])->name('employee.status');
     Route::put('/employees/{id}/departments', [UserController::class, 'updateDepartments'])
         ->name('employees.updateDepartments');
+
+    Route::resource('user', EmployeeController::class);
+    Route::post('/user-status/{id}', [EmployeeController::class, 'changeUserStatus']);
+
+    Route::resource('payment', EmployeePaymentController::class);
+
 
 
     // Roles n Permissions
@@ -129,6 +135,15 @@ Route::middleware('auth')->group(function () {
     
     
     Route::get('/purchase-order', [PurchaseOrderController::class, 'index'])->name('purchase_order.index');
+    Route::post('/purchase-order', [PurchaseOrderController::class, 'store'])->name('purchase-order.store');
+    Route::post('/purchase-status/{id}', [PurchaseOrderController::class, 'submitApproval'])->name('po.submit-approval');
+    Route::post('/purchase-approve/{id}', [PurchaseOrderController::class, 'approve'])->name('purchase-orders.approve');
+    Route::post('/purchase-send/{id}', [PurchaseOrderController::class, 'sendToSupplier'])->name('purchase-orders.send');
+    Route::post('/purchase-orders/{purchaseOrder}/receive-items', [PurchaseOrderController::class, 'receiveItems'])->name('purchase-orders.receive-items');
+    Route::post('/purchase-cancel/{id}', [PurchaseOrderController::class, 'cancel'])->name('purchase-orders.cancel');
+    Route::delete('/purchase-orders/{purchaseOrder}', [PurchaseOrderController::class, 'destroy'])->name('purchase-orders.destroy');
+
+
 });
 
 require __DIR__.'/auth.php';

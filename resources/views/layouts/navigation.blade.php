@@ -250,6 +250,22 @@
                             </a>
                         </div>
                         <div class="menu-item">
+                            <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('user.index') }}')">
+                                <span class="menu-bullet">
+                                    <span class="bullet bullet-dot"></span>
+                                </span>
+                                <span class="menu-title">{{ __('pagination.employee_index') }}</span>
+                            </a>
+                        </div>
+                        <div class="menu-item">
+                            <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('payment.index') }}')">
+                                <span class="menu-bullet">
+                                    <span class="bullet bullet-dot"></span>
+                                </span>
+                                <span class="menu-title">{{ __('pagination.employee_payment') }}</span>
+                            </a>
+                        </div>
+                        <div class="menu-item">
                             <a class="menu-link" data-link href="javascript:void(0);" onclick="reloadToApp('{{ route('role.index') }}')">
                                 <span class="menu-bullet">
                                     <span class="bullet bullet-dot"></span>

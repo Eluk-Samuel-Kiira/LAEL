@@ -126,6 +126,20 @@ class UserSeeder extends Seeder
             'delete tax',
             'update tax',
 
+            // employee Management
+            'create employee',
+            'view employee',
+            'edit employee',
+            'delete employee',
+            'update employee',
+
+            // tax Management
+            'create employee-payment',
+            'view employee-payment',
+            'edit employee-payment',
+            'delete employee-payment',
+            'update employee-payment',
+
             // promotion Management
             'create promotion',
             'view promotion',
@@ -140,13 +154,17 @@ class UserSeeder extends Seeder
             'delete supplier',
             'update supplier',
 
-            // supplier Management
-            'create purchase_orders',
+            // Typical purchase order permissions
             'view purchase_orders',
-            'edit purchase_orders',
+            'create purchase_orders',
+            'edit purchase_orders', 
             'delete purchase_orders',
-            'update purchase_orders',
+            'submit purchase_orders',
             'approve purchase_orders',
+            'send purchase_orders',
+            'update purchase_orders',
+            'receive purchase_orders',
+            'cancel purchase_orders',
 
             // Admin Management
             'admin only',
@@ -185,6 +203,22 @@ class UserSeeder extends Seeder
             'password' => bcrypt('1234567890')
         ]);
         $adminUser->assignRole('admin');
+
+        // Create sample users
+        $adminUser2 = User::factory()->create([
+            'name' => 'Trial User',
+            'first_name' => 'Trial',
+            'last_name' => 'User',
+            'telephone_number' => '0700000001',
+            'job_title' => 'System Administrator',
+            'department_id' => 1,
+            'profile_image' => '',
+            'role_id' => 1,
+            'status' => 'active',
+            'email' => 'trialuser@gmail.com',
+            'password' => bcrypt('password@123')
+        ]);
+        $adminUser2->assignRole('admin');
         User::factory()->count(5)->create();
 
     }

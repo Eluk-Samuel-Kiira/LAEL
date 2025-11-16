@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use App\Models\Location;
+use App\Models\User;
+use App\Models\Tenant;
 use App\Models\Department;
 
 /**
@@ -35,6 +37,7 @@ class UserFactory extends Factory
             'location_id' => $this->faker->randomElement([1, 2, 3, 4, 6, 7, 8, 9, 10]),
             'profile_image' => '',
             'role_id' => $this->faker->randomElement([1, 2, 3, 4]),
+            'tenant_id' => Tenant::factory(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),

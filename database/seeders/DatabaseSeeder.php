@@ -40,6 +40,10 @@ class DatabaseSeeder extends Seeder
             SupplierSeeder::class,
             PurchaseOrderSeeder::class,
             PurchaseReceiptSeeder::class,
+
+            // Employement
+            EmployeeSeeder::class,
+            EmployeePaymentSeeder::class,
         ]);
     }
 }

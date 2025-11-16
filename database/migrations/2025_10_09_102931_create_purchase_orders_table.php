@@ -21,6 +21,19 @@ return new class extends Migration
             $table->decimal('total', 12, 2);
             $table->text('notes')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('users');
+            
+            // Status tracking fields
+            $table->timestamp('submitted_at')->nullable();
+            $table->foreignId('submitted_by')->nullable()->constrained('users');
+            $table->timestamp('approved_at')->nullable();
+            $table->foreignId('approved_by')->nullable()->constrained('users');
+            $table->timestamp('sent_at')->nullable();
+            $table->foreignId('sent_by')->nullable()->constrained('users');
+            $table->timestamp('cancelled_at')->nullable();
+            $table->foreignId('cancelled_by')->nullable()->constrained('users');
+            $table->timestamp('received_at')->nullable();
+            $table->foreignId('received_by')->nullable()->constrained('users');
+            
             $table->timestamps();
 
             $table->unique(['tenant_id', 'po_number']);

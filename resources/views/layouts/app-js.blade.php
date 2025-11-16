@@ -766,50 +766,70 @@
 
 
 <!-- Human Resource -->
- 
 <script>
+    
+    function editUserInstanceLoop(uniqueId) {
+        const submitButton = document.getElementById('submitEmplButton' + uniqueId);
+        LiveBlade.toggleButtonLoading(submitButton, true);
 
-function submitEmployeeForm(formId, submitButtonId, url, method = 'POST', discardButtonId = 'discardButton') {
-    const form = document.getElementById(formId);
-    const submitButton = document.getElementById(submitButtonId);
+        var form = document.getElementById('edit_user_form' + uniqueId);
+        var formData = new FormData(form);
 
-    if (!form || !submitButton) {
-        console.error('Form or button not found:', formId, submitButtonId);
-        return;
+        var data = Object.fromEntries(formData.entries());
+        // console.log(data);
+        var updateUrl = '{{ route('user.update', ['user' => ':id']) }}'.replace(':id', uniqueId);
+
+        handleEditResponse(data, updateUrl, uniqueId, submitButton);
     }
 
-    // Collect form data
-    const formData = Object.fromEntries(new FormData(form));
-    formData._method = method;
-    formData.routeName = url;
+    function updateUserStatus(uniqueId, selectedStatus) {
+        // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
+        const updateRoute = '/user-status/' + uniqueId;
+        LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
+    }
+</script>
+<script>
 
-    // Start loading
-    LiveBlade.toggleButtonLoading(submitButton, true);
+    function submitEmployeeForm(formId, submitButtonId, url, method = 'POST', discardButtonId = 'discardButton') {
+        const form = document.getElementById(formId);
+        const submitButton = document.getElementById(submitButtonId);
 
-    // Pass handling + data to reusable handler
-    handleFormSubmission(formData, submitButton, discardButtonId);
-}
+        if (!form || !submitButton) {
+            console.error('Form or button not found:', formId, submitButtonId);
+            return;
+        }
 
-function editEmployeeInstanceLoop(uniqueId) {
-    const submitButton = document.getElementById('submitEmplButton' + uniqueId);
-    LiveBlade.toggleButtonLoading(submitButton, true);
+        // Collect form data
+        const formData = Object.fromEntries(new FormData(form));
+        formData._method = method;
+        formData.routeName = url;
 
-    var form = document.getElementById('edit_user_form' + uniqueId);
-    var formData = new FormData(form);
+        // Start loading
+        LiveBlade.toggleButtonLoading(submitButton, true);
 
-    var data = Object.fromEntries(formData.entries());
-    // console.log(data);
-    var updateUrl = '{{ route('employee.update', ['employee' => ':id']) }}'.replace(':id', uniqueId);
+        // Pass handling + data to reusable handler
+        handleFormSubmission(formData, submitButton, discardButtonId);
+    }
 
-    handleEditResponse(data, updateUrl, uniqueId, submitButton);
-}
+    function editEmployeeInstanceLoop(uniqueId) {
+        const submitButton = document.getElementById('submitEmplButton' + uniqueId);
+        LiveBlade.toggleButtonLoading(submitButton, true);
 
+        var form = document.getElementById('edit_user_form' + uniqueId);
+        var formData = new FormData(form);
 
-function updateEmployeeStatus(uniqueId, selectedStatus) {
-    // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
-    const updateRoute = '/employee-status/' + uniqueId;
-    LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
-}
+        var data = Object.fromEntries(formData.entries());
+        // console.log(data);
+        var updateUrl = '{{ route('employee.update', ['employee' => ':id']) }}'.replace(':id', uniqueId);
+
+        handleEditResponse(data, updateUrl, uniqueId, submitButton);
+    }
+
+    function updateEmployeeStatus(uniqueId, selectedStatus) {
+        // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
+        const updateRoute = '/employee-status/' + uniqueId;
+        LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
+    }
 
 </script>
 

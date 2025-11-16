@@ -31,6 +31,22 @@ class PurchaseOrderItem extends Model
         'received_quantity' => 'integer',
     ];
 
+    // 👇 Accessors for monetary fields
+    public function getUnitCostAttribute($value)
+    {
+        return formatCurrency($value);
+    }
+
+    public function getTaxAmountAttribute($value)
+    {
+        return formatCurrency($value);
+    }
+
+    public function getTotalCostAttribute($value)
+    {
+        return formatCurrency($value);
+    }
+
     public function purchaseOrder(): BelongsTo
     {
         return $this->belongsTo(PurchaseOrder::class);

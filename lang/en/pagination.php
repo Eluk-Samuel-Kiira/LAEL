@@ -225,4 +225,49 @@ return [
     'product_not_taxable_now'  => 'Product nolonger Taxable, activate tax status to apply taxes',
     'Payment_method_coming_soon'  => 'Payment method coming soon, please use cash as per now!!',
 
+
+    
+    'employee_index'  => 'Employee Index',
+    'employee_table'  => 'Employee Table',
+    'back' => 'Back',
+    'employee_payment'  => 'Payments',
+    'id' => 'ID',
+    'employee' => 'Employee',
+    'department' => 'Department',
+    'email' => 'Email',
+    'phone' => 'Phone',
+    'job_title' => 'Job Title',
+    'salary' => 'Salary',
+    'hire_date' => 'Hire Date',
+    'term_date' => 'Termination Date',
+    'status' => 'Status',
+    'actions' => 'Actions',
+    'created_by' => 'Created By',
+    'manager' => 'Manager',
+    'created_at' => 'Created At',
+    
+    // Employee Status
+    'active' => 'Active',
+    'inactive' => 'Inactive',
+    
+    // Actions
+    'edit' => 'Edit',
+    'view' => 'View',
+    'delete' => 'Delete',
+    
+    // Modals
+    'confirm_deletion' => 'Confirm Deletion',
+    'are_you_sure' => 'Are you sure you want to delete this employee?',
+    'action_cannot' => 'This action cannot be undone.',
+    'discard' => 'Discard',
+    'confirm' => 'Confirm',
+    'please_wait' => 'Please wait...',
+    
+    // Other
+    'no_employees_found' => 'No employees found.',
+    'showing' => 'Showing',
+    'to' => 'to',
+    'of' => 'of',
+    'entries' => 'entries',
+
 ];

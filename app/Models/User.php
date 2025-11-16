@@ -34,6 +34,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'status',
         'email',
         'password',
+        'tenant_id'
     ];
 
     /**
@@ -59,6 +60,7 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
+
     public function userRole()
     {
         return $this->belongsTo(Role::class, 'role_id');
@@ -83,6 +85,8 @@ class User extends Authenticatable implements MustVerifyEmail
             'department_id'           // related key on pivot (for departments)
         );
     }
+
+
 
 
 }

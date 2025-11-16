@@ -398,19 +398,22 @@ const formLogic = {
                 _token: document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             },
             success: function(response) {
+                LiveBladeResponse.reloadOrRedirect(response);
                 if(response.success) {
-                    Swal.fire({
-                        toast: true,
-                        position: 'top-end',  
-                        icon: 'success',        // Error icon
-                        title: `<span style="color: green;">${response.message}</span>`, 
-                        showConfirmButton: false,
-                        timer: 5000,          
-                        timerProgressBar: true, // Show a progress bar
-                        customClass: {
-                            popup: 'swal2-show', // Adds a fade-in effect for the popup
-                        }
-                    });
+                    // Swal.fire({
+                    //     toast: true,
+                    //     position: 'top-end',  
+                    //     icon: 'success',        // Error icon
+                    //     title: `<span style="color: green;">${response.message}</span>`, 
+                    //     showConfirmButton: false,
+                    //     timer: 5000,          
+                    //     timerProgressBar: true, // Show a progress bar
+                    //     customClass: {
+                    //         popup: 'swal2-show', // Adds a fade-in effect for the popup
+                    //     }
+                    // });
+                    const componentToReload = response.component;
+                    LiveBladeResponse.loadComponent('', response.redirect, response.component, componentToReload, response.message);
                 } else {
                     // Show error message for failed requests
                     Swal.fire({

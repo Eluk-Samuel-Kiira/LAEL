@@ -36,12 +36,12 @@
 
         <!-- Demo credentials (auto-fill when clicked) -->
         <div class="text-center">
-            <p class="text-gray-600 fw-semibold mb-2">{{ __('For Demo Access') }}</p>
+            <p class="text-gray-400 fw-semibold mb-2">{{ __('For Demo Access') }}</p>
             <button type="button" 
                 onclick="fillDemoCredentials()" 
                 class="btn btn-outline-primary btn-sm fw-semibold px-4 py-2 rounded-pill shadow-sm d-inline-flex align-items-center gap-2">
                 <i class="fas fa-magic"></i>
-                <span>Click to Auto-Fill: <strong>samuelkiiraeluk@gmail.com / 1234567890</strong></span>
+                <span>Click to Auto-Fill: <strong>trialuser@gmail.com / password@123</strong></span>
             </button>
             <p class="text-muted fs-7 mt-2">Tap to fill demo credentials automatically</p>
         </div>
@@ -49,8 +49,8 @@
 
     <script>
         function fillDemoCredentials() {
-            document.getElementById('emailField').value = 'samuelkiiraeluk@gmail.com';
-            document.getElementById('passwordField').value = '1234567890';
+            document.getElementById('emailField').value = 'trialuser@gmail.com';
+            document.getElementById('passwordField').value = 'password@123';
         }
     </script>
 

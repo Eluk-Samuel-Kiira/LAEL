@@ -14,28 +14,81 @@
 
             <!-- Modal Body -->
             <div class="modal-body px-5 py-7">
+                <!-- Basic Information -->
                 <div class="row mb-8">
-                    <div class="col-md-6 text-start">
+                    <div class="col-md-4 text-start">
                         <label class="fw-semibold text-gray-600">{{ __('passwords.supplier') }}:</label>
                         <div class="fw-bold fs-6 text-gray-800">{{ $order->supplier->name ?? '—' }}</div>
                     </div>
-                    <div class="col-md-6 text-start">
+                    <div class="col-md-4 text-start">
                         <label class="fw-semibold text-gray-600">{{ __('passwords.expected_delivery') }}:</label>
                         <div class="fw-bold fs-6 text-gray-800">{{ optional($order->expected_delivery_date)->format('M d, Y') ?? '—' }}</div>
+                    </div>
+                    <div class="col-md-4 text-start">
+                        <label class="fw-semibold text-gray-600">{{ __('pagination._location') }}:</label>
+                        <div class="fw-bold fs-6 text-gray-800">{{ $order->location->name ?? '—' }}</div>
                     </div>
                 </div>
 
                 <div class="row mb-8">
-                    <div class="col-md-6 text-start">
+                    <div class="col-md-4 text-start">
                         <label class="fw-semibold text-gray-600">{{ __('auth._status') }}:</label>
                         <div class="fw-bold fs-6 {{ $order->status_badge ? 'text-'.$order->status_badge : 'text-gray-800' }}">
                             {{ ucfirst(str_replace('_', ' ', $order->status)) }}
                         </div>
                     </div>
-                    <div class="col-md-6 text-start">
+                    <div class="col-md-4 text-start">
                         <label class="fw-semibold text-gray-600">{{ __('auth._creater') }}:</label>
                         <div class="fw-bold fs-6 text-gray-800">{{ $order->creator->name ?? '—' }}</div>
+                        <small class="text-muted">{{ optional($order->created_at)->format('M d, Y H:i') }}</small>
                     </div>
+                    <div class="col-md-4 text-start">
+                        <label class="fw-semibold text-gray-600">{{ __('auth.updated_at') }}:</label>
+                        <div class="fw-bold fs-6 text-gray-800">{{ optional($order->updated_at)->format('M d, Y H:i') }}</div>
+                    </div>
+                </div>
+
+                <!-- Status Action History -->
+                <div class="row mb-8">
+                    @if($order->submitted_at)
+                    <div class="col-md-6 text-start">
+                        <label class="fw-semibold text-gray-600">{{ __('passwords.submitted_for_approval') }}:</label>
+                        <div class="fw-bold fs-6 text-gray-800">{{ $order->submittedBy->name ?? '—' }}</div>
+                        <small class="text-muted">{{ optional($order->submitted_at)->format('M d, Y H:i') }}</small>
+                    </div>
+                    @endif
+
+                    @if($order->approved_at)
+                    <div class="col-md-6 text-start">
+                        <label class="fw-semibold text-gray-600">{{ __('passwords.approved_by') }}:</label>
+                        <div class="fw-bold fs-6 text-gray-800">{{ $order->approvedBy->name ?? '—' }}</div>
+                        <small class="text-muted">{{ optional($order->approved_at)->format('M d, Y H:i') }}</small>
+                    </div>
+                    @endif
+
+                    @if($order->sent_at)
+                    <div class="col-md-6 text-start">
+                        <label class="fw-semibold text-gray-600">{{ __('passwords.sent_to_supplier_by') }}:</label>
+                        <div class="fw-bold fs-6 text-gray-800">{{ $order->sentBy->name ?? '—' }}</div>
+                        <small class="text-muted">{{ optional($order->sent_at)->format('M d, Y H:i') }}</small>
+                    </div>
+                    @endif
+
+                    @if($order->received_at)
+                    <div class="col-md-6 text-start">
+                        <label class="fw-semibold text-gray-600">{{ __('passwords.received_by') }}:</label>
+                        <div class="fw-bold fs-6 text-gray-800">{{ $order->receivedBy->name ?? '—' }}</div>
+                        <small class="text-muted">{{ optional($order->received_at)->format('M d, Y H:i') }}</small>
+                    </div>
+                    @endif
+
+                    @if($order->cancelled_at)
+                    <div class="col-md-6 text-start">
+                        <label class="fw-semibold text-gray-600">{{ __('passwords.cancelled_by') }}:</label>
+                        <div class="fw-bold fs-6 text-gray-800">{{ $order->cancelledBy->name ?? '—' }}</div>
+                        <small class="text-muted">{{ optional($order->cancelled_at)->format('M d, Y H:i') }}</small>
+                    </div>
+                    @endif
                 </div>
 
                 <hr class="my-4">
@@ -76,7 +129,6 @@
                     <div class="alert alert-secondary text-center">{{ __('passwords.no_items_found') }}</div>
                 @endif
 
-
                 <!-- Order Summary -->
                 <div class="row">
                     <div class="col-md-6 mb-3">
@@ -98,21 +150,55 @@
                     </div>
 
                     <div class="col-md-6 mb-3">
-                        <h6 class="fw-bold">{{ __('passwords.delivery_info') }}</h6>
+                        <h6 class="fw-bold">{{ __('passwords.status_history') }}</h6>
                         <table class="table table-sm table-borderless w-auto">
-                            <tr><td>{{ __('passwords.supplier') }}:</td><td class="text-end">{{ $order->supplier->name ?? 'N/A' }}</td></tr>
-                            <tr><td>{{ __('pagination._location') }}:</td><td class="text-end">{{ $order->location->name ?? 'N/A' }}</td></tr>
-                            <tr><td>{{ __('passwords.expected_delivery') }}:</td><td class="text-end">{{ optional($order->expected_delivery_date)->format('M d, Y') ?? 'N/A' }}</td></tr>
-                            <tr><td>{{ __('auth._status') }}:</td>
-                                <td class="text-end"><span class="badge badge-{{ $order->status_badge }}">{{ ucfirst(str_replace('_', ' ', $order->status)) }}</span></td>
+                            <tr>
+                                <td>{{ __('auth.created_at') }}:</td>
+                                <td class="text-end">{{ optional($order->created_at)->format('M d, Y H:i') }}</td>
                             </tr>
+                            @if($order->submitted_at)
+                            <tr>
+                                <td>{{ __('passwords.submitted_at') }}:</td>
+                                <td class="text-end">{{ optional($order->submitted_at)->format('M d, Y H:i') }}</td>
+                            </tr>
+                            @endif
+                            @if($order->approved_at)
+                            <tr>
+                                <td>{{ __('passwords.approved_at') }}:</td>
+                                <td class="text-end">{{ optional($order->approved_at)->format('M d, Y H:i') }}</td>
+                            </tr>
+                            @endif
+                            @if($order->sent_at)
+                            <tr>
+                                <td>{{ __('passwords.sent_at') }}:</td>
+                                <td class="text-end">{{ optional($order->sent_at)->format('M d, Y H:i') }}</td>
+                            </tr>
+                            @endif
+                            @if($order->received_at)
+                            <tr>
+                                <td>{{ __('passwords.received_at') }}:</td>
+                                <td class="text-end">{{ optional($order->received_at)->format('M d, Y H:i') }}</td>
+                            </tr>
+                            @endif
+                            @if($order->cancelled_at)
+                            <tr>
+                                <td>{{ __('passwords.cancelled_at') }}:</td>
+                                <td class="text-end">{{ optional($order->cancelled_at)->format('M d, Y H:i') }}</td>
+                            </tr>
+                            @endif
                         </table>
                     </div>
                 </div>
 
                 @if($order->notes)
-                    <div class="alert alert-secondary mt-4 mb-0">
-                        <strong>{{ __('passwords._notes') }}:</strong> {{ $order->notes }}
+                    <div class="mt-4 mb-0">
+                        <div class="d-flex align-items-start">
+                            <i class="bi bi-sticky text-muted me-2 mt-1"></i>
+                            <div>
+                                <small class="text-muted d-block">{{ __('passwords._notes') }}</small>
+                                <p class="mb-0 text-dark">{{ $order->notes }}</p>
+                            </div>
+                        </div>
                     </div>
                 @endif
 

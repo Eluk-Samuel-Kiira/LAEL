@@ -58,7 +58,7 @@ class SupplierController extends Controller
         ]);
 
         $validated['tenant_id'] = auth()->user()->tenant_id ?? 1;
-        // $validated['created_by'] = auth()->id();
+        $validated['created_by'] = auth()->id();
 
         $supplier = Supplier::create($validated);
 

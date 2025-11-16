@@ -60,6 +60,7 @@ class UserController extends Controller
         $userData = array_merge($validatedData, [
             'name' => $username,
             'password' => $hashedPassword,
+            'tenant_id' => 1,
         ]);
 
         try {

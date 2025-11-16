@@ -19,6 +19,7 @@
                     <th class="min-w-125px">{{__('pagination._total')}}</th>
                     <th class="min-w-125px">{{__('passwords.expected_delivery')}}</th>
                     <th class="min-w-125px">{{__('auth._creater')}}</th>
+                    <th class="min-w-125px">{{__('auth.updated_at')}}</th>
                     <th class="min-w-125px">{{__('auth.created_at')}}</th>
                     <th class="min-w-100px text-end">{{__('auth._actions')}}</th>
                 </tr>
@@ -70,65 +71,87 @@
                                 <div class="badge badge-light fw-bold">{{ $order->creator->name ?? __('pagination._none')}}</div>
                             </td>
                             
+                            <td>{{ $order->updated_at->format('d M Y, h:i a') }}</td>
                             <td>{{ $order->created_at->format('d M Y, h:i a') }}</td>
                             
                             <td>
                                 <div class="d-flex gap-2">
                                     <!-- Status Action Buttons -->
                                     @if($order->status === 'draft')
-                                        <button class="btn btn-sm btn-warning" onclick="submitForApproval({{ $order->id }})">
-                                            {{ __('passwords.submit_approval') }}
-                                        </button>
+                                        @can('submit purchase_orders')
+                                            <button class="btn btn-sm btn-warning" onclick="submitForApproval({{ $order->id }})">
+                                                {{ __('passwords.submit_approval') }}
+                                            </button>
+                                        @endcan
                                     @endif
                                     
-                                    @if($order->status === 'pending_approval' && auth()->user()->can('approve purchase_orders'))
-                                        <button class="btn btn-sm btn-success" onclick="approvePurchaseOrder({{ $order->id }})">
-                                            {{ __('passwords.approve') }}
-                                        </button>
+                                    @if($order->status === 'pending_approval')
+                                        @can('approve purchase_orders')
+                                            <button class="btn btn-sm btn-success" onclick="approvePurchaseOrder({{ $order->id }})">
+                                                {{ __('passwords.approve') }}
+                                            </button>
+                                        @endcan
                                     @endif
                                     
                                     @if($order->status === 'approved')
-                                        <button class="btn btn-sm btn-primary" onclick="sendToSupplier({{ $order->id }})">
-                                            {{ __('passwords.send_supplier') }}
-                                        </button>
+                                        @can('send purchase_orders')
+                                            <button class="btn btn-sm btn-primary" onclick="sendToSupplier({{ $order->id }})">
+                                                {{ __('passwords.send_supplier') }}
+                                            </button>
+                                        @endcan
                                     @endif
                                     
                                     @if(in_array($order->status, ['sent', 'partially_received']))
-                                        <button class="btn btn-sm btn-info" onclick="receiveItems({{ $order->id }})">
-                                            {{ __('passwords.receive_items') }}
-                                        </button>
+                                        @can('receive purchase_orders')
+                                            <button class="btn btn-sm btn-info" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#receiveItemsModal{{ $order->id }}"
+                                                    data-total-pending="{{ $order->items->sum('quantity') - $order->items->sum('received_quantity') }}">
+                                                {{ __('passwords.receive_items') }}
+                                            </button>
+                                        @endcan
                                     @endif
                                     
                                     @if(in_array($order->status, ['draft', 'pending_approval', 'approved']))
-                                        <button class="btn btn-sm btn-danger" onclick="cancelPurchaseOrder({{ $order->id }})">
-                                            {{ __('passwords.cancel') }}
-                                        </button>
+                                        @can('cancel purchase_orders')
+                                            <button class="btn btn-sm btn-danger" onclick="cancelPurchaseOrder({{ $order->id }})">
+                                                {{ __('passwords.cancel') }}
+                                            </button>
+                                        @endcan
                                     @endif
 
                                     <!-- View/Edit/Delete Buttons -->
-                                    @can('view tax')
+                                    @can('view purchase_orders')
                                         <button class="btn btn-sm btn-light btn-active-color-success" 
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#viewPurchase{{$order->id}}">
                                             <i class="bi bi-eye fs-5"></i>
                                         </button>
                                     @endcan
+                                    
                                     {{--
-                                    @can('edit tax')
-                                        <button class="btn btn-sm btn-light btn-active-color-primary" 
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#editPurchase{{$order->id}}">
-                                            <i class="bi bi-pencil-square fs-5"></i>
-                                        </button>
+                                    @can('edit purchase_orders')
+                                        <!-- Only show edit for draft and pending_approval status -->
+                                        @if(in_array($order->status, ['draft', 'pending_approval']))
+                                            <button class="btn btn-sm btn-light btn-active-color-primary" 
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#editPurchase{{$order->id}}">
+                                                <i class="bi bi-pencil-square fs-5"></i>
+                                            </button>
+                                        @endif
                                     @endcan
                                     --}}
-                                    @can('delete tax')
-                                        <button type="button" 
-                                                class="btn btn-sm btn-light btn-active-color-danger" 
-                                                data-bs-toggle="modal" 
-                                                data-bs-target="#deletePurchaseModal{{$order->id}}">
-                                            <i class="bi bi-trash fs-5"></i>
-                                        </button>
+
+                                    @can('delete purchase_orders')
+                                        <!-- Only show delete for draft status (before submission) and cancelled orders -->
+                                        @if(in_array($order->status, ['draft', 'cancelled']))
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-light btn-active-color-danger" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#deletePurchaseModal{{$order->id}}">
+                                                <i class="bi bi-trash fs-5"></i>
+                                            </button>
+                                        @endif
                                     @endcan
                                 </div>
 
@@ -145,9 +168,9 @@
                                                 <p>{{ __('auth.action_cannot') }}</p>
                                             </div>
                                             <div class="modal-footer">
-                                                <button type="button" class="btn btn-light me-3" data-bs-dismiss="modal">{{ __('auth._discard') }}</button>
-                                                <button type="button" class="btn btn-danger" 
-                                                        {{-- data-item-url="{{ route('purchase-orders.destroy', $order->id) }}" --}}
+                                                <button type="button" id="closeDeleteModal{{$order->id}}" class="btn btn-light me-3" data-bs-dismiss="modal">{{ __('auth._discard') }}</button>
+                                                <button type="button" id="deleteButton{{$order->id}}" class="btn btn-danger" 
+                                                        data-item-url="{{ route('purchase-orders.destroy', $order->id) }}"
                                                         data-item-id="{{ $order->id }}"
                                                         onclick="deleteItem(this)">
                                                     <span class="indicator-label">{{ __('auth._confirm') }}</span>
@@ -160,7 +183,9 @@
                                         </div>
                                     </div>
                                 </div>  
+
                                 @include('procurement.purchase-order.view') 
+                                @include('procurement.purchase-order.receive') 
                             </td>
                         </tr>
                     @endforeach

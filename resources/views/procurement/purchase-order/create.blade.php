@@ -27,7 +27,7 @@
                                         <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
                                     @endforeach
                                 </select>
-                                <div id="supplier_id_error"></div>
+                                <div id="supplier_id"></div>
                             </div>
 
                             <div class="d-flex flex-column mb-8 fv-row col-md-6">
@@ -40,7 +40,7 @@
                                         <option value="{{ $location->id }}">{{ $location->name }}</option>
                                     @endforeach
                                 </select>
-                                <div id="location_id_error"></div>
+                                <div id="location_id"></div>
                             </div>
                         </div>
 
@@ -50,7 +50,7 @@
                                     <span class="required">{{ __('passwords.expected_delivery_date') }}</span>
                                 </label>
                                 <input type="date" class="form-control form-control-solid" name="expected_delivery_date" min="{{ date('Y-m-d') }}" />
-                                <div id="expected_delivery_date_error"></div>
+                                <div id="expected_delivery_date"></div>
                             </div>
 
                             <div class="d-flex flex-column mb-8 fv-row col-md-6">
@@ -58,7 +58,7 @@
                                     <span>{{ __('passwords.notes') }}</span>
                                 </label>
                                 <textarea class="form-control form-control-solid" name="notes" rows="2" placeholder="{{ __('passwords.optional_notes') }}"></textarea>
-                                <div id="notes_error"></div>
+                                <div id="notes"></div>
                             </div>
                         </div>
 
@@ -73,26 +73,34 @@
                             </div>
 
                             <div id="purchase_order_items_container">
-                                <!-- Items will be added dynamically here -->
+                                <!-- Update the first item error divs in your HTML -->
                                 <div class="row g-4 mb-4 purchase-order-item">
                                     <div class="col-md-4">
                                         <label class="form-label required">{{ __('passwords.product') }}</label>
                                         <select name="items[0][product_variant_id]" class="form-select product-select" onchange="updateProductDetails(this, 0)">
                                             <option></option>
                                             @foreach($variants as $variant)
-                                                <option value="{{ $variant->id }}" data-sku="{{ $variant->sku }}" data-name="{{ $variant->name }}">
-                                                    {{ $variant->name }} ({{ $variant->sku }})
+                                                <option value="{{ $variant->id }}" 
+                                                data-sku="{{ $variant->sku }}" 
+                                                data-name="{{ $variant->name }}"
+                                                data-cost-price="{{ $variant->cost_price }}"
+                                                data-is-taxable="{{ $variant->is_taxable ? '1' : '0' }}"
+                                                >                                                    
+                                                {{ $variant->name }} ({{ $variant->sku }})
                                                 </option>
                                             @endforeach
                                         </select>
+                                        <div id="items.0.product_variant_id"></div>
                                     </div>
                                     <div class="col-md-2">
                                         <label class="form-label required">{{ __('passwords.quantity') }}</label>
                                         <input type="number" name="items[0][quantity]" class="form-control" min="1" value="1" onchange="calculateItemTotal(0)">
+                                        <div id="items.0.quantity"></div>
                                     </div>
                                     <div class="col-md-2">
                                         <label class="form-label required">{{ __('passwords.unit_cost') }}</label>
                                         <input type="number" name="items[0][unit_cost]" class="form-control" min="0.01" step="0.01" value="0.00" onchange="calculateItemTotal(0)">
+                                        <div id="items.0.unit_cost"></div>
                                     </div>
                                     <div class="col-md-2">
                                         <label class="form-label">{{ __('passwords.total') }}</label>
@@ -101,7 +109,7 @@
                                     <div class="col-md-2">
                                         <label class="form-label">&nbsp;</label>
                                         <button type="button" class="btn btn-sm btn-danger w-100" onclick="removePurchaseOrderItem(this)" disabled>
-                                            <i class="ki-duotone ki-trash fs-3"></i>
+                                            <i class="bi bi-trash fs-5"></i>
                                         </button>
                                     </div>
                                 </div>
@@ -136,7 +144,13 @@
                             id="submitPurchaseOrderButton" 
                             type="button" 
                             class="btn btn-primary"
-                            onclick="submitPurchaseOrderForm()">
+                            onclick="submitPurchaseOrderForm(
+                                'kt_modal_add_purchase_order_form', 
+                                'submitPurchaseOrderButton',
+                                '{{ route('purchase-order.store') }}',
+                                'POST',
+                                'discardPurchaseOrderButton'
+                            )">
                             
                             <span class="indicator-label">{{ __('passwords.create_purchase_order') }}</span>
                             <span class="indicator-progress">{{ __('passwords.please_wait') }}
@@ -149,3 +163,5 @@
         </div>
     </div>
 </div>
+
+
