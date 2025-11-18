@@ -34,6 +34,7 @@ class Employee extends Model
         'is_active' => 'boolean',
     ];
 
+
     /**
      * Get the user associated with the employee.
      */

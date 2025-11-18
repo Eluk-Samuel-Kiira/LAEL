@@ -19,6 +19,11 @@ class OrderTax extends Model
         'created_by',
     ];
 
+    public function getTaxAmountAttribute($value)
+    {
+        return formatCurrency($value);
+    }
+    
     public function order()
     {
         return $this->belongsTo(Order::class, 'order_id');

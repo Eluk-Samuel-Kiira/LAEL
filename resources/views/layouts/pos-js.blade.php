@@ -756,6 +756,42 @@
 
     }
 
+
+    // Prevent all closing methods
+    document.addEventListener('DOMContentLoaded', function() {
+        const receiptModal = document.getElementById('receiptModal');
+        
+        // Prevent backdrop click
+        receiptModal.addEventListener('click', function(event) {
+            if (event.target === receiptModal) {
+                event.stopPropagation();
+                event.preventDefault();
+                return false;
+            }
+        });
+        
+        // Prevent ESC key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && receiptModal.classList.contains('show')) {
+                event.preventDefault();
+                event.stopPropagation();
+                return false;
+            }
+        });
+        
+        // Prevent Bootstrap hide events
+        receiptModal.addEventListener('hide.bs.modal', function(event) {
+            event.preventDefault();
+            return false;
+        });
+        
+        // Prevent any other hide attempts
+        receiptModal.addEventListener('hidden.bs.modal', function(event) {
+            event.preventDefault();
+            return false;
+        });
+    });
+
 </script>
 
 

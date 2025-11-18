@@ -109,6 +109,7 @@ return [
 
     // Purchase Orders
     'purchase_order' => 'Purchase Order',
+    'new_purchase_order' => 'New Purchase Order',
     'po_table' => 'Purchase Order Table',
     'po_number' => 'PO Number',
     'expected_delivery' => 'Excepted Delivery',
@@ -116,6 +117,8 @@ return [
     'unit_cost' => 'Unit Cost',
     'tax_amount' => 'Tax Amount',
     'tax_total' => 'Tax Total',
+    'print' => 'Print',
+    'download_pdf' => 'Download PDF',
     'total_cost' => 'Total Cost',
     'received_qty' => 'Received Qty',
     'pending_qty' => 'Pending Qty',

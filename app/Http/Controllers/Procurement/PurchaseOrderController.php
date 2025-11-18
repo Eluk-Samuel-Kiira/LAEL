@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Procurement;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\{ Supplier, PurchaseOrder, ProductVariant, PurchaseOrderItem, InventoryItems,
-        PurchaseReceipt, InventoryTransactions, InventoryAdjustment, PurchaseReceiptItem };
+        PurchaseReceipt, InventoryTransactions, InventoryAdjustment, PurchaseReceiptItem, SingleShopInventoryLog };
 use Illuminate\Support\Facades\{ Auth, DB };
 
 
@@ -572,6 +572,9 @@ class PurchaseOrderController extends Controller
             ], 422);
         }
 
+        $tenantId = auth()->user()->tenant_id;
+        $isSingleShop = tenant_is_single_shop($tenantId);
+
         DB::beginTransaction();
         try {
             $totalReceived = 0;
@@ -641,6 +644,32 @@ class PurchaseOrderController extends Controller
                         'received_by' => auth()->id(),
                         'tenant_id' => auth()->user()->tenant_id ?? 1,
                     ]);
+
+                    // ✅ LOG TO SINGLE SHOP INVENTORY LOG IF SINGLE SHOP
+                    if ($isSingleShop) {
+                        SingleShopInventoryLog::create([
+                            'variant_id' => $variant->id,
+                            'order_id' => $purchaseOrder->id, // Use purchase order ID
+                            'tenant_id' => $tenantId,
+                            'created_by' => auth()->id(),
+                            'quantity_before' => $quantityBefore,
+                            'quantity_after' => $quantityAfter,
+                            'quantity_change' => $quantityReceived, // Positive for stock increase
+                            'reason' => 'purchase_receipt',
+                            'notes' => 'Stock received from Purchase Order #' . $purchaseOrder->po_number . 
+                                    ' - Receipt #' . $purchaseReceipt->id,
+                            'source' => 'purchase',
+                            'metadata' => [
+                                'purchase_order_id' => $purchaseOrder->id,
+                                'purchase_receipt_id' => $purchaseReceipt->id,
+                                'purchase_order_item_id' => $purchaseOrderItem->id,
+                                'batch_number' => $validated['batch_number'] ?? null,
+                                'expiry_date' => $validated['expiry_date'] ?? null,
+                                'unit_cost' => $purchaseOrderItem->unit_cost,
+                                'total_cost' => $purchaseOrderItem->unit_cost * $quantityReceived,
+                            ],
+                        ]);
+                    }
 
                     // Store receipt item data for response
                     $receiptItems[] = $receiptItem;

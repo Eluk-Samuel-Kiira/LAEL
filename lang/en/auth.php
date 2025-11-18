@@ -201,4 +201,11 @@ return [
     'does_not_permision' => 'You Do not Have Permissions to perform action',
     'edit_employee' => 'Edit Employee',
     'job_title' => 'Job Title',
+
+    // messages
+    'maximum_locations_reached' => 'You have reached the maximum limit of :max locations for your plan.',
+    'maximum_departments_reached' => 'You have reached the maximum limit of :max departments for your plan.',
+    'single_shop_plan' => 'Single Shop Plan',
+    'upgrade_for_multiple_shops' => 'You are currently on a single shop plan. Upgrade your plan to use multiple shops, locations, and departments.',
+    'upgrade_plan' => 'Upgrade Plan',
 ];

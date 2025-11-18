@@ -2,6 +2,8 @@
     @section('title', __('pagination._inventory_item'))
     @section('content')
     
+    @unless(tenant_is_single_shop(auth()->user()->tenant_id))
+    
     <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
         <div id="kt_app_toolbar_container" class="app-container container-fluid d-flex flex-stack">
             <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
@@ -71,6 +73,16 @@
             </div>
         </div>
     </div>
+    @else
+        <div class="alert alert-info mb-4">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>{{ __('auth.single_shop_plan') }}:</strong>
+            {{ __('auth.upgrade_for_multiple_shops') }}
+            <a href="/" class="btn btn-sm btn-outline-primary ms-2">
+                {{ __('auth.upgrade_plan') }}
+            </a>
+        </div>
+    @endunless
         
     @endsection
 </x-app-layout>

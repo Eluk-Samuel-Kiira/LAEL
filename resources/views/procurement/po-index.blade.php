@@ -33,7 +33,7 @@
                 </div>
                 @can('create tax')
                     <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_add_purchase_order">
-                    <i class="ki-duotone ki-plus fs-2"></i>{{__('passwords.new_supplier')}}</button>
+                    <i class="ki-duotone ki-plus fs-2"></i>{{__('passwords.new_purchase_order')}}</button>
                 @endcan
 
                 @include('procurement.purchase-order.create')    

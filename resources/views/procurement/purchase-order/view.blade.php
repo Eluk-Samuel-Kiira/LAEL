@@ -14,6 +14,18 @@
 
             <!-- Modal Body -->
             <div class="modal-body px-5 py-7">
+                <!-- Action Buttons -->
+                <div class="row mb-6">
+                    <div class="col-12 text-end">
+                        <button type="button" class="btn btn-primary me-2" onclick="printPurchaseOrder('viewPurchase{{ $order->id }}')">
+                            <i class="bi bi-printer me-2"></i>{{ __('passwords.print') }}
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="downloadPurchaseOrder('viewPurchase{{ $order->id }}')">
+                            <i class="bi bi-download me-2"></i>{{ __('passwords.download_pdf') }}
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Basic Information -->
                 <div class="row mb-8">
                     <div class="col-md-4 text-start">
@@ -209,3 +221,120 @@
         </div>
     </div>
 </div>
+
+
+
+<script>
+    // Function to print purchase order
+    function printPurchaseOrder(modalId) {
+        const modalElement = document.getElementById(modalId);
+        if (!modalElement) {
+            console.error('Modal not found:', modalId);
+            return;
+        }
+
+        // Clone the modal content
+        const modalContent = modalElement.querySelector('.modal-content').cloneNode(true);
+        
+        // Remove action buttons from the print version
+        const actionButtons = modalContent.querySelector('.row.mb-6');
+        if (actionButtons) {
+            actionButtons.remove();
+        }
+
+        // Remove the close button from print version
+        const closeButton = modalContent.querySelector('.text-end.mt-6');
+        if (closeButton) {
+            closeButton.remove();
+        }
+
+        // Create a new window for printing
+        const printWindow = window.open('', '_blank', 'width=1000,height=700');
+        
+        // Create print-friendly HTML
+        const printContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Purchase Order Details</title>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+                <style>
+                    body { 
+                        font-family: Arial, sans-serif; 
+                        margin: 20px; 
+                        background: white;
+                        color: black;
+                    }
+                    .print-header { 
+                        text-align: center; 
+                        margin-bottom: 30px; 
+                        border-bottom: 2px solid #333; 
+                        padding-bottom: 20px; 
+                    }
+                    .modal-header { 
+                        border-bottom: 2px solid #dee2e6; 
+                        margin-bottom: 20px;
+                    }
+                    .modal-body {
+                        padding: 0 !important;
+                    }
+                    .text-primary { color: #007bff !important; }
+                    .text-success { color: #28a745 !important; }
+                    .text-danger { color: #dc3545 !important; }
+                    .badge { 
+                        padding: 4px 8px; 
+                        border-radius: 4px; 
+                        font-size: 12px; 
+                    }
+                    .bg-success { background-color: #28a745 !important; color: white; }
+                    .bg-danger { background-color: #dc3545 !important; color: white; }
+                    .bg-warning { background-color: #ffc107 !important; color: black; }
+                    .bg-primary { background-color: #007bff !important; color: white; }
+                    .bg-info { background-color: #17a2b8 !important; color: white; }
+                    .bg-secondary { background-color: #6c757d !important; color: white; }
+                    .bg-light { background-color: #f8f9fa !important; color: black; }
+                    @media print {
+                        body { margin: 0; }
+                        .no-print { display: none !important; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container-fluid">
+                    ${modalContent.innerHTML}
+                </div>
+                
+                <div class="text-center mt-4 no-print">
+                    <button onclick="window.print()" class="btn btn-primary me-2">Print</button>
+                    <button onclick="window.close()" class="btn btn-secondary">Close</button>
+                </div>
+                
+                <script>
+                    window.onload = function() {
+                        // Auto-print after a short delay
+                        setTimeout(() => {
+                            window.print();
+                        }, 1000);
+                    };
+                <\/script>
+            </body>
+            </html>
+        `;
+
+        printWindow.document.write(printContent);
+        printWindow.document.close();
+    }
+
+    // Function to download as PDF
+    function downloadPurchaseOrder(modalId) {
+        // For PDF download, we can use the same print function but suggest saving as PDF
+        printPurchaseOrder(modalId);
+        
+        // Alternatively, show a message about using browser's "Save as PDF" option
+        setTimeout(() => {
+            alert('To download as PDF, use the print dialog and choose "Save as PDF" as your printer destination.');
+        }, 1000);
+    }
+
+</script>

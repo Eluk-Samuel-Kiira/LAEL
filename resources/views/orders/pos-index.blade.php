@@ -34,12 +34,14 @@
                 </div>
 
                 <!-- Department Filter -->
+                @if(!tenant_is_single_shop(auth()->user()->tenant_id))
                 <select class="form-select form-select-solid fw-bold w-100 w-md-auto" id="departmentFilter">
                     <option value="">{{ __('auth._department') }}</option>
                     @foreach ($user_departments as $department)
                         <option value="{{ $department->id }}">{{ ucwords($department->name) }}</option>
                     @endforeach
                 </select>
+                @endif
             </div>
         </div>
     </div>

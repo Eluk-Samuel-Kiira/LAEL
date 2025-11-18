@@ -5,21 +5,12 @@ namespace App\Http\Controllers\Orders;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Product;
+use App\Models\{ Product, SingleShopInventoryLog, InventoryItems, ProductVariant, Order, InventoryTransactions };
 use Illuminate\Support\Facades\Artisan;
-use App\Models\InventoryItems;
-use App\Models\ProductVariant;
-use App\Models\Order;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str; 
-use App\Models\OrderItem;
-use App\Models\OrderPayment;
-use App\Models\InventoryLog;
-use App\Models\Customer;
-use App\Models\Inventory;
-use App\Models\OrderTax;
-use App\Models\InventoryAdjustments;
-use App\Models\InventoryTransactions;
+use App\Models\{ OrderItem, OrderPayment, InventoryLog, Customer, Inventory, OrderTax, InventoryAdjustments };
+
 
 class POSController extends Controller
 {
@@ -29,33 +20,68 @@ class POSController extends Controller
         Artisan::call('optimize:clear');
 
         $user = Auth::user();
+        $tenantId = $user->tenant_id;
 
-        $user_departments = $user->departments()->get();
-        $departments_id = $user_departments->pluck('id')->toArray();
+        // Check if this is a single shop tenant
+        $isSingleShop = tenant_is_single_shop($tenantId);
+        // dd($isSingleShop);
 
         $now = now();
 
-        $products = Product::with([
-                'departments',
-                'taxes' => fn($q) => $q->where('is_active', 1),
-                'promotions' => fn($q) => $q
-                    ->where('is_active', 1)
-                    ->where('start_date', '<=', $now)
-                    ->where('end_date', '>=', $now),
-                'variants.inventory',
-                'variants.variantTaxes' => fn($q) => $q->where('is_active', 1),
-                'variants.variantPromotions' => fn($q) => $q
-                    ->where('is_active', 1)
-                    ->where('start_date', '<=', $now)
-                    ->where('end_date', '>=', $now),
-            ])
-            ->whereHas('departments', fn($q) => $q->whereIn('departments.id', $departments_id))
-            ->where('is_active', 1)
-            ->latest()
-            ->get();
+        if ($isSingleShop) {
+            // Single shop: Get all product variants regardless of department, inventory, location
+            $products = Product::with([
+                    'taxes' => fn($q) => $q->where('is_active', 1),
+                    'promotions' => fn($q) => $q
+                        ->where('is_active', 1)
+                        ->where('start_date', '<=', $now)
+                        ->where('end_date', '>=', $now),
+                    'variants' => function($query) {
+                        $query->where('is_active', 1)
+                            ->orderBy('name');
+                    },
+                    'variants.variantTaxes' => fn($q) => $q->where('is_active', 1),
+                    'variants.variantPromotions' => fn($q) => $q
+                        ->where('is_active', 1)
+                        ->where('start_date', '<=', $now)
+                        ->where('end_date', '>=', $now),
+                ])
+                ->where('is_active', 1)
+                ->whereHas('variants') // Only products that have variants
+                ->latest()
+                ->get();
 
+        } else {
+            // Multi-shop: Use department-based filtering with inventory
+            $user_departments = $user->departments()->get();
+            $departments_id = $user_departments->pluck('id')->toArray();
 
-        // Compute applicable taxes per variant following your rules
+            $products = Product::with([
+                    'departments',
+                    'taxes' => fn($q) => $q->where('is_active', 1),
+                    'promotions' => fn($q) => $q
+                        ->where('is_active', 1)
+                        ->where('start_date', '<=', $now)
+                        ->where('end_date', '>=', $now),
+                    'variants' => function($query) {
+                        $query->where('is_active', 1)
+                            ->orderBy('name');
+                    },
+                    'variants.inventory', // Changed from inventory to inventoryItems
+                    'variants.variantTaxes' => fn($q) => $q->where('is_active', 1),
+                    'variants.variantPromotions' => fn($q) => $q
+                        ->where('is_active', 1)
+                        ->where('start_date', '<=', $now)
+                        ->where('end_date', '>=', $now),
+                ])
+                ->whereHas('departments', fn($q) => $q->whereIn('departments.id', $departments_id))
+                ->where('is_active', 1)
+                ->whereHas('variants') // Only products that have variants
+                ->latest()
+                ->get();
+        }
+
+        // Compute applicable taxes and promotions per variant
         foreach ($products as $product) {
             foreach ($product->variants as $variant) {
                 /** ---------------- Taxes ---------------- */
@@ -108,53 +134,53 @@ class POSController extends Controller
                         'name'        => $p->name,
                         'type'        => $p->discount_type,   // 'percentage' | 'fixed' | 'buy_x_get_y'
                         'value'       => $p->discount_type === 'fixed'
-                                        ? formatCurrency($value)   // show in system currency
+                                        ? formatCurrency($value)   // show in system currency convert to needed currency
                                         : $value, 
                         'start_date'  => $p->start_date,
                         'end_date'    => $p->end_date,
                     ];
                 })->values();
 
+                /** ---------------- Quantity Handling ---------------- */
+                if ($isSingleShop) {
+                    // Single shop: Use overal_quantity_at_hand directly
+                    $variant->quantity_available = $variant->overal_quantity_at_hand ?? 0;
+                    $variant->quantity_source = 'overall';
+                } else {
+                    
+                    // Multi-shop: Calculate from inventory using quantity_allocated
+                    $inventory = $variant->inventory; // Now using singular 'inventory'
+
+                    if ($inventory) {
+                        $variant->quantity_available = $inventory->quantity_allocated ?? 0;
+                    } else {
+                        $variant->quantity_available = 0;
+                    }
+                    $variant->quantity_source = 'inventory_allocated';
+                }
+
                 /** ---------------- Currency Casting ---------------- */
                 // Always raw in USD
-                $variant->price      = formatCurrency($variant->price);
-                $variant->cost_price = formatCurrency($variant->cost_price);
+                $variant->price      = $variant->price;
+                $variant->cost_price = $variant->cost_price; // They are auto converted in the model by accessors
             }
         }
+
+        // Only include user_departments for multi-shop scenario
+        $user_departments = $user->departments()->get();
 
         // \Log::info($products->toArray());
 
         return view('orders.pos-index', compact('user_departments', 'products'));
     }
 
-
-    // public function index(Request $request)
-    // {
-    //     Artisan::call('optimize:clear');
-    //     $user = Auth::user();
-        
-    //     // fetch departments assigned to this user
-    //     $user_departments = $user->departments()->get();
-    //     $departments_id = $user_departments->pluck('id')->toArray();
-
-    //     // Fetch only products allocated to those departments (with variants AND their inventory)
-    //     $products = Product::with(['variants.inventory', 'departments'])
-    //         ->whereHas('departments', function ($query) use ($departments_id) {
-    //             $query->whereIn('departments.id', $departments_id);
-    //         })
-    //         ->where('is_active', 1)
-    //         ->latest()
-    //         ->get();
-            
-    //     // \Log::info($products->toArray());
-    //     return view('orders.pos-index', compact('user_departments', 'products'));
-    // }
-
     public function processPayment(Request $request)
     {
         try {
             $cartData = json_decode($request->cart_data, true);
             $user = Auth::user();
+            $tenantId = $user->tenant_id;
+            $isSingleShop = tenant_is_single_shop($tenantId);
 
             // Determine customer details
             $customerId = null;
@@ -170,37 +196,56 @@ class POSController extends Controller
                     $customerName = $cartData['customer']['name'];
                 }
             }
+
             // Generate order number
             $orderNumber = 'ORD-' . date('Ymd') . '-' . strtoupper(Str::random(6));
             
             $order = Order::create([
-                'tenant_id' => 1,
+                'tenant_id' => $tenantId,
                 'customer_id' => $customerId,     
                 'customer_name' => $customerName, 
-                'location_id' => 1,
-                'department_id' => 1,
+                'location_id' => $user->location_id ?? 1,
+                'department_id' => $user->department_id ?? 1,
                 'order_number' => $orderNumber,
                 'type' => 'sale',
                 'status' => 'confirmed',
-                'subtotal' => toUSD($cartData['subtotal']),
-                'discount_total' => toUSD($cartData['discount']),
-                'tax_total' => toUSD($cartData['tax']),
-                'total' => toUSD($cartData['total']),
+                'subtotal' => $cartData['subtotal'],
+                'discount_total' => $cartData['discount'],
+                'tax_total' => $cartData['tax'],
+                'total' => $cartData['total'],
                 'paid_amount' => 0, // Will be updated after payment
                 'balance_due' => 0,
                 'source' => 'pos',
                 'created_by' => $user->id,
             ]);
 
-            // \Log::info($cartData['items']);
-
             // Create order items 
             foreach ($cartData['items'] as $item) {
-                // Get product variant with inventory
-                $variant = ProductVariant::with('inventory')->find($item['variant_id']);
+                // Get product variant
+                $variant = ProductVariant::find($item['variant_id']);
                 
                 if (!$variant) {
                     continue;
+                }
+
+                // Prepare inventory data based on shop type
+                $inventoryData = [];
+                if ($isSingleShop) {
+                    // Single shop: Track overall quantity changes
+                    $inventoryData = [
+                        'initial_stock' => $variant->overal_quantity_at_hand,
+                        'current_stock' => $variant->overal_quantity_at_hand - $item['quantity'],
+                        'shop_type' => 'single_shop'
+                    ];
+                } else {
+                    // Multi-shop: Track inventory item changes
+                    $inventory = $variant->inventory;
+                    $inventoryData = [
+                        'initial_stock' => $inventory ? $inventory->quantity_allocated : 0,
+                        'current_stock' => $inventory ? $inventory->quantity_allocated - $item['quantity'] : 0,
+                        'inventory_id' => $inventory ? $inventory->id : null,
+                        'shop_type' => 'multi_shop'
+                    ];
                 }
 
                 // Create order item
@@ -209,25 +254,16 @@ class POSController extends Controller
                     'variant_id' => $variant->id,
                     'item_name' => $item['name'],
                     'sku' => $variant->sku,
-                    'unit_price' => toUSD($item['price']),
+                    'unit_price' => $item['price'],
                     'quantity' => $item['quantity'],
-                    'tax_amount' => toUSD($item['tax_total']),
-                    'discount' => toUSD($item['discount']),
-                    'total_price' => toUSD($item['total']),
-
-                    // keep inventory data
-                    'inventory_data' => json_encode([
-                        'initial_stock' => $variant->inventory->quantity_on_hand,
-                        'current_stock' => $variant->inventory->quantity_on_hand - $item['quantity']
-                    ]),
-                    // dump the raw taxes array into JSON
-                    'tax_data'       => json_encode($item['taxes'] ?? []),
-
-                    // dump the raw promotions array into JSON
+                    'tax_amount' => $item['tax_total'],
+                    'discount' => $item['discount'],
+                    'total_price' => $item['total'],
+                    'inventory_data' => json_encode($inventoryData),
+                    'tax_data' => json_encode($item['taxes'] ?? []),
                     'promotion_data' => json_encode($item['promotions'] ?? []),
                 ]);
             }
-
 
             return response()->json([
                 'success' => true,
@@ -235,6 +271,7 @@ class POSController extends Controller
                 'order_number' => $orderNumber,
                 'customerName' => $customerName,
                 'order_id' => $order['id'],
+                'is_single_shop' => $isSingleShop,
             ]);
 
         } catch (\Exception $e) {
@@ -247,102 +284,262 @@ class POSController extends Controller
         }
     }
 
-    
     public function completePayment(Request $request) 
     {
-        // \Log::info($request->all());
-        $cartData = $request->items; 
-        $paymentDetails = $request->payment_details;  
+        try {
+            $cartData = $request->items; 
+            $paymentDetails = $request->payment_details;  
+            $user = Auth::user();
+            $tenantId = $user->tenant_id;
+            $isSingleShop = tenant_is_single_shop($tenantId);
 
-        $order = Order::findOrFail($request->order_id);
-        $order->update([
-            'paid_amount' => toUSD($paymentDetails['amount_tendered']) ?? 0,
-            'balance_due' => toUSD($paymentDetails['change_due']) ?? 0,
-            'notes'       => __('pagination.payment_completed'),
-            'status'      => 'completed',
-        ]);
+            $order = Order::findOrFail($request->order_id);
+            $order->update([
+                'paid_amount' => $paymentDetails['amount_tendered'] ?? 0,
+                'balance_due' => $paymentDetails['change_due'] ?? 0,
+                'notes' => __('pagination.payment_completed'),
+                'status' => 'completed',
+            ]);
 
-        // Payment Details - FIXED: Access payment_method from $request, not $cartData
-        $transactionId = ($request->payment_method === 'cash') 
-                            ? (string) Str::uuid() 
-                            : null;
+            // Payment Details
+            $transactionId = ($request->payment_method === 'cash') 
+                                ? (string) Str::uuid() 
+                                : null;
 
-        // --- Update or create Payment ---
-        OrderPayment::updateOrCreate(
-            ['order_id' => $order->id],
-            [
-                'amount'          => toUSD($request->total) ?? 0,
-                'payment_method'  => $request->payment_method, // Fixed this line too
-                'transaction_id'  => $transactionId,
-                'status'          => 'completed',
-                'notes'           => __('pagination.payment_completed'),
-                'processed_at'    => now(),
-                'processed_by'    => auth()->id(),
-            ]
-        );
+            // Create Payment
+            OrderPayment::updateOrCreate(
+                ['order_id' => $order->id],
+                [
+                    'amount' => $request->total ?? 0,
+                    'payment_method' => $request->payment_method,
+                    'transaction_id' => $transactionId,
+                    'status' => 'completed',
+                    'notes' => __('pagination.payment_completed'),
+                    'processed_at' => now(),
+                    'processed_by' => auth()->id(),
+                ]
+            );
 
-        // --- Update or create total Tax ---
-        OrderTax::updateOrCreate(
-            [
-                'order_id' => $order->id,
-            ],
-            [
-                'tax_name'   => 'VAT',
-                'tax_rate'    => toUSD((($request->total - $request->subtotal) / $request->total) * 100),
-                'tax_amount'  => toUSD($request->tax),
-                'is_compound' => 1,
-                'created_by'  => auth()->id(),
-            ]
-        );
+            // Create Tax Record
+            OrderTax::updateOrCreate(
+                ['order_id' => $order->id],
+                [
+                    'tax_name' => 'VAT',
+                    'tax_rate' => (($request->total - $request->subtotal) / $request->total) * 100,
+                    'tax_amount' => $request->tax,
+                    'is_compound' => 1,
+                    'created_by' => auth()->id(),
+                ]
+            );
 
-        // Finally update the inventory
-        foreach ($cartData as $item) {
-            // Get product variant with inventory
-            $variant = ProductVariant::with('inventory')->find($item['variant_id']);
+            // Update inventory based on shop type
+            foreach ($cartData as $item) {
+                $variant = ProductVariant::find($item['variant_id']);
 
-            if (!$variant || !$variant->inventory) {
-                continue;
+                if (!$variant) {
+                    continue;
+                }
+
+                if ($isSingleShop) {
+                    // Single Shop: Update overall quantity
+                    $this->handleSingleShopInventory($variant, $item, $order);
+                } else {
+                    // Multi Shop: Update inventory items
+                    $this->handleMultiShopInventory($variant, $item, $order);
+                }
             }
 
-            $inventory = $variant->inventory;
-
-            $beforeQty = $inventory->quantity_allocated;
-            $afterQty  = $beforeQty - $item['quantity'];
-
-            // ✅ 1. Update stock
-            $inventory->quantity_allocated = $afterQty;
-            $inventory->save();
-
-            // ✅ 2. Record adjustment (audit trail)
-            InventoryAdjustments::create([
-                'quantity_before' => $beforeQty,
-                'quantity_after'  => $afterQty,
-                'reason'          => 'order_sale', // can be enum/string
-                'notes'           => 'Stock reduced due to order #' . $order->id,
-                'inventory_id'    => $inventory->id,
-                'created_by'      => auth()->id() ?? null,
-                'tenant_id'       => $order->tenant_id,
+            return response()->json([
+                'success' => true,
+                'message' => __('pagination.payment_completed'),
+                'is_single_shop' => $isSingleShop,
             ]);
 
-            // ✅ 3. Record transaction (movement)
-            InventoryTransactions::create([
-                'quantity'       => -$item['quantity'], // negative for outflow
-                'reference_id'   => $order->id,
-                'reference_type' => 'order',
-                'type'           => 'sale', // e.g., sale, return, transfer
-                'notes'          => 'Sold ' . $item['quantity'] . ' units of ' . $variant->sku,
-                'inventory_id'   => $inventory->id,
-                'created_by'     => auth()->id() ?? null,
-                'tenant_id'      => $order->tenant_id,
-            ]);
-
+        } catch (\Exception $e) {
+            \Log::error('Payment completion failed: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment completion failed: ' . $e->getMessage()
+            ], 500);
         }
+    }
 
-        return response()->json([
-            'success' => true,
-            'message' => __('pagination.payment_completed'),
+    /**
+     * Handle inventory updates for single shop
+     */
+    private function handleSingleShopInventory($variant, $item, $order)
+    {
+        $beforeQty = $variant->overal_quantity_at_hand;
+        $afterQty = $beforeQty - $item['quantity'];
+
+        // Update overall quantity
+        $variant->update([
+            'overal_quantity_at_hand' => $afterQty
+        ]);
+
+        // Record single shop transaction using the new model
+        SingleShopInventoryLog::create([
+            'variant_id' => $variant->id,
+            'order_id' => $order->id,
+            'tenant_id' => $order->tenant_id,
+            'created_by' => auth()->id(),
+            'quantity_before' => $beforeQty,
+            'quantity_after' => $afterQty,
+            'quantity_change' => -$item['quantity'],
+            'reason' => 'pos_sale',
+            'notes' => 'POS sale - Order #' . $order->order_number,
+            'source' => 'pos',
+            'metadata' => [
+                'item_name' => $item['name'],
+                'unit_price' => $item['price'],
+                'customer_name' => $order->customer_name,
+                'location_id' => $order->location_id,
+                'department_id' => $order->department_id,
+            ],
         ]);
     }
+
+    /**
+     * Handle inventory updates for multi shop
+     */
+    private function handleMultiShopInventory($variant, $item, $order)
+    {
+        $inventory = $variant->inventory;
+
+        if (!$inventory) {
+            \Log::warning("No inventory found for variant {$variant->id} in multi-shop mode");
+            return;
+        }
+
+        $beforeQty = $inventory->quantity_allocated;
+        $afterQty = $beforeQty - $item['quantity'];
+
+        // Update inventory
+        $inventory->update([
+            'quantity_allocated' => $afterQty
+        ]);
+
+        // Record adjustment (audit trail)
+        InventoryAdjustments::create([
+            'quantity_before' => $beforeQty,
+            'quantity_after' => $afterQty,
+            'reason' => 'order_sale',
+            'notes' => 'Stock reduced due to order #' . $order->order_number,
+            'inventory_id' => $inventory->id,
+            'created_by' => auth()->id(),
+            'tenant_id' => $order->tenant_id,
+        ]);
+
+        // Record transaction (movement)
+        InventoryTransactions::create([
+            'quantity' => -$item['quantity'],
+            'reference_id' => $order->id,
+            'reference_type' => 'order',
+            'type' => 'sale',
+            'notes' => 'Sold ' . $item['quantity'] . ' units of ' . $variant->sku,
+            'inventory_id' => $inventory->id,
+            'created_by' => auth()->id(),
+            'tenant_id' => $order->tenant_id,
+        ]);
+    }
+
+    
+    // public function completePayment(Request $request) 
+    // {
+    //     // \Log::info($request->all());
+    //     $cartData = $request->items; 
+    //     $paymentDetails = $request->payment_details;  
+
+    //     $order = Order::findOrFail($request->order_id);
+    //     $order->update([
+    //         'paid_amount' => $paymentDetails['amount_tendered'] ?? 0,
+    //         'balance_due' => $paymentDetails['change_due'] ?? 0,
+    //         'notes'       => __('pagination.payment_completed'),
+    //         'status'      => 'completed',
+    //     ]);
+
+    //     // Payment Details - FIXED: Access payment_method from $request, not $cartData
+    //     $transactionId = ($request->payment_method === 'cash') 
+    //                         ? (string) Str::uuid() 
+    //                         : null;
+
+    //     // --- Update or create Payment ---
+    //     OrderPayment::updateOrCreate(
+    //         ['order_id' => $order->id],
+    //         [
+    //             'amount'          => $request->total ?? 0,
+    //             'payment_method'  => $request->payment_method, // Fixed this line too
+    //             'transaction_id'  => $transactionId,
+    //             'status'          => 'completed',
+    //             'notes'           => __('pagination.payment_completed'),
+    //             'processed_at'    => now(),
+    //             'processed_by'    => auth()->id(),
+    //         ]
+    //     );
+
+    //     // --- Update or create total Tax ---
+    //     OrderTax::updateOrCreate(
+    //         [
+    //             'order_id' => $order->id,
+    //         ],
+    //         [
+    //             'tax_name'   => 'VAT',
+    //             'tax_rate'    => (($request->total - $request->subtotal) / $request->total) * 100,
+    //             'tax_amount'  => $request->tax,
+    //             'is_compound' => 1,
+    //             'created_by'  => auth()->id(),
+    //         ]
+    //     );
+
+    //     // Finally update the inventory
+    //     foreach ($cartData as $item) {
+    //         // Get product variant with inventory
+    //         $variant = ProductVariant::with('inventory')->find($item['variant_id']);
+
+    //         if (!$variant || !$variant->inventory) {
+    //             continue;
+    //         }
+
+    //         $inventory = $variant->inventory;
+
+    //         $beforeQty = $inventory->quantity_allocated;
+    //         $afterQty  = $beforeQty - $item['quantity'];
+
+    //         // ✅ 1. Update stock
+    //         $inventory->quantity_allocated = $afterQty;
+    //         $inventory->save();
+
+    //         // ✅ 2. Record adjustment (audit trail)
+    //         InventoryAdjustments::create([
+    //             'quantity_before' => $beforeQty,
+    //             'quantity_after'  => $afterQty,
+    //             'reason'          => 'order_sale', // can be enum/string
+    //             'notes'           => 'Stock reduced due to order #' . $order->id,
+    //             'inventory_id'    => $inventory->id,
+    //             'created_by'      => auth()->id() ?? null,
+    //             'tenant_id'       => $order->tenant_id,
+    //         ]);
+
+    //         // ✅ 3. Record transaction (movement)
+    //         InventoryTransactions::create([
+    //             'quantity'       => -$item['quantity'], // negative for outflow
+    //             'reference_id'   => $order->id,
+    //             'reference_type' => 'order',
+    //             'type'           => 'sale', // e.g., sale, return, transfer
+    //             'notes'          => 'Sold ' . $item['quantity'] . ' units of ' . $variant->sku,
+    //             'inventory_id'   => $inventory->id,
+    //             'created_by'     => auth()->id() ?? null,
+    //             'tenant_id'      => $order->tenant_id,
+    //         ]);
+
+    //     }
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => __('pagination.payment_completed'),
+    //     ]);
+    // }
 
 }
 

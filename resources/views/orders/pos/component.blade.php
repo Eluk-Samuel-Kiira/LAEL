@@ -67,7 +67,7 @@
                                                 'name' => $variant->name ?? $product->name,
                                                 'price' => $variant->price,
                                                 'image' => productVariantImage($variant->image_url ?? $product->image_url),
-                                                'quantity_available' => $variant->inventory->quantity_allocated ?? 0,
+                                                'quantity_available' => $variant->quantity_available ?? 0,
                                                 'taxes' => $variant->applicable_taxes ?? [],  
                                                 'promotions' => $variant->applicable_promotions ?? []  
                                             ]) }})"
@@ -100,7 +100,7 @@
                                                             {{ \Illuminate\Support\Str::words($variant->name ?? $product->name, 2, '...') }}
                                                         </span>
                                                         <span class="text-gray-500 fw-semibold d-block fs-6 mt-n1">
-                                                            {{ $variant->inventory->quantity_allocated ?? 0 }} {{__('pagination._available')}}
+                                                            {{ $variant->quantity_available ?? 0 }} {{__('pagination._available')}}
                                                         </span>
                                                     </div>
                                                 </div>

@@ -37,11 +37,12 @@
     document.addEventListener('DOMContentLoaded', function() {
         console.log('Purchase order form initialized');
         
-        // Set the first item ID
+        // Set the first item ID - FIXED: Ensure it has the ID
         const firstItem = document.querySelector('.purchase-order-item');
-        if (firstItem && !firstItem.id) {
+        if (firstItem) {
             firstItem.id = 'item_0';
             purchaseOrderItemCount = 0;
+            console.log('First item ID set to:', firstItem.id);
         }
         
         // Enable remove button if needed
@@ -54,23 +55,81 @@
         initializeExistingInputs();
     });
 
-    // Initialize event listeners for existing inputs
+    
+
+    // Initialize event listeners for existing inputs - FIXED
     function initializeExistingInputs() {
-        // Add input event listeners to quantity and unit cost fields
+        console.log('Initializing existing inputs...');
+        
+        // Add input event listeners to quantity and unit cost fields - WITH ERROR HANDLING
         document.querySelectorAll('input[name^="items["][name$="[quantity]"]').forEach(input => {
+            console.log('Found quantity input:', input.name);
+            
             input.addEventListener('input', function() {
-                const itemIndex = this.name.match(/\[(\d+)\]/)[1];
-                calculateItemTotal(parseInt(itemIndex));
+                try {
+                    const matches = this.name.match(/\[(\d+)\]/);
+                    if (matches && matches[1]) {
+                        const itemIndex = parseInt(matches[1]);
+                        console.log('Quantity input changed for item:', itemIndex);
+                        calculateItemTotal(itemIndex);
+                    } else {
+                        console.error('Could not parse item index from:', this.name);
+                        // Fallback: try to calculate for first item (index 0)
+                        calculateItemTotal(0);
+                    }
+                } catch (error) {
+                    console.error('Error in quantity input listener:', error);
+                    calculateItemTotal(0); // Fallback to first item
+                }
             });
         });
         
         document.querySelectorAll('input[name^="items["][name$="[unit_cost]"]').forEach(input => {
+            console.log('Found unit cost input:', input.name);
+            
             input.addEventListener('input', function() {
-                const itemIndex = this.name.match(/\[(\d+)\]/)[1];
-                calculateItemTotal(parseInt(itemIndex));
+                try {
+                    const matches = this.name.match(/\[(\d+)\]/);
+                    if (matches && matches[1]) {
+                        const itemIndex = parseInt(matches[1]);
+                        console.log('Unit cost input changed for item:', itemIndex);
+                        calculateItemTotal(itemIndex);
+                    } else {
+                        console.error('Could not parse item index from:', this.name);
+                        // Fallback: try to calculate for first item (index 0)
+                        calculateItemTotal(0);
+                    }
+                } catch (error) {
+                    console.error('Error in unit cost input listener:', error);
+                    calculateItemTotal(0); // Fallback to first item
+                }
+            });
+        });
+        
+        // Also add event listeners to product selects
+        document.querySelectorAll('select[name^="items["][name$="[product_variant_id]"]').forEach(select => {
+            console.log('Found product select:', select.name);
+            
+            select.addEventListener('change', function() {
+                try {
+                    const matches = this.name.match(/\[(\d+)\]/);
+                    if (matches && matches[1]) {
+                        const itemIndex = parseInt(matches[1]);
+                        console.log('Product select changed for item:', itemIndex);
+                        updateProductDetails(this, itemIndex);
+                    } else {
+                        console.error('Could not parse item index from:', this.name);
+                        updateProductDetails(this, 0); // Fallback to first item
+                    }
+                } catch (error) {
+                    console.error('Error in product select listener:', error);
+                    updateProductDetails(this, 0); // Fallback to first item
+                }
             });
         });
     }
+
+
 
     // Function to add new purchase order item row
     function addPurchaseOrderItem() {

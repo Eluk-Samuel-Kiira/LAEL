@@ -40,20 +40,33 @@ class DepartmentController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     */
+    */
     public function store(Request $request)
     {
-        
         $request->validate([
             'name' => 'required|string|max:55|unique:departments,name',
             'manager_id' => 'required|exists:users,id',
         ]);
 
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
+
+        // Check maximum departments limit
+        $currentDepartmentCount = Department::where('tenant_id', $tenantId)->count();
+        $maxDepartments = tenant_setting($tenantId, 'max_departments');
+
+        if ($currentDepartmentCount >= $maxDepartments) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.maximum_departments_reached', ['max' => $maxDepartments]),
+            ]);
+        }
+
         $department = Department::create([
             'name' => $request->name,
-            'created_by' => Auth::user()->id,
+            'created_by' => $user->id,
             'manager_id' => $request->manager_id,
-            'tenant_id' => 1,
+            'tenant_id' => $tenantId,
         ]);
 
         return response()->json([

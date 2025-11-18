@@ -149,6 +149,7 @@
                 </div>
                 
 
+                @if(!tenant_is_single_shop(auth()->user()->tenant_id))
                 <!-- Inventory Items -->
                 <div data-kt-menu-trigger="click" class="menu-item here menu-accordion">
                     <span class="menu-link">
@@ -185,6 +186,7 @@
 
                     </div>
                 </div>
+                @endif
 
 
                 <!-- Suppliers & Purchasing -->

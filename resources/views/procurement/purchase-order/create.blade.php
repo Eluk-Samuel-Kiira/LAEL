@@ -73,8 +73,7 @@
                             </div>
 
                             <div id="purchase_order_items_container">
-                                <!-- Update the first item error divs in your HTML -->
-                                <div class="row g-4 mb-4 purchase-order-item">
+                                <div class="row g-4 mb-4 purchase-order-item" id="item_0">
                                     <div class="col-md-4">
                                         <label class="form-label required">{{ __('passwords.product') }}</label>
                                         <select name="items[0][product_variant_id]" class="form-select product-select" onchange="updateProductDetails(this, 0)">
@@ -94,12 +93,18 @@
                                     </div>
                                     <div class="col-md-2">
                                         <label class="form-label required">{{ __('passwords.quantity') }}</label>
-                                        <input type="number" name="items[0][quantity]" class="form-control" min="1" value="1" onchange="calculateItemTotal(0)">
+                                        <!-- ADD oninput HERE -->
+                                        <input type="number" name="items[0][quantity]" class="form-control" min="1" value="1" 
+                                            onchange="calculateItemTotal(0)" 
+                                            oninput="calculateItemTotal(0)">
                                         <div id="items.0.quantity"></div>
                                     </div>
                                     <div class="col-md-2">
                                         <label class="form-label required">{{ __('passwords.unit_cost') }}</label>
-                                        <input type="number" name="items[0][unit_cost]" class="form-control" min="0.01" step="0.01" value="0.00" onchange="calculateItemTotal(0)">
+                                        <!-- ADD oninput HERE -->
+                                        <input type="number" name="items[0][unit_cost]" class="form-control" min="0.01" step="0.01" value="0.00" 
+                                            onchange="calculateItemTotal(0)" 
+                                            oninput="calculateItemTotal(0)">
                                         <div id="items.0.unit_cost"></div>
                                     </div>
                                     <div class="col-md-2">

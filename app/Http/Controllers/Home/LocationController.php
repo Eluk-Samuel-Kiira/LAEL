@@ -49,12 +49,26 @@ class LocationController extends Controller
             'manager_id' => 'required|exists:users,id',
         ]);
 
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
+
+        // Check maximum locations limit
+        $currentLocationCount = Location::where('tenant_id', $tenantId)->count();
+        $maxLocations = tenant_setting($tenantId, 'max_locations', 1);
+
+        if ($currentLocationCount >= $maxLocations) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.maximum_locations_reached', ['max' => $maxLocations]),
+            ], 422);
+        }
+
         $location = Location::create([
             'name' => $request->name,
             'address' => $request->address,
             'created_by' => Auth::user()->id,
             'manager_id' => $request->manager_id,
-            'tenant_id' => 1,
+            'tenant_id' => $tenantId = $user->tenant_id,
         ]);
 
         return response()->json([

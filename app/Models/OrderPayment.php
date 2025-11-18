@@ -23,6 +23,12 @@ class OrderPayment extends Model
         'processed_by',
     ];
 
+     // Accessor to format amount automatically
+    public function getAmountAttribute($value)
+    {
+        return formatCurrency($value);
+    }
+
     public function order()
     {
         return $this->belongsTo(Order::class, 'order_id');

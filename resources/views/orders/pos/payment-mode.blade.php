@@ -156,19 +156,19 @@
 </div>
 
 <!-- Receipt Modal -->
-<div class="modal fade" id="receiptModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="receiptModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 class="modal-title fw-bold text-gray-800">{{__('pagination.payment_receipt')}}</h2>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <!-- Remove close button completely -->
             </div>
             <div class="modal-body" id="receiptContent">
                 <!-- Receipt content will be generated here -->
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-light" data-bs-dismiss="modal">{{__('pagination.close')}}</button>
-                <button type="button" class="btn btn-primary" onclick="printReceipt()">
+                <!-- Only show print button - no close button -->
+                <button type="button" class="btn btn-primary" onclick="printReceipt()" id="printReceiptBtn">
                     <i class="ki-duotone ki-printer fs-2 me-2"></i>
                     {{__('pagination.print_receipt')}}
                 </button>
