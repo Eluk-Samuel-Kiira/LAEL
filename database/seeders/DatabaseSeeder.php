@@ -46,7 +46,7 @@ class DatabaseSeeder extends Seeder
             EmployeePaymentSeeder::class,
 
             // System tracking
-            TenantSettingSeeder::class,
+            TenantSettingsSeeder::class,
         ]);
     }
 }
