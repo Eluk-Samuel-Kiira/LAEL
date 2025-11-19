@@ -123,7 +123,7 @@ if (!function_exists('getFaviconImage')) {
         }
 
         // Fallback: return default favicon
-        return asset('assets/media/logos/favicon.ico');
+        return asset('assets/media/logos/favicon.png');
     }
 }
 

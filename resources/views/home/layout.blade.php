@@ -363,20 +363,21 @@
         <div class="container">
             <div class="row g-5">
                 <div class="col-lg-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="200" height="60" viewBox="0 0 200 60">
-                        <defs>
-                            <linearGradient id="lael-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#0046B8"/>
-                            <stop offset="100%" stop-color="#007BFF"/>
-                            </linearGradient>
-                        </defs>
-                        <!-- Blue gradient circle background -->
-                        <circle cx="30" cy="30" r="20" fill="url(#lael-grad)" />
-                        <!-- White minimal exchange symbol /= -->
-                        <text x="20" y="38" font-family="Poppins, sans-serif" font-size="24" fill="#FFFFFF" font-weight="700">/=</text>
-                        <!-- Product name -->
-                        <text x="65" y="37" font-family="Poppins, sans-serif" font-size="26" fill="#FFFFFF" font-weight="600">LAEL</text>
-                    </svg>
+                    <a href="/">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="200" height="60" viewBox="0 0 200 60">
+                            <defs>
+                                <linearGradient id="lael-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#0046B8"/>
+                                <stop offset="100%" stop-color="#007BFF"/>
+                                </linearGradient>
+                            </defs>
+                            <!-- Blue gradient circle background -->
+                            <circle cx="30" cy="30" r="20" fill="url(#lael-grad)" />
+                            <!-- White minimal exchange symbol /= -->
+                            <text x="20" y="38" font-family="Poppins, sans-serif" font-size="24" fill="#FFFFFF" font-weight="700">/=</text>
+                            <!-- Product name -->
+                            <text x="65" y="37" font-family="Poppins, sans-serif" font-size="26" fill="#FFFFFF" font-weight="600">LAEL</text>
+                        </svg>
                     </a>
                     <p class="text-white-50 mb-4">The all-in-one point of sale solution designed for African businesses. Streamline your operations with our powerful, affordable system.</p>
                     <div class="social-icons">

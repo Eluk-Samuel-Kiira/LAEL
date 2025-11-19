@@ -350,8 +350,10 @@ const formLogic = {
     },
 
     beginUploadImage(file, uploadRoute, fileInputName) {
+        // console.log(file);
+        
         const formData = new FormData();
-        formData.append(fileInputName, file); // Append the file to the FormData object
+        formData.append(fileInputName, file);
 
         fetch(uploadRoute, {
             method: 'POST',
@@ -361,23 +363,38 @@ const formLogic = {
             body: formData,
         })
         .then(response => {
-            if (!response.ok) {
-                throw new Error('Failed to upload image');
-            }
-            return response.json();
+            // console.log('Response status:', response.status);
+            // console.log('Response headers:', response.headers);
+            
+            // Get the response as text first to see what we're dealing with
+            return response.text().then(text => {
+                console.log('Raw response:', text);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to upload image');
+                }
+                
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    console.error('JSON parse error:', e);
+                    console.error('Response that failed to parse:', text);
+                    throw new Error('Invalid JSON response: ' + text.substring(0, 100));
+                }
+            });
         })
         .then(data => {
             if (data.success) {
                 Swal.fire({
                     toast: true,
                     position: 'top-end',  
-                    icon: 'success',        // Error icon
+                    icon: 'success',
                     title: `<span style="color: green;">${data.message}</span>`, 
                     showConfirmButton: false,
                     timer: 5000,          
-                    timerProgressBar: true, // Show a progress bar
+                    timerProgressBar: true,
                     customClass: {
-                        popup: 'swal2-show', // Adds a fade-in effect for the popup
+                        popup: 'swal2-show',
                     }
                 });
             }

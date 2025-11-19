@@ -13,7 +13,12 @@
         <meta property="og:url" content="https://lael.stardena.com" />
         <meta property="og:site_name" content="Lael by Stardena" />
         <link rel="canonical" href="https://lael.stardena.com" />
-        <link rel="shortcut icon" href="{{ getFaviconImage() }}" />
+
+		<link rel="icon" type="image/png" sizes="512x512" href="{{ getFaviconImage() }}">
+		<link rel="icon" type="image/png" sizes="192x192" href="{{ getFaviconImage() }}">
+		<link rel="icon" type="image/png" sizes="32x32" href="{{ getFaviconImage() }}">
+		<link rel="icon" type="image/png" sizes="16x16" href="{{ getFaviconImage() }}">
+
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700" />
         <link href="{{ asset('assets/plugins/custom/fullcalendar/fullcalendar.bundle.css') }}" rel="stylesheet" type="text/css" />
         <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />

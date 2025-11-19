@@ -4,7 +4,7 @@
     <header class="sticky-top bg-white shadow-sm">
         <nav class="navbar navbar-expand-lg navbar-light py-3">
             <div class="container">
-                <a class="navbar-brand" href="#">
+                <a class="navbar-brand" href="/">
                     <svg xmlns="http://www.w3.org/2000/svg" width="200" height="60" viewBox="0 0 200 60">
                         <defs>
                             <linearGradient id="lael-grad" x1="0%" y1="0%" x2="100%" y2="100%">

@@ -8,6 +8,7 @@ use App\Models\Setting;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class SettingsController extends Controller
 {
@@ -146,8 +147,9 @@ class SettingsController extends Controller
 
     public function uploadFavicon(Request $request)
     {
+    
         $request->validate([
-            'favicon_image' => 'required|file|mimes:ico|max:1024', // Max size: 1MB, accepts .ico only
+            'favicon_image' => 'required|max:5084', 
         ]);
 
         try {
