@@ -29,6 +29,7 @@ return new class extends Migration
             $table->bigIncrements('id'); // permission id
             $table->string('name');       // For MyISAM use string('name', 225); // (or 166 for InnoDB with Redundant/Compact row format)
             $table->string('guard_name'); // For MyISAM use string('guard_name', 25);
+            $table->boolean('is_super_admin')->default(false); // 👈 ADD THIS LINE
             $table->timestamps();
 
             $table->unique(['name', 'guard_name']);
@@ -37,18 +38,29 @@ return new class extends Migration
         Schema::create($tableNames['roles'], function (Blueprint $table) use ($teams, $columnNames) {
             //$table->engine('InnoDB');
             $table->bigIncrements('id'); // role id
-            if ($teams || config('permission.testing')) { // permission.testing is a fix for sqlite testing
+            if ($teams || config('permission.testing')) {
                 $table->unsignedBigInteger($columnNames['team_foreign_key'])->nullable();
                 $table->index($columnNames['team_foreign_key'], 'roles_team_foreign_key_index');
             }
-            $table->string('name');       // For MyISAM use string('name', 225); // (or 166 for InnoDB with Redundant/Compact row format)
+            $table->string('name');       // For MyISAM use string('name', 225);
             $table->string('guard_name'); // For MyISAM use string('guard_name', 25);
+            
+            // Add tenant_id ONLY to roles table (roles are tenant-specific)
+            $table->foreignId('tenant_id')
+                ->constrained('tenants')
+                ->cascadeOnDelete();
+            
             $table->timestamps();
+            
             if ($teams || config('permission.testing')) {
                 $table->unique([$columnNames['team_foreign_key'], 'name', 'guard_name']);
             } else {
-                $table->unique(['name', 'guard_name']);
+                // Add tenant_id to the unique constraint for roles
+                $table->unique(['tenant_id', 'name', 'guard_name']);
             }
+            
+            // Add index for tenant_id for better performance
+            $table->index('tenant_id');
         });
 
         Schema::create($tableNames['model_has_permissions'], function (Blueprint $table) use ($tableNames, $columnNames, $pivotPermission, $teams) {

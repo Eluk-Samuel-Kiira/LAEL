@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Setting;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\{ Auth, DB };
 use Illuminate\Validation\Rule;
-use App\Models\Tax;
+use App\Models\{ Tax, Product, ProductVariant };
 
 class TaxController extends Controller
 {
@@ -16,17 +16,27 @@ class TaxController extends Controller
      */
     public function index(Request $request)
     {
-        $taxes = Tax::latest()->get();
+        $user = Auth::user();
+        
+        // Build the query
+        $query = Tax::query();
+        
+        // If user is NOT super_admin, filter by tenant
+        if (!$user->hasRole('super_admin')) {
+            $query->where('tenant_id', $user->tenant_id);
+        }
+        
+        $taxes = $query->latest()->get();
 
         $bladeToReload = $request->query('bladeFileToReload');
         switch ($bladeToReload) {
             case 'reloadTaxComponent':
                 return view('promotion.tax.component', [
-                    'taxes' => $taxes,
+                    'all_taxes' => $taxes,
                 ]);
             default:
                 return view('promotion.tax-index', [
-                    'taxes' => $taxes,
+                    'all_taxes' => $taxes,
                 ]);
         }
     }
@@ -44,9 +54,27 @@ class TaxController extends Controller
      */
     public function store(Request $request)
     {
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
+
         $request->validate([
-            'name' => 'required|string|max:55|unique:taxes,name',
-            'code' => 'required|string|max:6|min:5',
+            'name' => [
+                'required',
+                'string',
+                'max:55',
+                Rule::unique('taxes')->where(function ($query) use ($tenantId) {
+                    return $query->where('tenant_id', $tenantId);
+                })
+            ],
+            'code' => [
+                'required',
+                'string',
+                'max:6',
+                'min:5',
+                Rule::unique('taxes')->where(function ($query) use ($tenantId) {
+                    return $query->where('tenant_id', $tenantId);
+                })
+            ],
             'rate' => 'required',
             'type' => 'required',
         ]);
@@ -56,8 +84,8 @@ class TaxController extends Controller
             'code' => $request->code,
             'rate' => $request->rate,
             'type' => $request->type,
-            'created_by' => Auth::user()->id,
-            'tenant_id' => 1,
+            'created_by' => $user->id,
+            'tenant_id' => $tenantId, // Use dynamic tenant_id
         ]);
 
         return response()->json([
@@ -91,14 +119,40 @@ class TaxController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $tax = Tax::find($id);
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
+
+        $tax = Tax::where('id', $id)
+                ->where('tenant_id', $tenantId)
+                ->first();
+
+        // Check if tax exists and belongs to tenant
+        if (!$tax) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.tax_not_found'),
+            ]);
+        }
+
         $request->validate([
             'name' => [
                 'required',
                 'max:255',
-                Rule::unique('taxes', 'name')->ignore($tax->id),
+                Rule::unique('taxes')->where(function ($query) use ($tenantId, $id) {
+                    return $query->where('tenant_id', $tenantId)
+                            ->where('id', '!=', $id);
+                })->ignore($tax->id),
             ],
-            'code' => 'required|string|max:6|min:5',
+            'code' => [
+                'required',
+                'string',
+                'max:6',
+                'min:5',
+                Rule::unique('taxes')->where(function ($query) use ($tenantId, $id) {
+                    return $query->where('tenant_id', $tenantId)
+                            ->where('id', '!=', $id);
+                })->ignore($tax->id),
+            ],
             'rate' => 'required',
             'type' => 'required',
         ]);
@@ -108,8 +162,8 @@ class TaxController extends Controller
             'code' => $request->code,
             'rate' => $request->rate,
             'type' => $request->type,
-            'created_by' => Auth::user()->id,
-            'tenant_id' => 1,
+            'created_by' => $user->id,
+            // Don't update tenant_id on update
         ]);
 
         return response()->json([
@@ -127,7 +181,22 @@ class TaxController extends Controller
      */
     public function destroy(string $id)
     {
-        $tax = Tax::find($id);
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
+
+        // Find tax and ensure it belongs to the tenant
+        $tax = Tax::where('id', $id)
+                ->where('tenant_id', $tenantId)
+                ->first();
+
+        if (!$tax) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.tax_not_found'),
+            ]);
+        }
+
+        // Check if tax is active
         if ($tax->is_active === 1) {
             return response()->json([
                 'success' => false,
@@ -135,7 +204,33 @@ class TaxController extends Controller
             ]);
         }
 
+        // Check if tax is attached to any products through the pivot table
+        $attachedToProducts = DB::table('tax_product')
+            ->where('tax_id', $id)
+            ->exists();
+
+        if ($attachedToProducts) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.tax_attached_to_products'),
+            ]);
+        }
+
+        // Check if tax is attached to any product variants through the pivot table
+        $attachedToVariants = DB::table('variant_taxes')
+            ->where('tax_id', $id)
+            ->exists();
+
+        if ($attachedToVariants) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.tax_attached_to_variants'),
+            ]);
+        }
+
+        // If all checks pass, delete the tax
         $tax->delete();
+        
         return response()->json([
             'success' => true,
             'reload' => true,
@@ -165,6 +260,7 @@ class TaxController extends Controller
                     'refresh' => false,
                     'componentId' => 'reloadTaxComponent',
                     'message' => __('auth._updated'),
+                    'redirect' => route('tax.index'),
                 ]);
             }
         }

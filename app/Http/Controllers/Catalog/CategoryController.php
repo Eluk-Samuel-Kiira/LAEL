@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Catalog;
 
 use App\Http\Controllers\Controller;
-use App\Models\Category;
+use App\Models\{ Category, ProductCategory };
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
@@ -16,17 +16,27 @@ class CategoryController extends Controller
      */
     public function index(Request $request)
     {
-        $categories = Category::with('categoryCreater')->latest()->get();
+        $user = Auth::user();
+        
+        // Build the query
+        $query = Category::with('categoryCreater');
+        
+        // If user is NOT super_admin, filter by tenant
+        if (!$user->hasRole('super_admin')) {
+            $query->where('tenant_id', current_tenant_id());
+        }
+        
+        $categories = $query->latest()->get();
 
         $bladeToReload = $request->query('bladeFileToReload');
         switch ($bladeToReload) {
             case 'reloadCategoryComponent':
                 return view('inventory.category.category-componenet', [
-                    'categories' => $categories,
+                    'all_categories' => $categories,
                 ]);
             default:
                 return view('inventory.category-index', [
-                    'categories' => $categories,
+                    'all_categories' => $categories,
                 ]);
         }
     }
@@ -44,14 +54,35 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
+
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:categories,name',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('categories')->where(function ($query) use ($tenantId) {
+                    return $query->where('tenant_id', $tenantId);
+                })
+            ],
             'description' => 'nullable|string',
         ]);
 
+        // Check maximum categories limit
+        // $currentCategoryCount = Category::where('tenant_id', $tenantId)->count();
+        // $maxCategories = tenant_setting($tenantId, 'max_categories', 20);
+
+        // if ($currentCategoryCount >= $maxCategories) {
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => __('auth.maximum_categories_reached', ['max' => $maxCategories]),
+        //     ]);
+        // }
+
         $validated['slug'] = Str::slug($validated['name']);
-        $validated['created_by'] = Auth::user()->id;
-        $validated['tenant_id'] = 1;
+        $validated['created_by'] = $user->id;
+        $validated['tenant_id'] = $tenantId;
 
         Category::create($validated);
 
@@ -86,22 +117,33 @@ class CategoryController extends Controller
      */
     public function update(Request $request, Category $category)
     {
-        
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
+
+        // Check if category belongs to tenant
+        if ($category->tenant_id !== $tenantId) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.unauthorized_access'),
+            ]);
+        }
+
         $request->validate([
             'name' => [
                 'required',
                 'max:255',
-                Rule::unique('categories', 'name')->ignore($category->id),
+                Rule::unique('categories')->where(function ($query) use ($tenantId, $category) {
+                    return $query->where('tenant_id', $tenantId)
+                            ->where('id', '!=', $category->id);
+                })->ignore($category->id),
             ],
         ]);
-
-        // \Log::info($uOM);
-
 
         $category->update([
             'name' => $request->name,
             'description' => $request->description,
-            'created_by' => Auth::user()->id,
+            'created_by' => $user->id,
+            // Don't update tenant_id
         ]);
 
         return response()->json([
@@ -119,7 +161,17 @@ class CategoryController extends Controller
      */
     public function destroy(Category $category)
     {
-        
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
+
+        // Check if category belongs to tenant
+        if ($category->tenant_id !== $tenantId) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.unauthorized_access'),
+            ]);
+        }
+
         if ($category->is_active === 1) {
             return response()->json([
                 'success' => false,
@@ -127,7 +179,20 @@ class CategoryController extends Controller
             ]);
         }
 
+        // Check if category is being used as parent category in ProductCategory
+        $usedInProductCategories = ProductCategory::where('parent_category_id', $category->id)
+            ->where('tenant_id', $tenantId)
+            ->exists();
+
+        if ($usedInProductCategories) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.category_used_in_product_categories'),
+            ]);
+        }
+
         $category->delete();
+        
         return response()->json([
             'success' => true,
             'reload' => true,
@@ -156,6 +221,7 @@ class CategoryController extends Controller
                     'refresh' => false,
                     'componentId' => 'reloadCategoryComponent',
                     'message' => __('auth._updated'),
+                    'redirect' => route('category.index'),
                 ]);
             }
         }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Tenant;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\{ Employee };
+use Illuminate\Support\Facades\{ Mail, Auth };
 
 class EmployeeController extends Controller
 {
@@ -13,7 +14,17 @@ class EmployeeController extends Controller
      */
     public function index(Request $request)
     {
-        $employees = Employee::latest()->get();
+        $user = Auth::user();
+        
+        // Build the query
+        $query = Employee::query();
+        
+        // If user is NOT super_admin, filter by tenant
+        if (!$user->hasRole('super_admin')) {
+            $query->where('tenant_id', current_tenant_id());
+        }
+        
+        $employees = $query->latest()->get();
         
         $bladeToReload = $request->query('bladeFileToReload');
         switch ($bladeToReload) {
@@ -66,10 +77,21 @@ class EmployeeController extends Controller
     public function update(Request $request, string $id)
     {
         try {
-            \Log::info('Uou');
-            // Find the employee
-            $employee = Employee::findOrFail($id);
-            
+            $user = Auth::user();
+            $tenantId = $user->tenant_id;
+
+            // Find the employee and ensure it belongs to tenant
+            $employee = Employee::where('id', $id)
+                            ->where('tenant_id', $tenantId)
+                            ->first();
+
+            if (!$employee) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('auth._not_found'),
+                ]);
+            }
+
             // Validate the request
             $validated = $request->validate([
                 'salary' => 'required|numeric|min:0',
@@ -87,9 +109,8 @@ class EmployeeController extends Controller
                 'is_active' => $validated['termination_date'] ? false : true,
             ]);
 
-            // Sync with User model if user exists
-            if ($employee->user) {
-                \Log::info($employee->user);
+            // Sync with User model if user exists and belongs to same tenant
+            if ($employee->user && $employee->user->tenant_id === $tenantId) {
                 $employee->user->update([
                     'job_title' => $employee->job_title, 
                     'first_name' => $employee->first_name, 
@@ -117,6 +138,7 @@ class EmployeeController extends Controller
                 'errors' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
+            \Log::error('Error updating employee', ['error' => $e->getMessage(), 'employee_id' => $id]);
             return response()->json([
                 'success' => false,
                 'message' => 'Error updating employee: ' . $e->getMessage()
@@ -135,33 +157,52 @@ class EmployeeController extends Controller
 
     public function changeUserStatus(Request $request, $id) 
     {
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
+
         // Validate the request data for status
         $validated = $request->validate([
-            'status' => 'required|in:1,0',  // Ensures only 'active' or 'inactive' are allowed
+            'status' => 'required|in:1,0',  // Ensures only 1 or 0 are allowed
         ]);
-    
-        // Find the user by ID
-        $user = Employee::find($id);
-    
-        // Check if the user exists and update their status
-        if ($user) {
-            $user->is_active = $validated['status'];  // Directly update the status field
-            if ($user->save()) {  // Save the user object
-                return response()->json([
-                    'success' => true,
-                    'reload' => true,
-                    'componentId' => 'employeeUserIndexTable',
-                    'refresh' => false,
-                    'message' => __('auth._updated'),
-                    'redirect' => route('user.index'),
-                ]);
-            }
+
+        // Find the employee and ensure it belongs to tenant
+        $employee = Employee::where('id', $id)
+                        ->where('tenant_id', $tenantId)
+                        ->first();
+
+        if (!$employee) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth._not_found'),
+            ]);
         }
-    
-        // If user not found or status update failed
+
+        // Check if employee has a user with protected roles (super_admin or admin)
+        if ($employee->user && $employee->user->hasAnyRole(['super_admin', 'admin'])) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.protected_user_not_updatable'),
+            ]);
+        }
+
+        // Update the employee status
+        $employee->is_active = $validated['status'];
+        
+        if ($employee->save()) {
+            return response()->json([
+                'success' => true,
+                'reload' => true,
+                'componentId' => 'employeeUserIndexTable',
+                'refresh' => false,
+                'message' => __('auth._updated'),
+                'redirect' => route('user.index'),
+            ]);
+        }
+
+        // If status update failed
         return response()->json([
             'success' => false,
-            'message' => __('auth._not_found'),
+            'message' => __('auth.update_failed'),
         ]);
     }
 }

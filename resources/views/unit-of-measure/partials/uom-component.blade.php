@@ -18,8 +18,8 @@
                 </tr>
             </thead>
             <tbody class="text-gray-600 fw-semibold">
-                @if (!empty($uoms) && $uoms->count() > 0)
-                    @foreach ($uoms as $uom)
+                @if (!empty($all_uoms) && $all_uoms->count() > 0)
+                    @foreach ($all_uoms as $uom)
                         <tr data-role="{{ strtolower($uom->name) }}">
                             <td>
                                 <div class="form-check form-check-sm form-check-custom form-check-solid">

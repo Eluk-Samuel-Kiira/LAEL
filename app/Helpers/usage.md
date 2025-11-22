@@ -41,3 +41,27 @@ if (tenant_is_on_plan($tenantId, 'enterprise')) {
 
 // Update settings
 tenant_setting_set($tenantId, 'max_users', 10, 'integer', 'limits');
+
+
+Filter the roles and permissions for the tenant and permissions for super admin
+
+// Get only super admin permissions
+$superAdminPermissions = Permission::superAdmin()->get();
+
+// Get only regular permissions
+$regularPermissions = Permission::regular()->get();
+
+// Check if a permission is super admin only
+if ($permission->isSuperAdminOnly()) {
+    // Handle super admin permission
+}
+
+// In your role management
+public function getAvailablePermissions()
+{
+    if (auth()->user()->hasRole('super_admin')) {
+        return Permission::all(); // Super admin sees all
+    }
+    
+    return Permission::regular()->get(); // Others see only regular permissions
+}

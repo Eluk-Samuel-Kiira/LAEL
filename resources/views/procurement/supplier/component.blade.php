@@ -24,8 +24,8 @@
                 </tr>
             </thead>
             <tbody class="text-gray-600 fw-semibold">
-                @if (!empty($suppliers) && $suppliers->count() > 0)
-                    @foreach ($suppliers as $supplier)
+                @if (!empty($all_suppliers) && $all_suppliers->count() > 0)
+                    @foreach ($all_suppliers as $supplier)
                         <tr data-role="{{ strtolower($supplier->name) }}">
                             <td>
                                 <div class="form-check form-check-sm form-check-custom form-check-solid">

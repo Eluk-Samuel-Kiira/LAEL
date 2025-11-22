@@ -25,8 +25,8 @@
                 </tr>
             </thead>
             <tbody class="text-gray-600 fw-semibold">
-                @if (!empty($products) && $products->count() > 0)
-                    @foreach ($products as $product)
+                @if (!empty($all_products) && $all_products->count() > 0)
+                    @foreach ($all_products as $product)
                         <tr data-role="{{ strtolower($product->name) }}">
                             <td>
                                 <div class="form-check form-check-sm form-check-custom form-check-solid">
@@ -104,6 +104,7 @@
                                             <i class="bi bi-pencil-square me-1 fs-5"></i> <span>{{ __('auth._edit') }}</span>
                                         </button>
                                     @endcan
+                                    {{--
                                     @can('delete product')
                                         <button type="button" 
                                             class="btn btn-sm btn-light btn-active-color-danger d-flex align-items-center px-3 py-2" 
@@ -112,6 +113,7 @@
                                             <i class="bi bi-trash me-1 fs-5"></i> <span>{{ __('auth._delete') }}</span>
                                         </button>
                                     @endcan
+                                    --}}
                                 </div>
 
                                 <!-- Delete User Modal -->

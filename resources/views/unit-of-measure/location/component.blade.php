@@ -20,8 +20,8 @@
                 </tr>
             </thead>
             <tbody class="text-gray-600 fw-semibold">
-                @if (!empty($locations) && $locations->count() > 0)
-                    @foreach ($locations as $location)
+                @if (!empty($all_locations) && $all_locations->count() > 0)
+                    @foreach ($all_locations as $location)
                         <tr data-role="{{ strtolower($location->name) }}">
                             <td>
                                 <div class="form-check form-check-sm form-check-custom form-check-solid">
@@ -50,8 +50,8 @@
                             <td>
                                 <select name="status" class="form-select form-select-solid form-select-sm" onchange="updateLocationStatus({{ $location->id }}, this.value)"
                                 @cannot('update location') disabled @endcannot>
-                                    <option value="1" {{ $location->isActive == 1 ? 'selected' : '' }}><span>{{__('auth._active')}}</option>
-                                    <option value="0" {{ $location->isActive == 0 ? 'selected' : '' }}>{{__('auth._inactive')}}</option>
+                                    <option value="1" {{ $location->is_active == 1 ? 'selected' : '' }}><span>{{__('auth._active')}}</option>
+                                    <option value="0" {{ $location->is_active == 0 ? 'selected' : '' }}>{{__('auth._inactive')}}</option>
                                 </select>
                             </td>
                             <td>

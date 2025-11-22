@@ -25,8 +25,8 @@
                 </tr>
             </thead>
             <tbody class="text-gray-600 fw-semibold">
-                @if (!empty($promotions) && $promotions->count() > 0)
-                    @foreach ($promotions as $promotion)
+                @if (!empty($all_promotions) && $all_promotions->count() > 0)
+                    @foreach ($all_promotions as $promotion)
                         <tr data-role="{{ strtolower($promotion->name) }}">
                             <td>
                                 <div class="form-check form-check-sm form-check-custom form-check-solid">

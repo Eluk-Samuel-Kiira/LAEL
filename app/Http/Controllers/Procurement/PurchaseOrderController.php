@@ -13,9 +13,18 @@ class PurchaseOrderController extends Controller
 {
     public function index(Request $request)
     {
-        $purchaseOrders = PurchaseOrder::with(['items', 'supplier', 'location', 'creator'])->latest()->get();
+        $user = Auth::user();
+        
+        // Build the query
+        $query = PurchaseOrder::with(['items', 'supplier', 'location', 'creator']);
+        
+        // If user is NOT super_admin, filter by tenant
+        if (!$user->hasRole('super_admin')) {
+            $query->where('tenant_id', current_tenant_id());
+        }
+        
+        $purchaseOrders = $query->latest()->get();
 
-        // \Log::info($purchaseOrders);
         $bladeToReload = $request->query('bladeFileToReload');
         switch ($bladeToReload) {
             case 'reloadPurchasesComponent':
@@ -35,19 +44,53 @@ class PurchaseOrderController extends Controller
      */
     public function store(Request $request)
     {
-        // \Log::info($request->all());
-        // Validate the main purchase order data
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
+
+        // Validate the main purchase order data with tenant checks
         $validated = $request->validate([
-            'supplier_id' => 'required|exists:suppliers,id',
-            'location_id' => 'required|exists:locations,id',
+            'supplier_id' => [
+                'required',
+                'exists:suppliers,id',
+                function ($attribute, $value, $fail) use ($tenantId) {
+                    $supplier = Supplier::where('id', $value)
+                                    ->where('tenant_id', $tenantId)
+                                    ->first();
+                    if (!$supplier) {
+                        $fail('The selected supplier is invalid.');
+                    }
+                }
+            ],
+            'location_id' => [
+                'required',
+                'exists:locations,id',
+                function ($attribute, $value, $fail) use ($tenantId) {
+                    $location = Location::where('id', $value)
+                                    ->where('tenant_id', $tenantId)
+                                    ->first();
+                    if (!$location) {
+                        $fail('The selected location is invalid.');
+                    }
+                }
+            ],
             'expected_delivery_date' => 'required|date|after_or_equal:today',
             'notes' => 'nullable|string|max:500',
             'items' => 'required|array|min:1',
-            'items.*.product_variant_id' => 'required|exists:product_variants,id',
+            'items.*.product_variant_id' => [
+                'required',
+                'exists:product_variants,id',
+                function ($attribute, $value, $fail) use ($tenantId) {
+                    $variant = ProductVariant::where('id', $value)
+                                        ->where('tenant_id', $tenantId)
+                                        ->first();
+                    if (!$variant) {
+                        $fail('The selected product variant is invalid.');
+                    }
+                }
+            ],
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.unit_cost' => 'required|numeric|min:0.01',
         ]);
-
 
         // Calculate totals
         $subtotal = 0;
@@ -68,42 +111,43 @@ class PurchaseOrderController extends Controller
         try {
             // Create the purchase order
             $purchaseOrder = PurchaseOrder::create([
-                'tenant_id' => auth()->user()->tenant_id,
+                'tenant_id' => $tenantId,
                 'supplier_id' => $validated['supplier_id'],
                 'location_id' => $validated['location_id'],
                 'po_number' => $poNumber,
                 'status' => 'draft',
                 'expected_delivery_date' => $validated['expected_delivery_date'],
                 'subtotal' => $subtotal,
-                'tax_total' => 0, // Set tax total to 0
+                'tax_total' => 0,
                 'total' => $total,
                 'notes' => $validated['notes'] ?? null,
-                'created_by' => auth()->id(),
-                'tenant_id' => auth()->user()->tenant_id ?? 1,
+                'created_by' => $user->id,
             ]);
 
             // Create purchase order items
             foreach ($request->items as $item) {
                 // Only create items that have a product selected
                 if (!empty($item['product_variant_id'])) {
-                    $variant = ProductVariant::find($item['product_variant_id']);
-                    $itemSubtotal = $item['quantity'] * $item['unit_cost'];
+                    $variant = ProductVariant::where('id', $item['product_variant_id'])
+                                        ->where('tenant_id', $tenantId)
+                                        ->first();
                     
-                    // No tax calculations - set to 0
-                    $itemTaxAmount = 0;
-                    $totalCost = $itemSubtotal; // Total cost is just the subtotal
-                    
-                    PurchaseOrderItem::create([
-                        'purchase_order_id' => $purchaseOrder->id,
-                        'product_variant_id' => $item['product_variant_id'],
-                        'product_name' => $variant->name ?? null,
-                        'sku' => $variant->sku ?? null,
-                        'quantity' => $item['quantity'],
-                        'unit_cost' => $item['unit_cost'],
-                        'tax_amount' => 0, // Set tax amount to 0
-                        'total_cost' => $totalCost,
-                        'received_quantity' => 0,
-                    ]);
+                    if ($variant) {
+                        $itemSubtotal = $item['quantity'] * $item['unit_cost'];
+                        
+                        PurchaseOrderItem::create([
+                            'purchase_order_id' => $purchaseOrder->id,
+                            'product_variant_id' => $item['product_variant_id'],
+                            'product_name' => $variant->name ?? null,
+                            'sku' => $variant->sku ?? null,
+                            'quantity' => $item['quantity'],
+                            'unit_cost' => $item['unit_cost'],
+                            'tax_amount' => 0,
+                            'total_cost' => $itemSubtotal,
+                            'received_quantity' => 0,
+                            'tenant_id' => $tenantId, // Add tenant_id to items if your table has it
+                        ]);
+                    }
                 }
             }
 
@@ -122,6 +166,12 @@ class PurchaseOrderController extends Controller
         } catch (\Exception $e) {
             // Rollback transaction on error
             DB::rollBack();
+
+            \Log::error('Purchase order creation failed', [
+                'error' => $e->getMessage(),
+                'tenant_id' => $tenantId,
+                'user_id' => $user->id
+            ]);
 
             return response()->json([
                 'success' => false,
@@ -569,7 +619,7 @@ class PurchaseOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('passwords.cannot_receive_items_from_current_status'),
-            ], 422);
+            ]);
         }
 
         $tenantId = auth()->user()->tenant_id;
@@ -796,7 +846,7 @@ class PurchaseOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('passwords.not_found'),
-            ], 404);
+            ]);
         }
 
         // // Check tenant access
@@ -804,7 +854,7 @@ class PurchaseOrderController extends Controller
         //     return response()->json([
         //         'success' => false,
         //         'message' => __('auth.unauthorized'),
-        //     ], 403);
+        //     ]);
         // }
 
         // Only allow deletion of draft or cancelled purchase orders
@@ -812,7 +862,7 @@ class PurchaseOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('passwords.can_only_delete_draft_or_cancelled'),
-            ], 400);
+            ]);
         }
 
         // Check if purchase order has any received items
@@ -820,7 +870,7 @@ class PurchaseOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('passwords.has_received_items'),
-            ], 400);
+            ]);
         }
 
         // Check if purchase order has any purchase receipts
@@ -828,7 +878,7 @@ class PurchaseOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('passwords.has_related_receipts'),
-            ], 400);
+            ]);
         }
 
         DB::beginTransaction();
@@ -860,7 +910,7 @@ class PurchaseOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('passwords.delete_error') . $e->getMessage(),
-            ], 500);
+            ]);
         }
     }
 }

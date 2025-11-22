@@ -24,8 +24,8 @@
                 </tr>
             </thead>
             <tbody class="text-gray-600 fw-semibold">
-                @if (!empty($taxes) && $taxes->count() > 0)
-                    @foreach ($taxes as $tax)
+                @if (!empty($all_taxes) && $all_taxes->count() > 0)
+                    @foreach ($all_taxes as $tax)
                         <tr data-role="{{ strtolower($tax->name) }}">
                             <td>
                                 <div class="form-check form-check-sm form-check-custom form-check-solid">

@@ -18,6 +18,7 @@ use App\Models\Location;
 use App\Models\Customer;
 use App\Models\Tax;
 use App\Models\{ Promotion, Supplier };
+use Illuminate\Support\Facades\Auth;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -34,44 +35,56 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // $variants = ProductVariant::where('is_active', 1)
-        //     ->whereNotIn('id', function ($query) {
-        //         $query->select('variant_id')->from('inventory_items');
-        //     })
-        //     ->get();
-
-            
-        $variants = ProductVariant::where('is_active', 1)->get();
-        $suppliers = Supplier::where('is_active', 1)->get();
-        $taxes = Tax::where('is_active', 1)->get();
-        $promotions = Promotion::where('is_active', 1)->get();
-        $customers = Customer::where('is_active', 1)->get();
-        $locations = Location::where('is_active', 1)->get();
-        $sub_categories = ProductCategory::where('is_active', 1)->get();
-        $uoms = UnitOfMeasure::where('isActive', 1)->get();
-        $currencies = Currency::where('isActive', 1)->get();
-        $categories = Category::where('is_active', 1)->get();
-        $departments = Department::where('isActive', 1)->get();
-        $users = User::where('status', 'active')->get();
-        $roles = Role::with('permissions')->latest()->get();
-        $permissions = Permission::all();
         
-        View::share([
-            'users' => $users,
-            'roles' => $roles,
-            'permissions' => $permissions,
-            'departments' => $departments,
-            'categories' => $categories,
-            'sub_categories' => $sub_categories,
-            'uoms' => $uoms,
-            'variants' => $variants,
-            'currencies' => $currencies,
-            'locations' => $locations,
-            'customers' => $customers,
-            'taxes' => $taxes,
-            'promotions' => $promotions,
-            'suppliers' => $suppliers,
-        ]);
+        View::composer('*', function ($view) {
+            // Initialize with empty collections by default
+            $data = [
+                'users' => collect(),
+                'roles' => collect(),
+                'permissions' => collect(),
+                'departments' => collect(),
+                'categories' => collect(),
+                'sub_categories' => collect(),
+                'uoms' => collect(),
+                'variants' => collect(),
+                'currencies' => collect(),
+                'locations' => collect(),
+                'customers' => collect(),
+                'taxes' => collect(),
+                'promotions' => collect(),
+                'suppliers' => collect(),
+            ];
+
+            // Only query if user is authenticated
+            if (Auth::check()) {
+                $tenantId = Auth::user()->tenant_id;
+                
+                $data = [
+
+                    'users' => User::where('tenant_id', $tenantId)
+                        ->where('status', 'active')
+                        ->whereDoesntHave('roles', function ($query) {
+                            $query->where('name', 'super_admin');
+                        })
+                        ->get(),
+                    'roles' => Role::where('tenant_id', $tenantId)->with('permissions')->latest()->get(),
+                    'permissions' => Permission::regular()->get(),
+                    'departments' => Department::where('tenant_id', $tenantId)->where('isActive', 1)->get(),
+                    'categories' => Category::where('tenant_id', $tenantId)->where('is_active', 1)->get(),
+                    'sub_categories' => ProductCategory::where('tenant_id', $tenantId)->where('is_active', 1)->get(),
+                    'uoms' => UnitOfMeasure::where('tenant_id', $tenantId)->where('isActive', 1)->get(),
+                    'variants' => ProductVariant::where('tenant_id', $tenantId)->where('is_active', 1)->get(),
+                    'currencies' => Currency::where('tenant_id', $tenantId)->where('isActive', 1)->get(),
+                    'locations' => Location::where('tenant_id', $tenantId)->where('is_active', 1)->get(),
+                    'customers' => Customer::where('tenant_id', $tenantId)->where('is_active', 1)->get(),
+                    'taxes' => Tax::where('tenant_id', $tenantId)->where('is_active', 1)->get(),
+                    'promotions' => Promotion::where('tenant_id', $tenantId)->where('is_active', 1)->get(),
+                    'suppliers' => Supplier::where('tenant_id', $tenantId)->where('is_active', 1)->get(),
+                ];
+            }
+
+            $view->with($data);
+        });
 
         $app_mails = Setting::first();
         if ($app_mails) {

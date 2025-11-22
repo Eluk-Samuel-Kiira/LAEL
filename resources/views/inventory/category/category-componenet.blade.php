@@ -17,8 +17,8 @@
                 </tr>
             </thead>
             <tbody class="text-gray-600 fw-semibold">
-                @if (!empty($categories) && $categories->count() > 0)
-                    @foreach ($categories as $category)
+                @if (!empty($all_categories) && $all_categories->count() > 0)
+                    @foreach ($all_categories as $category)
                         <tr data-role="{{ strtolower($category->name) }}">
                             <td>
                                 <div class="form-check form-check-sm form-check-custom form-check-solid">

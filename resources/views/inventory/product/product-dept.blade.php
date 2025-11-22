@@ -68,47 +68,69 @@
                         </div>
                     </div>
 
-                    <!-- DEPARTMENTS ASSIGNMENT -->
-                    <div class="mb-5">
-                        <h6 class="fw-bold mb-3">{{ __('pagination.allocate_dept') }}</h6>
-                        <div class="row g-3">
-                            @foreach($departments as $department)
-                                <div class="col-md-6">
-                                    <div class="form-check">
-                                        <input type="checkbox" 
-                                            class="form-check-input"
-                                            name="departments[]" 
-                                            value="{{ $department->id }}"
-                                            {{ in_array($department->id, old('departments', $product->departments->pluck('id')->toArray() ?? [])) ? 'checked' : '' }}>
-                                        <label class="form-check-label">
-                                            {{ ucwords(str_replace('_', ' ', $department->name)) }}
-                                        </label>
-                                    </div>
+                        <!-- DEPARTMENTS ASSIGNMENT -->
+                        <div class="mb-5">
+                            <h6 class="fw-bold mb-3">{{ __('pagination.allocate_dept') }}</h6>
+                            @unless(tenant_is_single_shop(auth()->user()->tenant_id))
+                                <div class="row g-3">
+                                    @foreach($departments as $department)
+                                        <div class="col-md-6">
+                                            <div class="form-check">
+                                                <input type="checkbox" 
+                                                    class="form-check-input"
+                                                    name="departments[]" 
+                                                    value="{{ $department->id }}"
+                                                    {{ in_array($department->id, old('departments', $product->departments->pluck('id')->toArray() ?? [])) ? 'checked' : '' }}>
+                                                <label class="form-check-label">
+                                                    {{ ucwords(str_replace('_', ' ', $department->name)) }}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    @endforeach
                                 </div>
-                            @endforeach
+                            @else
+                                <div class="alert alert-info mb-4">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    <strong>{{ __('auth.single_shop_plan') }}:</strong>
+                                    {{ __('auth.upgrade_for_multiple_shops') }}
+                                    <a href="/" class="btn btn-sm btn-outline-primary ms-2">
+                                        {{ __('auth.upgrade_plan') }}
+                                    </a>
+                                </div>
+                            @endunless
                         </div>
-                    </div>
 
-                    <!-- LOCATIONS ASSIGNMENT -->
-                    <div class="mb-5">
-                        <h6 class="fw-bold mb-3">{{ __('pagination.allocate_location') }}</h6>
-                        <div class="row g-3">
-                            @foreach($locations as $location)
-                                <div class="col-md-6">
-                                    <div class="form-check">
-                                        <input type="checkbox" 
-                                            class="form-check-input"
-                                            name="locations[]" 
-                                            value="{{ $location->id }}"
-                                            {{ in_array($location->id, old('locations', $product->locations->pluck('id')->toArray() ?? [])) ? 'checked' : '' }}>
-                                        <label class="form-check-label">
-                                            {{ $location->name }}
-                                        </label>
-                                    </div>
+                        <!-- LOCATIONS ASSIGNMENT -->
+                        <div class="mb-5">
+                            <h6 class="fw-bold mb-3">{{ __('pagination.allocate_location') }}</h6>
+                            @unless(tenant_is_single_shop(auth()->user()->tenant_id))
+                                <div class="row g-3">
+                                    @foreach($locations as $location)
+                                        <div class="col-md-6">
+                                            <div class="form-check">
+                                                <input type="checkbox" 
+                                                    class="form-check-input"
+                                                    name="locations[]" 
+                                                    value="{{ $location->id }}"
+                                                    {{ in_array($location->id, old('locations', $product->locations->pluck('id')->toArray() ?? [])) ? 'checked' : '' }}>
+                                                <label class="form-check-label">
+                                                    {{ $location->name }}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    @endforeach
                                 </div>
-                            @endforeach
+                            @else
+                                <div class="alert alert-info mb-4">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    <strong>{{ __('auth.single_shop_plan') }}:</strong>
+                                    {{ __('auth.upgrade_for_multiple_shops') }}
+                                    <a href="/" class="btn btn-sm btn-outline-primary ms-2">
+                                        {{ __('auth.upgrade_plan') }}
+                                    </a>
+                                </div>
+                            @endunless
                         </div>
-                    </div>
 
                     <!-- ACTION BUTTONS -->
                     <div class="d-flex justify-content-center pt-10">

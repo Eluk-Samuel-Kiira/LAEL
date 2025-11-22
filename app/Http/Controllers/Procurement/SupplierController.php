@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Procurement;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Supplier;
+use Illuminate\Support\Facades\{ Mail, Auth };
+use Illuminate\Validation\Rule;
+
 
 class SupplierController extends Controller
 {
@@ -13,18 +16,27 @@ class SupplierController extends Controller
      */
     public function index(Request $request)
     {
+        $user = Auth::user();
         
-        $suppliers = Supplier::latest()->get();
+        // Build the query
+        $query = Supplier::query();
+        
+        // If user is NOT super_admin, filter by tenant
+        if (!$user->hasRole('super_admin')) {
+            $query->where('tenant_id', current_tenant_id());
+        }
+        
+        $suppliers = $query->latest()->get();
 
         $bladeToReload = $request->query('bladeFileToReload');
         switch ($bladeToReload) {
             case 'reloadSupplierComponent':
                 return view('procurement.supplier.component', [
-                    'suppliers' => $suppliers,
+                    'all_suppliers' => $suppliers,
                 ]);
             default:
                 return view('procurement.supplier-index', [
-                    'suppliers' => $suppliers,
+                    'all_suppliers' => $suppliers,
                 ]);
         }
     }
@@ -42,12 +54,36 @@ class SupplierController extends Controller
      */
     public function store(Request $request)
     {
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
+
         $validated = $request->validate([
-            'name' => 'required|string|max:100',
+            'name' => [
+                'required',
+                'string',
+                'max:100',
+                Rule::unique('suppliers')->where(function ($query) use ($tenantId) {
+                    return $query->where('tenant_id', $tenantId);
+                })
+            ],
+            'email' => [
+                'nullable',
+                'email',
+                'max:255',
+                Rule::unique('suppliers')->where(function ($query) use ($tenantId) {
+                    return $query->where('tenant_id', $tenantId);
+                })
+            ],
+            'tax_number' => [
+                'nullable',
+                'string',
+                'max:50',
+                Rule::unique('suppliers')->where(function ($query) use ($tenantId) {
+                    return $query->where('tenant_id', $tenantId);
+                })
+            ],
             'contact_person' => 'nullable|string|max:100',
-            'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:50',
-            'tax_number' => 'nullable|string|max:50',
             'address' => 'nullable|string',
             'city' => 'nullable|string|max:100',
             'state' => 'nullable|string|max:100',
@@ -57,8 +93,19 @@ class SupplierController extends Controller
             'notes' => 'nullable|string|max:500',
         ]);
 
-        $validated['tenant_id'] = auth()->user()->tenant_id ?? 1;
-        $validated['created_by'] = auth()->id();
+        // Check maximum suppliers limit
+        $currentSupplierCount = Supplier::where('tenant_id', $tenantId)->count();
+        $maxSuppliers = tenant_setting($tenantId, 'max_suppliers', 50); // Default to 50 if not set
+
+        if ($currentSupplierCount >= $maxSuppliers) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.maximum_suppliers_reached', ['max' => $maxSuppliers]),
+            ]);
+        }
+
+        $validated['tenant_id'] = $tenantId;
+        $validated['created_by'] = $user->id;
 
         $supplier = Supplier::create($validated);
 
@@ -188,6 +235,7 @@ class SupplierController extends Controller
                     'refresh' => false,
                     'componentId' => 'reloadSupplierComponent',
                     'message' => __('auth._updated'),
+                    'redirect' => route('suppliers.index'),
                 ]);
             }
         }

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Catalog;
 
 use App\Http\Controllers\Controller;
-use App\Models\ProductCategory;
+use App\Models\{ ProductCategory, Product, Category };
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
@@ -18,7 +18,17 @@ class ProductCategoryController extends Controller
      */
     public function index(Request $request)
     {
-        $products_categories = ProductCategory::with('productCategoryCreater','parentCategory')->latest()->get();
+        $user = Auth::user();
+        
+        // Build the query
+        $query = ProductCategory::with('productCategoryCreater', 'parentCategory');
+        
+        // If user is NOT super_admin, filter by tenant
+        if (!$user->hasRole('super_admin')) {
+            $query->where('tenant_id', current_tenant_id());
+        }
+        
+        $products_categories = $query->latest()->get();
 
         $bladeToReload = $request->query('bladeFileToReload');
         switch ($bladeToReload) {
@@ -50,22 +60,56 @@ class ProductCategoryController extends Controller
     public function store(Request $request)
     {
         try {
+            $user = Auth::user();
+            $tenantId = $user->tenant_id;
+
             $validated = $request->validate([
-                'name' => 'required|string|max:255|unique:product_categories,name',
-                'parent_category_id' => 'required|integer',
+                'name' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('product_categories')->where(function ($query) use ($tenantId) {
+                        return $query->where('tenant_id', $tenantId);
+                    })
+                ],
+                'parent_category_id' => [
+                    'required',
+                    'integer',
+                    function ($attribute, $value, $fail) use ($tenantId) {
+                        if ($value != 0) { // Assuming 0 means no parent
+                            $parentCategory = Category::where('id', $value)
+                                                ->where('tenant_id', $tenantId)
+                                                ->first();
+                            if (!$parentCategory) {
+                                $fail('The selected parent category is invalid.');
+                            }
+                        }
+                    }
+                ],
                 'description' => 'nullable|string',
                 'is_active' => 'required|in:1,0',
                 'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             ]);
 
+            // Check maximum product categories limit
+            // $currentProductCategoryCount = ProductCategory::where('tenant_id', $tenantId)->count();
+            // $maxProductCategories = tenant_setting($tenantId, 'max_product_categories', 50); // Default to 50 if not set
+
+            // if ($currentProductCategoryCount >= $maxProductCategories) {
+            //     return response()->json([
+            //         'success' => false,
+            //         'message' => __('auth.maximum_product_categories_reached', ['max' => $maxProductCategories]),
+            //     ]);
+            // }
+
             $validated['slug'] = Str::slug($validated['name']);
-            $validated['created_by'] = Auth::id();
-            $validated['tenant_id'] = 1;
+            $validated['created_by'] = $user->id;
+            $validated['tenant_id'] = $tenantId;
 
             // If file uploaded, store and set image_url
             if ($request->hasFile('photo')) {
                 $path = $request->file('photo')->store('categories', 'public');
-                $validated['image_url'] = $path; // store relative path
+                $validated['image_url'] = $path;
             }
 
             // Remove 'photo' from array before saving if not needed in DB
@@ -83,7 +127,7 @@ class ProductCategoryController extends Controller
             return response()->json([
                 'success' => false,
                 'errors' => $e->errors()
-            ], 422);
+            ]);
         }
     }
 
@@ -109,28 +153,57 @@ class ProductCategoryController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $category = ProductCategory::find($id);
+            $user = Auth::user();
+            $tenantId = $user->tenant_id;
+
+            // Find product category and ensure it belongs to tenant
+            $category = ProductCategory::where('id', $id)
+                                    ->where('tenant_id', $tenantId)
+                                    ->first();
+
+            if (!$category) {
+                session()->flash('toast', [
+                    'type' => 'error',
+                    'message' => __('auth._not_found'),
+                ]);
+                return redirect()->route('product-category.index');
+            }
 
             $validated = $request->validate([
                 'name' => [
                     'required',
                     'max:255',
-                    Rule::unique('product_categories', 'name')->ignore($category->id),
+                    Rule::unique('product_categories')->where(function ($query) use ($tenantId, $id) {
+                        return $query->where('tenant_id', $tenantId)
+                                ->where('id', '!=', $id);
+                    })->ignore($category->id),
                 ],
-                'parent_category_id' => 'required|integer',
+                'parent_category_id' => [
+                    'required',
+                    'integer',
+                    function ($attribute, $value, $fail) use ($tenantId, $id) {
+                        if ($value != 0) {
+                            $parentCategory = Category::where('id', $value)
+                                                ->where('tenant_id', $tenantId)
+                                                ->first();
+                            if (!$parentCategory) {
+                                $fail('The selected parent category is invalid.');
+                            }
+                        }
+                    }
+                ],
                 'description' => 'nullable|string',
                 'is_active' => 'required|in:1,0',
                 'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:4048',
             ]);
 
             $validated['slug'] = Str::slug($validated['name']);
-            $validated['updated_by'] = Auth::id(); // optional: track who updated
-            $validated['tenant_id'] = 1;
+            $validated['updated_by'] = $user->id;
 
             // If file uploaded, store and set image_url
             if ($request->hasFile('photo')) {
                 $path = $request->file('photo')->store('categories', 'public');
-                $validated['image_url'] = $path; // store relative path
+                $validated['image_url'] = $path;
             } else {
                 // Keep existing image_url if no new file uploaded
                 $validated['image_url'] = $category->image_url;
@@ -161,8 +234,21 @@ class ProductCategoryController extends Controller
      */
     public function destroy($id)
     {
-        \Log::info($id);
-        $category = ProductCategory::find($id);
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
+
+        // Find product category and ensure it belongs to tenant
+        $category = ProductCategory::where('id', $id)
+                                ->where('tenant_id', $tenantId)
+                                ->first();
+
+        if (!$category) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth._not_found'),
+            ]);
+        }
+
         if ($category->is_active === 1) {
             return response()->json([
                 'success' => false,
@@ -170,7 +256,32 @@ class ProductCategoryController extends Controller
             ]);
         }
 
+        // Check if product category is attached to any products
+        $attachedToProducts = Product::where('product_category_id', $id)
+            ->where('tenant_id', $tenantId)
+            ->exists();
+
+        if ($attachedToProducts) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.product_category_attached_to_products'),
+            ]);
+        }
+
+        // Check if this category is used as parent in other product categories
+        $hasChildCategories = ProductCategory::where('parent_category_id', $id)
+            ->where('tenant_id', $tenantId)
+            ->exists();
+
+        if ($hasChildCategories) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.product_category_has_children'),
+            ]);
+        }
+
         $category->delete();
+        
         return response()->json([
             'success' => true,
             'reload' => true,

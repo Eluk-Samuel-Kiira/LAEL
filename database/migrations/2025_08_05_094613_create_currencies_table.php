@@ -20,6 +20,7 @@ return new class extends Migration
             $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
             $table->boolean('isActive')->default(1);
             $table->boolean('isBaseCurrency')->default(0);
+            $table->foreignId('tenant_id')->constrained('tenants')->cascadeOnDelete();
             $table->timestamps();
         });
     }

@@ -19,8 +19,8 @@
                 </tr>
             </thead>
             <tbody class="text-gray-600 fw-semibold">
-                @if (!empty($departments) && $departments->count() > 0)
-                    @foreach ($departments as $department)
+                @if (!empty($all_departments) && $all_departments->count() > 0)
+                    @foreach ($all_departments as $department)
                         <tr data-role="{{ strtolower($department->name) }}">
                             <td>
                                 <div class="form-check form-check-sm form-check-custom form-check-solid">

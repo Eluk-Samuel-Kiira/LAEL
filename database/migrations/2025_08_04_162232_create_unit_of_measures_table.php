@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('symbol')->nullable();
             $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
             $table->boolean('isActive')->default(1);
+            $table->foreignId('tenant_id')->constrained('tenants')->cascadeOnDelete();
             $table->timestamps();
         });
     }

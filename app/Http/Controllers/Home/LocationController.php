@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Home;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Location;
-use Illuminate\Support\Facades\Auth;
+use App\Models\{ Location, User };
+use Illuminate\Support\Facades\{ Auth, DB };
 use Illuminate\Validation\Rule;
 
 class LocationController extends Controller
@@ -15,17 +15,17 @@ class LocationController extends Controller
      */
     public function index(Request $request)
     {
-        $locations = Location::with('locationCreater','locationManager')->latest()->get();
+        $locations = Location::with('locationCreater','locationManager')->where('tenant_id', Auth::user()->tenant_id)->latest()->get();
         
         $bladeToReload = $request->query('bladeFileToReload');
         switch ($bladeToReload) {
             case 'locationIndexTable':
                 return view('unit-of-measure.location.component', [
-                    'locations' => $locations,
+                    'all_locations' => $locations,
                 ]);
             default:
                 return view('unit-of-measure.location-index', [
-                    'locations' => $locations,
+                    'all_locations' => $locations,
                 ]);
         }
     }
@@ -60,7 +60,7 @@ class LocationController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('auth.maximum_locations_reached', ['max' => $maxLocations]),
-            ], 422);
+            ]);
         }
 
         $location = Location::create([
@@ -102,23 +102,51 @@ class LocationController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $location = Location::find($id);
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
+
+        // Find location and ensure it belongs to tenant
+        $location = Location::where('id', $id)
+                        ->where('tenant_id', $tenantId)
+                        ->first();
+
+        if (!$location) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth._not_found'),
+            ]);
+        }
+
         $request->validate([
             'name' => [
                 'required',
                 'max:255',
-                Rule::unique('locations', 'name')->ignore($location->id),
+                Rule::unique('locations')->where(function ($query) use ($tenantId, $id) {
+                    return $query->where('tenant_id', $tenantId)
+                            ->where('id', '!=', $id);
+                })->ignore($location->id),
             ],
-            'manager_id' => 'required|exists:users,id',
+            'manager_id' => [
+                'required',
+                'exists:users,id',
+                function ($attribute, $value, $fail) use ($tenantId) {
+                    $manager = User::where('id', $value)
+                                ->where('tenant_id', $tenantId)
+                                ->first();
+                    if (!$manager) {
+                        $fail('The selected manager is invalid.');
+                    }
+                }
+            ],
             'address' => 'required|string|max:55',
         ]);
 
         $location->update([
             'name' => $request->name,
             'address' => $request->address,
-            'created_by' => Auth::user()->id,
+            'created_by' => $user->id,
             'manager_id' => $request->manager_id,
-            'tenant_id' => 1,
+            // Don't update tenant_id - it should remain the same
         ]);
 
         return response()->json([
@@ -129,7 +157,6 @@ class LocationController extends Controller
             'message' => __('auth._updated'),
             'redirect' => route('locations.index'),
         ]);
-
     }
 
     /**
@@ -137,7 +164,26 @@ class LocationController extends Controller
      */
     public function destroy(string $id)
     {
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
+
         $location = Location::find($id);
+        
+        // Check if location exists and belongs to tenant
+        if (!$location) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth._not_found'),
+            ]);
+        }
+
+        if ($location->tenant_id !== $tenantId) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.unauthorized_access'),
+            ]);
+        }
+
         if ($location->is_active === 1) {
             return response()->json([
                 'success' => false,
@@ -145,7 +191,44 @@ class LocationController extends Controller
             ]);
         }
 
+        // Check if location is attached to any products in location_product pivot table
+        $attachedToProducts = DB::table('location_product')
+            ->where('location_id', $id)
+            ->exists();
+
+        if ($attachedToProducts) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.location_attached_to_products'),
+            ]);
+        }
+
+        // Check if location is referenced in inventory_items table
+        $hasInventoryItems = DB::table('inventory_items')
+            ->where('location_id', $id)
+            ->exists();
+
+        if ($hasInventoryItems) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.location_has_inventory_items'),
+            ]);
+        }
+
+        // Check if location is referenced in orders table
+        $hasOrders = DB::table('orders')
+            ->where('location_id', $id)
+            ->exists();
+
+        if ($hasOrders) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.location_has_orders'),
+            ]);
+        }
+
         $location->delete();
+        
         return response()->json([
             'success' => true,
             'reload' => true,
@@ -193,6 +276,7 @@ class LocationController extends Controller
         $validated = $request->validate([
             'status' => 'required|in:1,0',  // Ensures only 'active' or 'inactive' are allowed
         ]);
+        // \Log::info($request->all());
         
         $location = Location::find($id);
     

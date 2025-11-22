@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\User;
+use App\Models\{ User, Tenant };
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -15,20 +15,27 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+        $tenantId = 2; // Use consistent tenant ID
+
         // Define roles
         $roles = [
             'admin',
+            'super_admin',
             'manager',
             'cashier',
             'inventory_clerk',
         ];
 
-        // Create roles
+        // Create roles WITH guard_name
         foreach ($roles as $role) {
-            Role::create(['name' => $role]);
+            Role::create([
+                'name' => $role,
+                'guard_name' => 'web',
+                'tenant_id' => $tenantId
+            ]);
         }
 
-        // Define permissions
+        // Define regular permissions
         $permissions = [
             // Product Management
             'create product',
@@ -44,7 +51,6 @@ class UserSeeder extends Seeder
             'delete variant',
             'update variant',
             
-
             // Sales Management
             'process sale',
             'view sales report',
@@ -63,7 +69,6 @@ class UserSeeder extends Seeder
             'view customer',
             'edit customer',
             'delete customer',
-
 
             // Admin Permissions
             'configure system',
@@ -84,7 +89,7 @@ class UserSeeder extends Seeder
             'delete department',
             'update department',
 
-            // Tenant mgt
+            // Tenant mgt (regular tenant admin level)
             'create tenant',
             'view tenant',
             'edit tenant',
@@ -176,19 +181,97 @@ class UserSeeder extends Seeder
             'update settings',
         ];
 
-        // Create permissions
+        // Create regular permissions
         foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+            Permission::firstOrCreate([
+                'name' => $permission,
+                'guard_name' => 'web',
+                'is_super_admin' => false // 👈 MARK AS REGULAR
+            ]);
         }
 
-        // Assign permissions to roles
-        $adminRole = Role::where('name', 'admin')->first();
+        // Define SUPER ADMIN ONLY permissions
+        $superAdminOnlyPermissions = [
+            'tenant_manage_all',
+            'tenant_delete_any',
+            'tenant_billing_manage',
+            'system_settings_manage',
+            'user_impersonate',
+            'subscription_manage_all',
+            'data_export_all',
+            'audit_log_view_all',
+            'backup_manage',
+            'payment_gateway_manage',
+            'super_admin_dashboard',
+            'manage_all_tenants',
+            'override_tenant_limits',
+            'system_maintenance'
+        ];
 
+        // Create super admin only permissions
+        foreach ($superAdminOnlyPermissions as $permission) {
+            Permission::firstOrCreate([
+                'name' => $permission,
+                'guard_name' => 'web',
+                'is_super_admin' => true // 👈 MARK AS SUPER ADMIN
+            ]);
+        }
+
+        // Get all permissions (regular + super admin only)
         $allPermissions = Permission::all();
-        $adminRole->syncPermissions($allPermissions); // Admin gets all permissions
+        
+        // Get regular permissions only (for tenant admins)
+        $regularPermissions = Permission::whereNotIn('name', $superAdminOnlyPermissions)->get();
 
+        // Assign ALL permissions to super_admin (global role)
+        $superAdminRole = Role::where('name', 'super_admin')->first();
+        $superAdminRole->syncPermissions($allPermissions);
 
-        // Create sample users
+        // Assign regular permissions to admin (tenant-specific role)
+        $adminRole = Role::where('name', 'admin')->where('tenant_id', $tenantId)->first();
+        $adminRole->syncPermissions($regularPermissions);
+
+        // Assign basic permissions to other roles
+        $managerRole = Role::where('name', 'manager')->where('tenant_id', $tenantId)->first();
+        $managerPermissions = $regularPermissions->whereIn('name', [
+            'view product', 'view sales report', 'view inventory', 'view customer',
+            'create product', 'edit product', 'process sale', 'view user'
+        ]);
+        $managerRole->syncPermissions($managerPermissions);
+
+        $cashierRole = Role::where('name', 'cashier')->where('tenant_id', $tenantId)->first();
+        $cashierPermissions = $regularPermissions->whereIn('name', [
+            'view product', 'process sale', 'apply discounts', 'view customer',
+            'create customer'
+        ]);
+        $cashierRole->syncPermissions($cashierPermissions);
+
+        $inventoryClerkRole = Role::where('name', 'inventory_clerk')->where('tenant_id', $tenantId)->first();
+        $inventoryPermissions = $regularPermissions->whereIn('name', [
+            'view product', 'view inventory', 'update stock levels', 'create inventory record',
+            'edit inventory', 'view supplier'
+        ]);
+        $inventoryClerkRole->syncPermissions($inventoryPermissions);
+
+        // Create SUPER ADMIN user (global user, no tenant)
+        $superAdminUser = User::factory()->create([
+            'name' => 'Super Admin',
+            'first_name' => 'Super',
+            'last_name' => 'Admin',
+            'telephone_number' => '0700000000',
+            'job_title' => 'System Super Administrator',
+            'department_id' => 2,
+            'location_id' => 2,
+            'profile_image' => '',
+            'role_id' => $superAdminRole->id,
+            'status' => 'active',
+            'tenant_id' => 2, // Super admin has no tenant
+            'email' => 'superadmin@system.com',
+            'password' => bcrypt('superadmin&#123')
+        ]);
+        $superAdminUser->assignRole('super_admin');
+
+        // Create tenant admin user
         $adminUser = User::factory()->create([
             'name' => 'Admin User',
             'first_name' => 'Samu',
@@ -196,30 +279,37 @@ class UserSeeder extends Seeder
             'telephone_number' => '0700000001',
             'job_title' => 'System Administrator',
             'department_id' => 1,
+            'location_id' => 1,
             'profile_image' => '',
-            'role_id' => 1,
+            'role_id' => $adminRole->id,
             'status' => 'active',
+            'tenant_id' => $tenantId,
             'email' => 'samuelkiiraeluk@gmail.com',
             'password' => bcrypt('1234567890')
         ]);
         $adminUser->assignRole('admin');
 
-        // Create sample users
+        // Create trial user
         $adminUser2 = User::factory()->create([
             'name' => 'Trial User',
             'first_name' => 'Trial',
             'last_name' => 'User',
-            'telephone_number' => '0700000001',
+            'telephone_number' => '0700000002',
             'job_title' => 'System Administrator',
             'department_id' => 1,
+            'location_id' => 1,
             'profile_image' => '',
-            'role_id' => 1,
+            'role_id' => $adminRole->id,
             'status' => 'active',
             'email' => 'trialuser@gmail.com',
+            'tenant_id' => $tenantId,
             'password' => bcrypt('password@123')
         ]);
         $adminUser2->assignRole('admin');
-        User::factory()->count(5)->create();
-
+        
+        // Create other users
+        User::factory()->count(5)->create([
+            'tenant_id' => $tenantId,
+        ]);
     }
 }

@@ -162,8 +162,9 @@ return [
     // Human Resource
     '_users' => 'Users',
     '_users_index' => 'Users Index',
-    '_users_table' => 'Employee Table',
-    'new_user' => 'New Employee',
+    '_users_table' => 'Users Table',
+    'new_user' => 'New User',
+    'new_employee' => 'New Employee',
     '_back' => 'Back',
     'human_resource' => 'Human Resource',
     '_roles' => 'Roles',
@@ -208,4 +209,79 @@ return [
     'single_shop_plan' => 'Single Shop Plan',
     'upgrade_for_multiple_shops' => 'You are currently on a single shop plan. Upgrade your plan to use multiple shops, locations, and departments.',
     'upgrade_plan' => 'Upgrade Plan',
+    'default_currency_cannot_be_modified' => 'Default currency cannot be modified.',
+    'unauthorized_access' => 'Unauthorized access to this resource.',
+    'usd_currency_reserved' => 'USD currency code is reserved for the system default currency.',
+    'dollar_symbol_reserved' => 'Dollar symbol ($) is reserved for the system default currency.',
+    'currency_protected_from_deletion' => 'This currency is protected and cannot be deleted.',
+    'global_currency_protected' => 'Global currency cannot be deleted.',
+    'active_currency_protected' => 'Active currencies cannot be deleted. Deactivate first.',
+    'usd_currency_protected' => 'USD currency is protected and cannot be deleted.',
+    'default_currency_protected' => 'Default currency cannot be deleted.',
+
+    'still_active' => 'Please deactivate it first before deletion.',
+    'activated' => 'Unit of measure activated successfully.',
+    'deactivated' => 'Unit of measure deactivated successfully.',
+    'update_failed' => 'Failed to update status.',
+
+    'currency_activated' => 'Currency activated successfully.',
+    'currency_deactivated' => 'Currency deactivated successfully.',
+
+    'department_still_active' => 'This department is still active. Please deactivate it first before deletion.',
+    'department_activated' => 'Department activated successfully.',
+    'department_deactivated' => 'Department deactivated successfully.',
+    'department_has_users' => 'Cannot delete department. It has users assigned to it.',
+    'department_attached_to_products' => 'Cannot delete department. It is currently assigned to one or more products.',
+    'department_has_orders' => 'Cannot delete department. It is referenced in one or more orders.',
+    'department_has_inventory_items' => 'Cannot delete department. It is referenced in one or more inventory items.',
+    'super_admin_not_updatable' => 'Cannot update departments for super admin users.',
+    'protected_user_not_updatable' => 'Cannot update departments for protected role users.',
+    'admin_not_updatable' => 'Cannot update departments for admin users.',
+
+    'location_attached_to_products' => 'Cannot delete location. It is currently assigned to one or more products.',
+    'location_has_inventory_items' => 'Cannot delete location. It is referenced in one or more inventory items.',
+    'location_has_orders' => 'Cannot delete location. It is referenced in one or more orders.',
+
+
+    'maximum_users_reached' => 'Maximum users limit reached. You can only create up to :max users.',
+    'user_exist' => 'User creation failed. User may already exist.',
+
+    // Promotion related translations
+    'promotion_not_found' => 'Promotion not found.',
+    'promotion_attached_to_products' => 'Cannot delete promotion. It is currently assigned to one or more products.',
+    'promotion_attached_to_orders' => 'Cannot delete promotion. It is referenced in one or more orders.',
+    
+    'user_not_updatable' => 'Cannot update status for admin or super admin users.',
+    'update_failed' => 'Update failed. Please try again.',
+    'protected_user_not_updatable' => 'Cannot update status for protected role users.',
+
+    'role_not_found' => 'Role not found.',
+    'maximum_roles_reached' => 'Maximum roles limit reached. You can only create up to :max roles.',
+    'users_exist' => 'Cannot delete role. Users are still assigned to this role.',
+    'cant_delete' => 'This role cannot be deleted.',
+    'tax_not_found' => 'Tax not found.',
+
+    'tax_attached_to_products' => 'Cannot delete tax. It is currently being used on one or more products.',
+    'tax_attached_to_variants' => 'Cannot delete tax. It is currently being used on one or more product variants.',
+
+    'uom_attached_to_variants' => 'Cannot delete unit of measure. It is currently being used by one or more product variants.',
+
+    'maximum_suppliers_reached' => 'Maximum suppliers limit reached. You can only create up to :max suppliers.',
+
+    'category_used_in_product_categories' => 'Cannot delete category. It is being used as a parent category in one or more product categories.',
+    'category_used_in_product_categories_count' => 'Cannot delete category. It is being used as a parent category in :count product category(ies).',
+    'category_used_in_relations' => 'Cannot delete category. It is being used in :product_categories product category(ies) and :products product(s).',
+
+    'maximum_product_categories_reached' => 'Maximum product categories limit reached. You can only create up to :max product categories.',
+    'product_category_attached_to_products' => 'Cannot delete product category. It is currently assigned to one or more products.',
+    'product_category_has_children' => 'Cannot delete product category. It has child categories assigned to it.',
+
+    'maximum_products_reached' => 'Maximum products limit reached. You can only create up to :max products.',
+    'product_has_variants' => 'Cannot delete product. It has one or more variants.',
+    'product_has_orders' => 'Cannot delete product. It is referenced in one or more orders.',
+    'product_has_inventory' => 'Cannot delete product. It has inventory items.',
+
+    'product_not_taxable_now' => 'Product is not taxable. Tax assignments were not applied.',
+    'product_not_taxable_taxes_removed' => 'Product is not taxable. Tax assignments have been removed.',
+    'product_assignments_updated_taxes_ignored' => 'Assignments updated successfully. Tax assignments were ignored because product is not taxable.',
 ];

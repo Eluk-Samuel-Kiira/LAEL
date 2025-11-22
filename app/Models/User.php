@@ -86,6 +86,13 @@ class User extends Authenticatable implements MustVerifyEmail
         );
     }
 
+     /**
+     * Get the tenant that owns the user.
+     */
+    public function tenant()
+    {
+        return $this->belongsTo(Tenant::class);
+    }
 
 
 

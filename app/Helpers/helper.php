@@ -5,6 +5,7 @@ use App\Models\Setting;
 use App\Models\Currency;
 // protected array $cache = [];
 use App\Models\TenantSetting;
+use Illuminate\Support\Facades\Auth;
 
 if (! function_exists('is_tab_show')) {
     function is_tab_show($routeName)
@@ -276,6 +277,27 @@ if (!function_exists('productVariantImage')) {
 
 
 
+
+
+
+if (!function_exists('current_tenant_id')) {
+    function current_tenant_id()
+    {
+        return Auth::check() ? Auth::user()->tenant_id : null;
+    }
+}
+
+if (!function_exists('current_tenant')) {
+    function current_tenant()
+    {
+        if (!Auth::check()) {
+            return null;
+        }
+    
+        $tenantId = Auth::user()->tenant_id;
+        return \App\Models\Tenant::find($tenantId);
+    }
+}
 
 
 if (!function_exists('tenant_setting')) {

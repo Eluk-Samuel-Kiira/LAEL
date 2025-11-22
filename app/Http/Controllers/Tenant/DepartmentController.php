@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
-use App\Models\Department;
+use App\Models\{ Department, User };
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\{ Auth, DB };
 use Illuminate\Validation\Rule;
 
 class DepartmentController extends Controller
@@ -15,17 +15,17 @@ class DepartmentController extends Controller
      */
     public function index(Request $request)
     {
-        $departments = Department::latest()->get();
+        $departments = Department::where('tenant_id', Auth::user()->tenant_id)->latest()->get();
         
         $bladeToReload = $request->query('bladeFileToReload');
         switch ($bladeToReload) {
             case 'departmentIndexTable':
                 return view('department.partials.department-component', [
-                    'departments' => $departments,
+                    'all_departments' => $departments,
                 ]);
             default:
                 return view('department.department-index', [
-                    'departments' => $departments,
+                    'all_departments' => $departments,
                 ]);
         }
     }
@@ -43,17 +43,24 @@ class DepartmentController extends Controller
     */
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:55|unique:departments,name',
-            'manager_id' => 'required|exists:users,id',
-        ]);
-
         $user = Auth::user();
         $tenantId = $user->tenant_id;
 
+        $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:55',
+                Rule::unique('departments')->where(function ($query) use ($tenantId) {
+                    return $query->where('tenant_id', $tenantId);
+                })
+            ],
+            'manager_id' => 'required|exists:users,id',
+        ]);
+
         // Check maximum departments limit
         $currentDepartmentCount = Department::where('tenant_id', $tenantId)->count();
-        $maxDepartments = tenant_setting($tenantId, 'max_departments');
+        $maxDepartments = tenant_setting($tenantId, 'max_departments', 3);
 
         if ($currentDepartmentCount >= $maxDepartments) {
             return response()->json([
@@ -100,20 +107,41 @@ class DepartmentController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
+
         $department = Department::find($id);
+        
+        // Check if department exists and belongs to tenant
+        if (!$department) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth._not_found'),
+            ]);
+        }
+
+        if ($department->tenant_id !== $tenantId) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.unauthorized_access'),
+            ]);
+        }
+
         $request->validate([
             'name' => [
                 'required',
                 'max:255',
-                Rule::unique('departments', 'name')->ignore($department->id),
+                Rule::unique('departments')->where(function ($query) use ($tenantId) {
+                    return $query->where('tenant_id', $tenantId);
+                })->ignore($department->id),
             ],
             'manager_id' => 'required|exists:users,id',
         ]);
 
         $department->update([
             'name' => $request->name,
-            'created_by' => Auth::user()->id,
             'manager_id' => $request->manager_id,
+            'created_by' => $user->id,
         ]);
 
         return response()->json([
@@ -131,16 +159,85 @@ class DepartmentController extends Controller
      */
     public function destroy(string $id)
     {
-        
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
+
         $department = Department::find($id);
-        if ($department->isActive === 1) {
+        
+        // Check if department exists and belongs to tenant
+        if (!$department) {
             return response()->json([
                 'success' => false,
-                'message' => __('This Department Is Still Active!'),
+                'message' => __('auth._not_found'),
             ]);
         }
 
-        $department->delete();return response()->json([
+        if ($department->tenant_id !== $tenantId) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.unauthorized_access'),
+            ]);
+        }
+
+        if ($department->isActive === 1) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.department_still_active'),
+            ]);
+        }
+
+        // Check if department has any users assigned
+        $hasUsers = User::where('department_id', $id)
+            ->exists();
+
+        if ($hasUsers) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.department_has_users'),
+            ]);
+        }
+
+        // Check if department is attached to any products in department_product pivot table
+        $attachedToProducts = DB::table('department_product')
+            ->where('department_id', $id)
+            ->exists();
+
+        if ($attachedToProducts) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.department_attached_to_products'),
+            ]);
+        }
+
+        // Check if department is referenced in orders table
+        $hasOrders = DB::table('orders')
+            ->where('department_id', $id)
+            ->where('tenant_id', $tenantId)
+            ->exists();
+
+        if ($hasOrders) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.department_has_orders'),
+            ]);
+        }
+
+        // Check if department is referenced in inventory_items table
+        $hasInventoryItems = DB::table('inventory_items')
+            ->where('department_id', $id)
+            ->where('tenant_id', $tenantId)
+            ->exists();
+
+        if ($hasInventoryItems) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.department_has_inventory_items'),
+            ]);
+        }
+
+        $department->delete();
+        
+        return response()->json([
             'success' => true,
             'reload' => true,
             'componentId' => 'departmentIndexTable',
@@ -169,6 +266,7 @@ class DepartmentController extends Controller
                     'refresh' => false,
                     'componentId' => 'departmentIndexTable',
                     'message' => __('auth._updated'),
+                    'redirect' => route('department.index'),
                 ]);
             }
         }
