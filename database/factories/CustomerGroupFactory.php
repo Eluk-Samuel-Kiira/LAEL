@@ -19,7 +19,7 @@ class CustomerGroupFactory extends Factory
     public function definition(): array
     {
         return [
-            'tenant_id' => Tenant::factory(),
+            'tenant_id' => Tenant::inRandomOrder()->first()->id,
             'name' => $this->faker->unique()->word(),
             'discount_percentage' => $this->faker->randomFloat(2, 0, 30),
             'created_by' => User::where('role_id', '1' )->where('status', 'active')->get()->random()->id,

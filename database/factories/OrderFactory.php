@@ -28,11 +28,11 @@ class OrderFactory extends Factory
         $paidAmount = $this->faker->randomFloat(2, 0, $total);
         
         return [
-            'tenant_id' => Tenant::factory(),
-            'customer_id' => Customer::factory(),
+            'tenant_id' => Tenant::inRandomOrder()->first()->id,
+            'customer_id' => Customer::inRandomOrder()->first()->id,
             'customer_name' => $this->faker->name(),
-            'location_id' => Location::factory(),
-            'department_id' => Department::factory(),
+            'location_id' => Location::inRandomOrder()->first()->id,
+            'department_id' => Department::inRandomOrder()->first()->id,
             'order_number' => strtoupper($this->faker->unique()->bothify('ORD###??')),
             'type' => $this->faker->randomElement(['sale', 'return', 'quote', 'layby']),
             'status' => $this->faker->randomElement(['draft', 'confirmed', 'processing', 'completed', 'cancelled', 'refunded']),
@@ -44,7 +44,7 @@ class OrderFactory extends Factory
             'balance_due' => max(0, $total - $paidAmount),
             'source' => $this->faker->randomElement(['pos', 'online', 'phone', 'mobile']),
             'notes' => $this->faker->sentence(),
-            'created_by' => User::factory(),
+            'created_by' => User::inRandomOrder()->first()->id,
         ];
     }
 }

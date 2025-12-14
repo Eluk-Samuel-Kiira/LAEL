@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Str;
+use App\Models\Tenant;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Product>
@@ -25,7 +26,7 @@ class ProductFactory extends Factory
         $name = $this->faker->unique()->words(2, true);
 
         return [
-            'tenant_id' => 1, // change to dynamic if needed or use factory for tenants
+            'tenant_id' => Tenant::inRandomOrder()->first()->id,
             'category_id' => $this->faker->randomElement([2, 1, 4, 3, 9, 6, 5]),
             'sku' => $this->faker->unique()->bothify('SKU-####'),
             'name' => $this->faker->words(3, true),

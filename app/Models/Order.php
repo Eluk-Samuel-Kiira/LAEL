@@ -50,6 +50,26 @@ class Order extends Model
         return formatCurrency($value);
     }
 
+        // 👇 Mutators to convert to USD when WRITING to database
+    public function setSubtotalAttribute($value) {
+        $this->attributes['subtotal'] = toUSD($value);
+    }
+    public function setDiscountTotalAttribute($value) {
+        $this->attributes['discount_total'] = toUSD($value);
+    }
+    public function setTaxTotalAttribute($value) {
+        $this->attributes['tax_total'] = toUSD($value);
+    }
+    public function setTotalAttribute($value) {
+        $this->attributes['total'] = toUSD($value);
+    }
+    public function setPaidAmountAttribute($value) {
+        $this->attributes['paid_amount'] = toUSD($value);
+    }
+    public function setBalanceDueAttribute($value) {
+        $this->attributes['balance_due'] = toUSD($value);
+    }
+
     // Relationships
     public function tenant() { return $this->belongsTo(Tenant::class); }
     public function customer() { return $this->belongsTo(Customer::class); }

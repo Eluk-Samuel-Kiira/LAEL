@@ -9,7 +9,7 @@
                         </div>
                     </th>
                     <th class="min-w-125px">{{__('pagination.category_id')}}</th>
-                    <th class="min-w-125px">{{__('auth._name')}}</th> 
+                    <th class="min-w-125px">{{__('auth._name')}}</th>
                     <th class="min-w-125px">{{__('auth._creater')}}</th> 
                     <th class="min-w-125px">{{__('auth.created_at')}}</th>
                     <th class="min-w-125px">{{__('auth._status')}}</th>

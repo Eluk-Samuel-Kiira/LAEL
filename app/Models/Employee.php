@@ -72,4 +72,12 @@ class Employee extends Model
     {
         return formatCurrency($value);
     }
+
+    // 👇 Mutators for monetary fields - Convert to USD when WRITING to database
+    public function setSalaryAttribute($value)
+    {
+        $this->attributes['salary'] = toUSD($value);
+    }
+
+    
 }

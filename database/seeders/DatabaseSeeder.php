@@ -24,9 +24,9 @@ class DatabaseSeeder extends Seeder
             CurrencySeeder::class,
             CategorySeeder::class,
             ProductCategorySeeder::class,
-            PromotionSeeder::class,
             ProductSeeder::class,
             ProductVariantSeeder::class,
+            PromotionSeeder::class,
             InventoryItemSeeder::class,
             InventoryTransactionSeeder::class,
             InventoryAdjustmentsSeeder::class,
@@ -41,12 +41,26 @@ class DatabaseSeeder extends Seeder
             PurchaseOrderSeeder::class,
             PurchaseReceiptSeeder::class,
 
+            // Accounting
+            ChartOfAccountSeeder::class,
+            AccountingPeriodSeeder::class,
+            JournalEntrySeeder::class,
+            JournalEntryLineSeeder::class,
+            GeneralLedgerSeeder::class,
+
             // Employement
             EmployeeSeeder::class,
             EmployeePaymentSeeder::class,
 
             // System tracking
             TenantSettingsSeeder::class,
+
+
+            ExpenseCategorySeeder::class,
+            ExpenseSeeder::class,
+
+            BillingPlanSeeder::class,
+            TenantUsageTrackingSeeder::class,
         ]);
     }
 }

@@ -47,6 +47,17 @@ class ReceivedProductVariant extends Model
         return formatCurrency($value);
     }
 
+    // 👇 Mutators for monetary fields
+    public function setUnitCostAttribute($value)
+    {
+        $this->attributes['unit_cost'] = $this->toUSD($value);
+    }
+
+    public function setTotalCostAttribute($value)
+    {
+        $this->attributes['total_cost'] = $this->toUSD($value);
+    }
+
 
     /**
      * Relationships

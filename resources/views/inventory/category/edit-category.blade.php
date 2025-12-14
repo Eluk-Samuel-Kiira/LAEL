@@ -19,7 +19,7 @@
                         <div class="row g-9 mb-8">
                             <div class="d-flex flex-column mb-8 fv-row col-md-12">
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
-                                    <span class="required">{{__('auth._uom')}} </span>
+                                    <span class="required">{{__('pagination._category')}} </span>
                                 </label>
                                 <input type="text" value="{{ $category->name }}" class="form-control form-control-solid" name="name" />
                                 <div id="name{{ $category->id }}"></div>

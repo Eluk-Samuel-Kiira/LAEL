@@ -23,6 +23,11 @@ class OrderTax extends Model
     {
         return formatCurrency($value);
     }
+
+    public function setTaxAmountAttribute($value)
+    {
+        $this->attributes['tax_amount'] = toUSD($value);
+    }
     
     public function order()
     {

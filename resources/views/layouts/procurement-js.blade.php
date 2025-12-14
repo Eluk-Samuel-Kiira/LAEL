@@ -779,3 +779,130 @@
     }
 
 </script>
+
+
+
+<!-- Expense -->
+<script>
+
+    function updateExpenseCategory(uniqueId) {
+        const submitButton = document.getElementById('editCategoryButton' + uniqueId);
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Select the form and create FormData from it
+        var form = document.getElementById('kt_modal_edit_expense_category_form' + uniqueId);
+        var formData = new FormData(form);
+
+        var data = Object.fromEntries(formData.entries());
+        // console.log(data);
+
+        // Set up the URL dynamically
+        var updateUrl = '{{ route('expense-category.update', ['expense_category' => ':id']) }}'.replace(':id', uniqueId);
+        
+        // Submit form data asynchronously
+        handleEditResponse(data, updateUrl, uniqueId, submitButton);
+
+    }
+
+    function submitExpenseCategoryForm(formId, submitButtonId, url, method = 'POST', discardButtonId = 'discardButton') {
+        const form = document.getElementById(formId);
+        const submitButton = document.getElementById(submitButtonId);
+
+        if (!form || !submitButton) {
+            console.error('Form or button not found:', formId, submitButtonId);
+            return;
+        }
+
+        // Collect form data
+        const formData = Object.fromEntries(new FormData(form));
+        formData._method = method;
+        formData.routeName = url;
+
+        // Start loading
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Pass handling + data to reusable handler
+        handleFormSubmission(formData, submitButton, discardButtonId);
+    }
+
+
+    
+    // Expense
+    function createExpense(formId, submitButtonId, url, method = 'POST', discardButtonId = 'discardButton') {
+        const form = document.getElementById(formId);
+        const submitButton = document.getElementById(submitButtonId);
+
+        if (!form || !submitButton) {
+            console.error('Form or button not found:', formId, submitButtonId);
+            return;
+        }
+
+        // Collect form data
+        const formData = Object.fromEntries(new FormData(form));
+        formData._method = method;
+        formData.routeName = url;
+
+        // Start loading
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Pass handling + data to reusable handler
+        handleFormSubmission(formData, submitButton, discardButtonId);
+    }
+
+    function updateExpenseStatus(uniqueId, selectedStatus) {
+        // Update label instantly
+        const label = document.getElementById('expense-label-' + uniqueId);
+        if (label) {
+            label.innerText = selectedStatus == 'paid' ? 'Paid' : 
+                            selectedStatus == 'reimbursed' ? 'Reimbursed' : 'Pending';
+        }
+
+        // Send update to backend - just the status value
+        // console.log(selectedStatus)
+        const updateRoute = '/expense-status/' + uniqueId;
+        LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
+    }
+
+    
+    function updateExpense(uniqueId) {
+        const submitButton = document.getElementById('editExpenseButton' + uniqueId);
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Select the form and create FormData from it
+        var form = document.getElementById('editExpenseForm' + uniqueId);
+        var formData = new FormData(form);
+
+        var data = Object.fromEntries(formData.entries());
+        // console.log(data);
+
+        // Set up the URL dynamically
+        var updateUrl = '{{ route('expense.update', ['expense' => ':id']) }}'.replace(':id', uniqueId);
+        
+        // Submit form data asynchronously
+        handleEditResponse(data, updateUrl, uniqueId, submitButton);
+
+    }
+
+    /**
+     * Approve expense
+     */
+    function approveExpense(uniqueId, selectedStatus) {
+        // Update label instantly
+        const label = document.getElementById('approve-label-' + uniqueId);
+        if (label) {
+            label.innerText = selectedStatus == 1 ? '{{ __("pagination.approved") }}' : '{{ __("pagination.pending") }}';
+        }
+        
+        // Also update the switch element if needed
+        const switchEl = document.getElementById('approve-switch-' + uniqueId);
+        if (switchEl) {
+            switchEl.checked = selectedStatus == 1;
+        }
+
+        // Send update to backend
+        const updateRoute = '/expenses/' + uniqueId + '/approve';
+        LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
+    }
+
+   
+</script>

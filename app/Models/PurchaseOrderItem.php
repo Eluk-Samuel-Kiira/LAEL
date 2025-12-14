@@ -47,6 +47,22 @@ class PurchaseOrderItem extends Model
         return formatCurrency($value);
     }
 
+    // 👇 Mutators for monetary fields
+    public function setUnitCostAttribute($value)
+    {
+        $this->attributes['unit_cost'] = $this->toUSD($value);
+    }
+
+    public function setTaxAmountAttribute($value)
+    {
+        $this->attributes['tax_amount'] = $this->toUSD($value);
+    }
+
+    public function setTotalCostAttribute($value)
+    {
+        $this->attributes['total_cost'] = $this->toUSD($value);
+    }
+
     public function purchaseOrder(): BelongsTo
     {
         return $this->belongsTo(PurchaseOrder::class);

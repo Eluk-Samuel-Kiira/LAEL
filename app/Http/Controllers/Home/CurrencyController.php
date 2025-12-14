@@ -18,17 +18,19 @@ class CurrencyController extends Controller
         $user = Auth::user();
         $tenantId = current_tenant_id();
         
-        // Build the query
-        $query = Currency::query();
+        // Build the query - ALWAYS include currency with ID 1 (USD base currency)
+        $query = Currency::where(function($query) use ($tenantId, $user) {
+            $query->where('id', 1) // Always include base currency (USD)
+                ->orWhere('tenant_id', $tenantId); // Include tenant's currencies
+        });
         
-        // If user is NOT super_admin, filter by tenant plus currency ID 1
-        if (!$user->hasRole('super_admin')) {
-            $query->where(function($query) use ($tenantId) {
-                $query->where('tenant_id', $tenantId)
-                    ->orWhere('id', 1); // Always include currency with ID 1
+        // If user is super_admin, also show all other currencies
+        if ($user->hasRole('super_admin')) {
+            $query->orWhere(function($query) {
+                $query->where('id', '!=', 1) // Exclude base currency (already included)
+                    ->whereNotNull('tenant_id'); // Include all tenant currencies
             });
         }
-        // Super_admin sees everything (no filters applied)
         
         $currencies = $query->latest()->get();
         
@@ -36,11 +38,11 @@ class CurrencyController extends Controller
         switch ($bladeToReload) {
             case 'currencyIndexTable':
                 return view('settings.currency.currency-component', [
-                    'currencies' => $currencies,
+                    'all_currencies' => $currencies,
                 ]);
             default:
                 return view('settings.currency-index', [
-                    'currencies' => $currencies,
+                    'all_currencies' => $currencies,
                 ]);
         }
     }

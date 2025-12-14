@@ -14,7 +14,7 @@ class SupplierFactory extends Factory
     public function definition()
     {
         return [
-            'tenant_id' => Tenant::factory(),
+            'tenant_id' => Tenant::inRandomOrder()->first()->id,
             'name' => $this->faker->company(),
             'contact_person' => $this->faker->name(),
             'email' => $this->faker->companyEmail(),
@@ -30,7 +30,7 @@ class SupplierFactory extends Factory
             'is_active' => $this->faker->boolean(90),
             'created_at' => $this->faker->dateTimeBetween('-1 year', 'now'),
             'updated_at' => $this->faker->dateTimeBetween('-1 year', 'now'),
-            'created_by' => User::factory(),
+            'created_by' => User::inRandomOrder()->first()->id,
         ];
     }
 

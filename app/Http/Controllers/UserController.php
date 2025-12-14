@@ -292,13 +292,13 @@ class UserController extends Controller
         }
 
         // Check if employee has protected roles
-        if ($employee->hasAnyRole(['super_admin', 'admin'])) {
-            session()->flash('toast', [
-                'type' => 'error',
-                'message' => __('auth.protected_user_not_updatable'),
-            ]);
-            return redirect()->back();
-        }
+        // if ($employee->hasAnyRole(['super_admin', 'admin'])) {
+        //     session()->flash('toast', [
+        //         'type' => 'error',
+        //         'message' => __('auth.protected_user_not_updatable'),
+        //     ]);
+        //     return redirect()->back();
+        // }
 
         // Validate departments[] array with tenant check
         $validated = $request->validate([

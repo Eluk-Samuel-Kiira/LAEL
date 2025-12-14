@@ -21,13 +21,13 @@ class TaxFactory extends Factory
     public function definition(): array
     {
         return [
-            'tenant_id' => Tenant::factory(),
+            'tenant_id' => Tenant::inRandomOrder()->first()->id,
             'name' => $this->faker->randomElement(['VAT', 'Excise Duty', 'Service Tax']),
             'code' => strtoupper($this->faker->unique()->bothify('TAX###')),
             'rate' => $this->faker->randomElement([0.05, 0.10, 0.18, 0.20]),
             'type' => $this->faker->randomElement(['percentage', 'fixed']),
             'is_active' => true,
-            'created_by' => User::factory(),
+            'created_by' => User::inRandomOrder()->first()->id,
         ];
     }
 }

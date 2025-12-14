@@ -15,7 +15,15 @@ class DepartmentController extends Controller
      */
     public function index(Request $request)
     {
-        $departments = Department::where('tenant_id', Auth::user()->tenant_id)->latest()->get();
+        $user = Auth::user();
+        
+        // If user is super_admin, get all departments without tenant filter
+        if ($user->hasRole('super_admin')) {
+            $departments = Department::latest()->get();
+        } else {
+            // Regular users only see their tenant's departments
+            $departments = Department::where('tenant_id', $user->tenant_id)->latest()->get();
+        }
         
         $bladeToReload = $request->query('bladeFileToReload');
         switch ($bladeToReload) {

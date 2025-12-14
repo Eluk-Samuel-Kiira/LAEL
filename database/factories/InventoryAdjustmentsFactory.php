@@ -5,6 +5,7 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\User;
 use App\Models\InventoryItems;
+use App\Models\Tenant;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\InventoryAdjustments>
@@ -24,7 +25,7 @@ class InventoryAdjustmentsFactory extends Factory
             'reason' => $this->faker->sentence(),
             'notes' => $this->faker->sentence(),
             'inventory_id' => InventoryItems::inRandomOrder()->value('id'),
-            'tenant_id' => 1,
+            'tenant_id' => Tenant::inRandomOrder()->first()->id,
             'created_by' => User::where('role_id', '1' )->where('status', 'active')->get()->random()->id,
         ];
     }

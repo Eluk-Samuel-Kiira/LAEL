@@ -31,6 +31,26 @@ class Promotion extends Model
         'end_date' => 'datetime',
     ];
 
+        // Accessor for discount_value - format as currency only when discount_type is 'fixed'
+    public function getDiscountValueAttribute($value)
+    {
+        if ($this->discount_type === 'fixed_amount') {
+            return formatCurrency($value);
+        }
+        
+        return $value; // Return raw value for percentage and other types
+    }
+
+    // Mutator for discount_value - convert to USD only when discount_type is 'fixed'
+    public function setDiscountValueAttribute($value)
+    {
+        if ($this->discount_type === 'fixed_amount') {
+            $this->attributes['discount_value'] = toUSD($value);
+        } else {
+            $this->attributes['discount_value'] = $value; // Store raw value for percentages
+        }
+    }
+
     // Relationships
     public function tenant()
     {

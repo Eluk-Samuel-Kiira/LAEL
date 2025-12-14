@@ -139,16 +139,53 @@ class SupplierController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, string $id)
     {
-        $supplier = Supplier::findOrFail($id);
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:100',
+        // Find supplier and ensure it belongs to tenant
+        $supplier = Supplier::where('id', $id)
+                        ->where('tenant_id', $tenantId)
+                        ->first();
+
+        if (!$supplier) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth._not_found'),
+            ]);
+        }
+
+        $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:100',
+                Rule::unique('suppliers')->where(function ($query) use ($tenantId, $id) {
+                    return $query->where('tenant_id', $tenantId)
+                            ->where('id', '!=', $id);
+                })->ignore($supplier->id),
+            ],
+            'email' => [
+                'nullable',
+                'email',
+                'max:255',
+                Rule::unique('suppliers')->where(function ($query) use ($tenantId, $id) {
+                    return $query->where('tenant_id', $tenantId)
+                            ->where('id', '!=', $id);
+                })->ignore($supplier->id),
+            ],
+            'tax_number' => [
+                'nullable',
+                'string',
+                'max:50',
+                Rule::unique('suppliers')->where(function ($query) use ($tenantId, $id) {
+                    return $query->where('tenant_id', $tenantId)
+                            ->where('id', '!=', $id);
+                })->ignore($supplier->id),
+            ],
             'contact_person' => 'nullable|string|max:100',
-            'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:50',
-            'tax_number' => 'nullable|string|max:50',
             'address' => 'nullable|string',
             'city' => 'nullable|string|max:100',
             'state' => 'nullable|string|max:100',
@@ -158,57 +195,112 @@ class SupplierController extends Controller
             'notes' => 'nullable|string|max:500',
         ]);
 
-        $validated['tenant_id'] = 1;
-        // $validated['created_by'] = auth()->id();
-
-        $supplier->update($validated);
+        $supplier->update([
+            'name' => $request->name,
+            'email' => $request->email,
+            'tax_number' => $request->tax_number,
+            'contact_person' => $request->contact_person,
+            'phone' => $request->phone,
+            'address' => $request->address,
+            'city' => $request->city,
+            'state' => $request->state,
+            'postal_code' => $request->postal_code,
+            'country_code' => $request->country_code,
+            'payment_terms' => $request->payment_terms,
+            'notes' => $request->notes,
+            // Don't update tenant_id or created_by - they should remain the same
+        ]);
 
         return response()->json([
             'success' => true,
             'reload' => true,
-            'componentId' => 'reloadSupplierComponent',
+            'componentId' => 'supplierIndexTable', // Update to match your component ID
             'refresh' => false,
             'message' => __('auth._updated'),
             'redirect' => route('suppliers.index'),
         ]);
-    }
+    }    
 
 
+    
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
     {
-        $supplier = Supplier::find($id);
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
 
+        $supplier = Supplier::find($id);
+        
+        // Check if supplier exists and belongs to tenant
         if (!$supplier) {
             return response()->json([
                 'success' => false,
-                'message' => __('passwords.not_found'),
-            ], 404);
+                'message' => __('auth._not_found'),
+            ]);
         }
 
-        // Check if supplier has any purchase orders
-        if ($supplier->purchaseOrders()->exists()) {
+        if ($supplier->tenant_id !== $tenantId) {
             return response()->json([
                 'success' => false,
-                'message' => __('passwords.has_related_orders'),
-            ], 400);
+                'message' => __('auth.unauthorized_access'),
+            ]);
         }
 
         if ($supplier->is_active === 1) {
             return response()->json([
                 'success' => false,
-                'message' => __('passwords.still_active'),
+                'message' => __('auth.still_active'),
             ]);
         }
 
-        $supplier->delete();
+        // Check if supplier has any purchase orders
+        $hasPurchaseOrders = PurchaseOrder::where('supplier_id', $id)
+            ->where('tenant_id', $tenantId)
+            ->exists();
 
+        if ($hasPurchaseOrders) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.supplier_has_purchase_orders'),
+            ]);
+        }
+
+        // Check if supplier is attached to any products
+        $hasProducts = Product::where('supplier_id', $id)
+            ->where('tenant_id', $tenantId)
+            ->orWhereHas('variants', function ($query) use ($id, $tenantId) {
+                $query->where('supplier_id', $id)
+                    ->where('tenant_id', $tenantId);
+            })
+            ->exists();
+
+        if ($hasProducts) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.supplier_has_products'),
+            ]);
+        }
+
+        // Check if supplier has any invoices
+        // $hasInvoices = Invoice::where('supplier_id', $id)
+        //     ->where('tenant_id', $tenantId)
+        //     ->exists();
+
+        // if ($hasInvoices) {
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => __('auth.supplier_has_invoices'),
+        //     ]);
+        // }
+
+        $supplier->delete();
+        
         return response()->json([
             'success' => true,
             'reload' => true,
-            'componentId' => 'reloadSupplierComponent',
+            'componentId' => 'supplierIndexTable',
             'refresh' => false,
             'message' => __('auth._deleted'),
             'redirect' => route('suppliers.index'),
@@ -218,14 +310,18 @@ class SupplierController extends Controller
 
     public function updateSupplierStatus(Request $request, $id) 
     {
-        // \Log::info($id);
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
+        
         // Validate the request data for status
         $validated = $request->validate([
-            'status' => 'required|in:1,0',  // Ensures only 'active' or 'inactive' are allowed
+            'status' => 'required|in:1,0',
         ]);
         
-        $supplier = Supplier::find($id);
-    
+        $supplier = Supplier::where('id', $id)
+                        ->where('tenant_id', $tenantId)
+                        ->first();
+        
         if ($supplier) {
             $supplier->is_active = $validated['status']; 
             if ($supplier->save()) {  
@@ -233,14 +329,14 @@ class SupplierController extends Controller
                     'success' => true,
                     'reload' => true,
                     'refresh' => false,
-                    'componentId' => 'reloadSupplierComponent',
+                    'componentId' => 'supplierIndexTable',
                     'message' => __('auth._updated'),
                     'redirect' => route('suppliers.index'),
                 ]);
             }
         }
-    
-        // If user not found or status update failed
+        
+        // If supplier not found or status update failed
         return response()->json([
             'success' => false,
             'message' => __('auth._not_found'),

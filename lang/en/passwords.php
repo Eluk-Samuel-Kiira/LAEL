@@ -255,4 +255,33 @@ return [
     'received_at' => 'Received At',
     'cancelled_at' => 'Cancelled At',
     'status_history' => 'Status History',
+
+
+    // Expense
+    'expense-category' => 'Expense Category',
+    'expense_cat_index' => 'Expense Category Index',
+    'expense_category_table' => 'Expense Category Table',
+    'expense_category_new' => 'New Expense Category',
+    'expense_category_create' => 'Create Expense Category',
+    'expense_category_edit' => 'Edit Expense Category',
+    '_code' => 'Code',
+    '_description' => 'Description',
+    '_gl_account' => 'GL Account',
+    '_monthly_budget' => 'Monthly Budget',
+    '_annual_budget' => 'Annual Budget',
+    'expense' => 'Expenses',
+    '_code' => 'Code',
+    '_gl_account' => 'GL Account',
+    '_monthly_budget' => 'Monthly Budget',
+    '_annual_budget' => 'Annual Budget',
+    '_status' => 'Status',
+    '_active' => 'Active',
+    '_inactive' => 'Inactive',
+    '_requires_receipt' => 'Requires Receipt',
+    '_requires_approval' => 'Requires Approval',
+    
+    'expense_index' => 'Expenses Management',
+    'expense_table' => 'Expenses Table',
+    'expense_new' => 'New Expense',
+
 ];

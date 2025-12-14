@@ -19,8 +19,8 @@
                 </tr>
             </thead>
             <tbody class="text-gray-600 fw-semibold">
-                @if (!empty($currencies) && $currencies->count() > 0)
-                    @foreach ($currencies as $currency)
+                @if (!empty($all_currencies) && $all_currencies->count() > 0)
+                    @foreach ($all_currencies as $currency)
                         <tr data-role="{{ strtolower($currency->name) }}">
                             <td>
                                 <div class="form-check form-check-sm form-check-custom form-check-solid">

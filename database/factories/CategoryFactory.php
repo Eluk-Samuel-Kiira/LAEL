@@ -5,6 +5,7 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 use App\Models\User;
+use App\Models\Tenant;
 
 
 /**
@@ -21,6 +22,7 @@ class CategoryFactory extends Factory
     {
         $name = $this->faker->unique()->words(2, true);
         return [
+            'tenant_id' => Tenant::inRandomOrder()->first()->id,
             'name' => ucfirst($name),
             'slug' => Str::slug($name),
             'description' => $this->faker->sentence(),

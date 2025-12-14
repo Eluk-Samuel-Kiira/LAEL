@@ -21,7 +21,7 @@ class TenantConfigurationFactory extends Factory
     public function definition(): array
     {
         return [
-            'tenant_id' => Tenant::factory(), // ✅ Now Tenant::factory() works
+            'tenant_id' => Tenant::inRandomOrder()->first()->id, // ✅ Now Tenant::inRandomOrder()->first()->id works
             'currency_code' => $this->faker->currencyCode,
             'timezone' => $this->faker->timezone,
             'locale' => $this->faker->locale,

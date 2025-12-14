@@ -29,6 +29,12 @@ class OrderPayment extends Model
         return formatCurrency($value);
     }
 
+    // Mutator to convert to USD when WRITING to database
+    public function setAmountAttribute($value)
+    {
+        $this->attributes['amount'] = toUSD($value);
+    }
+
     public function order()
     {
         return $this->belongsTo(Order::class, 'order_id');

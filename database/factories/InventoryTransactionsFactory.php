@@ -5,6 +5,7 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\User;
 use App\Models\InventoryItems;
+use App\Models\Tenant;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\InventoryTransactions>
@@ -27,7 +28,7 @@ class InventoryTransactionsFactory extends Factory
             'type' => $this->faker->randomElement($types),
             'inventory_id' => InventoryItems::inRandomOrder()->value('id'),
             'notes' => $this->faker->sentence(),
-            'tenant_id' => 1,
+            'tenant_id' => Tenant::inRandomOrder()->first()->id,
             'created_by' => User::where('role_id', '1' )->where('status', 'active')->get()->random()->id,
         ];
     }

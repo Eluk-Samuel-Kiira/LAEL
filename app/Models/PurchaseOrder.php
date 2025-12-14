@@ -80,6 +80,25 @@ class PurchaseOrder extends Model
         return formatCurrency($value);
     }
 
+    // 👇 Mutators for monetary fields
+    public function setSubtotalAttribute($value)
+    {
+        $this->attributes['subtotal'] = toUSD($value);
+    }
+
+    public function setTaxTotalAttribute($value)
+    {
+        $this->attributes['tax_total'] = toUSD($value); 
+    }
+
+    public function setTotalAttribute($value)
+    {
+        $this->attributes['total'] = toUSD($value);
+    }
+
+
+
+
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);

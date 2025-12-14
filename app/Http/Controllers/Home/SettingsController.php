@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Home;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Setting;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
@@ -14,10 +15,58 @@ class SettingsController extends Controller
 {
     public function index()
     {
-        $app_info = Setting::find(1);
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
+        
+        // Get tenant-specific settings
+        $app_info = Setting::where('tenant_id', $tenantId)->first();
+        
+        // If no tenant settings exist, create defaults
+        if (!$app_info) {
+            $app_info = $this->createDefaultSettings($tenantId, $user->id);
+        }
+
         return view('settings.index', [
             'app_info' => $app_info
         ]);
+    }
+
+    // Create default settings for a tenant
+    private function createDefaultSettings($tenantId, $userId)
+    {
+        $globalSettings = Setting::whereNull('tenant_id')->first();
+        
+        $defaults = [
+            'tenant_id' => $tenantId,
+            'app_name' => 'LAEL POS - Tenant ' . $tenantId,
+            'app_email' => '',
+            'app_contact' => '',
+            'currency' => 'USD',
+            'locale' => 'en',
+            'menu_nav_color' => '#3498db',
+            'font_family' => 'Cursive',
+            'font_size' => '1.3',
+            'created_by' => $userId,
+        ];
+
+        // Copy from global settings if they exist
+        if ($globalSettings) {
+            $defaults = array_merge($defaults, [
+                'mail_status' => $globalSettings->mail_status,
+                'mail_mailer' => $globalSettings->mail_mailer,
+                'mail_host' => $globalSettings->mail_host,
+                'mail_port' => $globalSettings->mail_port,
+                'mail_username' => $globalSettings->mail_username,
+                'mail_password' => $globalSettings->mail_password,
+                'mail_encryption' => $globalSettings->mail_encryption,
+                'mail_address' => $globalSettings->mail_address,
+                'mail_name' => $globalSettings->mail_name,
+                'meta_keyword' => $globalSettings->meta_keyword,
+                'meta_descrip' => $globalSettings->meta_descrip,
+            ]);
+        }
+
+        return Setting::create($defaults);
     }
 
     // Languages
@@ -28,17 +77,32 @@ class SettingsController extends Controller
             Session::put('locale', $locale);
         }
 
-        // update system language
-        $app_locale = Setting::first();
-        $app_locale->update([
-            'locale' => $locale
-        ]);
+        // Update tenant-specific language
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
+        
+        $app_locale = Setting::where('tenant_id', $tenantId)->first();
+        
+        if ($app_locale) {
+            $app_locale->update([
+                'locale' => $locale
+            ]);
+        } else {
+            Setting::create([
+                'tenant_id' => $tenantId,
+                'locale' => $locale,
+                'created_by' => $user->id,
+            ]);
+        }
 
         return redirect()->back();
     }
 
     public function updateSettings(Request $request)
     {
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
+
         // Validate the incoming request data
         $validatedData = $request->validate([
             'app_name' => 'nullable|string|max:255',
@@ -47,8 +111,9 @@ class SettingsController extends Controller
             'currency' => 'nullable|string|max:10',
             'meta_keyword' => 'nullable|string|max:255',
             'meta_descrip' => 'nullable|string|max:500',
-            'favicon' => 'nullable|string|max:255', 
-            'logo' => 'nullable|string|max:255',
+            'menu_nav_color' => 'nullable|string|max:50',
+            'font_family' => 'nullable|string|max:100',
+            'font_size' => 'nullable|string|max:10',
             'mail_status' => 'nullable|in:enabled,disabled',
             'mail_mailer' => 'nullable|string|max:50',
             'mail_host' => 'nullable|string|max:255',
@@ -60,14 +125,12 @@ class SettingsController extends Controller
             'mail_name' => 'nullable|string|max:255',
         ]);
 
-        // Retrieve the application settings
-        $setting = Setting::first();
+        // Retrieve the tenant-specific settings
+        $setting = Setting::where('tenant_id', $tenantId)->first();
 
         if (!$setting) {
-            return response()->json([
-                'success' => false,
-                'message' => __('auth.settings_not_found'),
-            ], 404);
+            // Create default settings if they don't exist
+            $setting = $this->createDefaultSettings($tenantId, $user->id);
         }
 
         $componentToReload = null;
@@ -91,7 +154,7 @@ class SettingsController extends Controller
 
         } elseif ($request->hasAny(['menu_nav_color', 'font_family', 'font_size'])) {
             $setting->update($request->only(['menu_nav_color', 'font_family', 'font_size']));
-            $componentToReload = 'updateMetaInfoForm';
+            $componentToReload = 'updateUISettingsForm';
 
         } else {
             return response()->json([
@@ -112,6 +175,9 @@ class SettingsController extends Controller
 
     public function uploadLogo(Request $request)
     {
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
+
         $request->validate([
             'logo_image' => 'required|image|mimes:jpeg,png,gif|max:5120', // Max size: 5MB
         ]);
@@ -119,17 +185,23 @@ class SettingsController extends Controller
         if ($request->hasFile('logo_image')) {
             $file = $request->file('logo_image');
 
-            // Store file in storage/app/public/logos and return filename
-            $path = $file->store('logos', 'public'); // returns something like logos/logo_abc123.png
+            // Store file in storage/app/public/logos with tenant prefix
+            $filename = 'tenant_' . $tenantId . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('logos', $filename, 'public');
+
+            // Get or create tenant settings
+            $setting = Setting::where('tenant_id', $tenantId)->first();
+            
+            if (!$setting) {
+                $setting = $this->createDefaultSettings($tenantId, $user->id);
+            }
 
             // Delete old file if it exists
-            $setting = Setting::find(1);
             if ($setting && $setting->logo) {
                 Storage::disk('public')->delete('logos/' . $setting->logo);
             }
 
-            // Save only the filename (optional: you can store full $path)
-            $filename = basename($path);
+            // Save the filename
             $setting->update(['logo' => $filename]);
 
             return response()->json([
@@ -144,31 +216,37 @@ class SettingsController extends Controller
         ], 400);
     }
 
-
     public function uploadFavicon(Request $request)
     {
-    
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
+
         $request->validate([
-            'favicon_image' => 'required|max:5084', 
+            'favicon_image' => 'required|mimes:ico,png|max:2048', // Max size: 2MB
         ]);
 
         try {
             if ($request->hasFile('favicon_image')) {
                 $file = $request->file('favicon_image');
 
-                // Store in storage/app/public/favicons
-                $path = $file->storeAs('favicons', 'favicon_' . time() . '.ico', 'public');
+                // Store in storage/app/public/favicons with tenant prefix
+                $extension = $file->getClientOriginalExtension();
+                $filename = 'favicon_tenant_' . $tenantId . '_' . time() . '.' . $extension;
+                $path = $file->storeAs('favicons', $filename, 'public');
 
-                // Fetch setting
-                $setting = Setting::find(1);
+                // Get or create tenant settings
+                $setting = Setting::where('tenant_id', $tenantId)->first();
+                
+                if (!$setting) {
+                    $setting = $this->createDefaultSettings($tenantId, $user->id);
+                }
 
                 // Delete old favicon if it exists
                 if ($setting && $setting->favicon) {
                     Storage::disk('public')->delete('favicons/' . $setting->favicon);
                 }
 
-                // Save just the filename
-                $filename = basename($path);
+                // Save the filename
                 $setting->update(['favicon' => $filename]);
 
                 return response()->json([
@@ -191,5 +269,4 @@ class SettingsController extends Controller
             ], 500);
         }
     }
-
 }

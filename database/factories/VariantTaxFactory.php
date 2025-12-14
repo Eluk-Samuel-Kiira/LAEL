@@ -25,10 +25,10 @@ class VariantTaxFactory extends Factory
     public function definition(): array
     {
         return [
-            'variant_id' => ProductVariant::factory(),
-            'tax_id' => Tax::factory(),
-            'created_by' => User::factory(),
-            'tenant_id' => Tenant::factory(),
+            'variant_id' => ProductVariant::inRandomOrder()->first()->id,
+            'tax_id' => Tax::inRandomOrder()->first()->id,
+            'created_by' => User::inRandomOrder()->first()->id,
+            'tenant_id' => Tenant::inRandomOrder()->first()->id,
         ];
     }
 }

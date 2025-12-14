@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\User;
+use App\Models\Tenant;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\UnitOfMeasure>
@@ -18,6 +19,7 @@ class UnitOfMeasureFactory extends Factory
     public function definition(): array
     {
         return [
+            'tenant_id' => Tenant::inRandomOrder()->first()->id,
             'name' => $this->faker->word, 
             'symbol' => $this->faker->randomElement(['g', 'l', 'kg', 'ml']),
             'created_by' => User::where('role_id', '1' )->where('status', 'active')->get()->random()->id,

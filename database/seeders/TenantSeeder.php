@@ -14,14 +14,53 @@ class TenantSeeder extends Seeder
      */
     public function run(): void
     {
+        // Ensure "Stardena Shoppers" exists with ID 2
+        if (!Tenant::where('id', 2)->exists()) {
+            $stardenaShoppers = Tenant::create([
+                'id' => 2,
+                'name' => 'Stardena Shoppers',
+                'subdomain' => 'stardenashoppers.pointofsale.com',
+                'status' => 'active',
+            ]);
+
+            $stardenaShoppers->configuration()->create([
+                'currency_code' => 'USD',
+                'timezone' => 'America/New_York',
+                'locale' => 'en',
+                'fiscal_year_start' => now()->startOfYear()->format('Y-m-d'),
+                'tax_calculation_method' => 'exclusive',
+            ]);
+        }
+
+        // Ensure "Brenda Shoppers" exists with ID 2
+        if (!Tenant::where('id', 1)->exists()) {
+            $stardenaShoppers = Tenant::create([
+                'id' => 1,
+                'name' => 'Brenda Shoppers',
+                'subdomain' => 'brenda.pointofsale.com',
+                'status' => 'active',
+            ]);
+
+            $stardenaShoppers->configuration()->create([
+                'currency_code' => 'USD',
+                'timezone' => 'America/New_York',
+                'locale' => 'en',
+                'fiscal_year_start' => now()->startOfYear()->format('Y-m-d'),
+                'tax_calculation_method' => 'exclusive',
+            ]);
+        }
+
+        // Create other tenants using factory
         Tenant::factory()
             ->count(10)
             ->create()
             ->each(function ($tenant) {
-                $tenant->configuration()->create(
-                    TenantConfiguration::factory()->make()->toArray()
-                );
+                // Skip creating configuration if it's ID 2 (already created above)
+                if ($tenant->id != 2 || $tenant->id != 1) {
+                    $tenant->configuration()->create(
+                        TenantConfiguration::factory()->make()->toArray()
+                    );
+                }
             });
     }
-
 }

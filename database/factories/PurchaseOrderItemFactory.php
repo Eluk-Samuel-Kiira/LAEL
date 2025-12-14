@@ -14,7 +14,7 @@ class PurchaseOrderItemFactory extends Factory
     public function definition()
     {
         // Get a random existing product variant or create one if none exists
-        $productVariant = ProductVariant::inRandomOrder()->first() ?? ProductVariant::factory()->create();
+        $productVariant = ProductVariant::inRandomOrder()->first() ?? ProductVariant::inRandomOrder()->first()->id->create();
         
         $quantity = $this->faker->numberBetween(1, 50);
         $unitCost = $this->faker->randomFloat(2, 1, 100); 
@@ -22,7 +22,7 @@ class PurchaseOrderItemFactory extends Factory
         $totalCost = ($quantity * $unitCost) + $taxAmount;
 
         return [
-            'purchase_order_id' => PurchaseOrder::factory(),
+            'purchase_order_id' => PurchaseOrder::inRandomOrder()->first()->id,
             'product_variant_id' => $productVariant->id,
             'product_name' => $productVariant->name, // Use actual product name
             'sku' => $productVariant->sku, // Use actual SKU

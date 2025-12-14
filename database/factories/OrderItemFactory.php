@@ -25,9 +25,9 @@ class OrderItemFactory extends Factory
         $taxAmount = $this->faker->randomFloat(2, 0, 15);
         
         return [
-            'order_id' => Order::factory(),
-            'product_id' => Product::factory(),
-            'variant_id' => ProductVariant::factory(),
+            'order_id' => Order::inRandomOrder()->first()->id,
+            'product_id' => Product::inRandomOrder()->first()->id,
+            'variant_id' => ProductVariant::inRandomOrder()->first()->id,
             'item_name' => $this->faker->words(3, true),
             'sku' => $this->faker->unique()->bothify('SKU#####'),
             'unit_price' => $unitPrice,

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\ProductCategory;
 use App\Models\User;
 use Illuminate\Support\Str;
+use App\Models\Tenant;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ProductCategory>
@@ -23,7 +24,7 @@ class ProductCategoryFactory extends Factory
         $name = $this->faker->unique()->words(2, true);
         
         return [
-            'tenant_id' => 1, // You can randomize if needed
+            'tenant_id' => Tenant::inRandomOrder()->first()->id,
             'parent_category_id' => $this->faker->randomElement([2, 1, 4, 3]), // Can assign later for subcategories
             'name' => $this->faker->unique()->words(2, true),
             'slug' => Str::slug($name),

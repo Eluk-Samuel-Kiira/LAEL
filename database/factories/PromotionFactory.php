@@ -21,7 +21,7 @@ class PromotionFactory extends Factory
     public function definition(): array
     {
         return [
-            'tenant_id' => Tenant::factory(),
+            'tenant_id' => Tenant::inRandomOrder()->first()->id,
             'name' => $this->faker->unique()->word,
             'description' => $this->faker->sentence,
             'discount_type' => $this->faker->randomElement(['percentage', 'fixed_amount', 'buy_x_get_y']),
@@ -32,7 +32,7 @@ class PromotionFactory extends Factory
             'max_uses' => $this->faker->numberBetween(10, 100),
             'max_uses_per_customer' => $this->faker->numberBetween(1, 5),
             'min_order_amount' => $this->faker->randomFloat(2, 50, 500),
-            'created_by' => User::factory(),
+            'created_by' => User::inRandomOrder()->first()->id,
         ];
     }
 }

@@ -53,6 +53,20 @@ class OrderItem extends Model
     public function getTotalPriceAttribute($value) {
         return formatCurrency($value);
     }
+
+        // 👇 Mutators - Convert to USD when WRITING to database
+    public function setUnitPriceAttribute($value) {
+        $this->attributes['unit_price'] = toUSD($value);
+    }
+    public function setDiscountAttribute($value) {
+        $this->attributes['discount'] = toUSD($value);
+    }
+    public function setTaxAmountAttribute($value) {
+        $this->attributes['tax_amount'] = toUSD($value);
+    }
+    public function setTotalPriceAttribute($value) {
+        $this->attributes['total_price'] = toUSD($value);
+    }
     
 
     /**

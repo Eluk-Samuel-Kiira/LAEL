@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\User;
+use App\Models\Tenant;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Currency>
@@ -20,6 +21,7 @@ class CurrencyFactory extends Factory
     public function definition(): array
     {
         return [
+            'tenant_id' => Tenant::inRandomOrder()->first()->id,
             'code' => $this->faker->currencyCode(),
             'name' => $this->faker->word(),
             'symbol' => $this->faker->randomElement(['$', '€', '£', '¥']),

@@ -26,7 +26,7 @@ class OrderPaymentFactory extends Factory
         ]);
 
         return [
-            'order_id' => Order::factory(),
+            'order_id' => Order::inRandomOrder()->first()->id,
             'amount' => $this->faker->randomFloat(2, 10, 500),
             'payment_method' => $method,
             'transaction_id' => $this->faker->uuid(),

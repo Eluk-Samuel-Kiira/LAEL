@@ -15,7 +15,17 @@ class LocationController extends Controller
      */
     public function index(Request $request)
     {
-        $locations = Location::with('locationCreater','locationManager')->where('tenant_id', Auth::user()->tenant_id)->latest()->get();
+        $user = Auth::user();
+        
+        // Start the query with relationships
+        $query = Location::with('locationCreater', 'locationManager');
+        
+        // Apply tenant filter only if not super_admin
+        if (!$user->hasRole('super_admin')) {
+            $query->where('tenant_id', $user->tenant_id);
+        }
+        
+        $locations = $query->latest()->get();
         
         $bladeToReload = $request->query('bladeFileToReload');
         switch ($bladeToReload) {

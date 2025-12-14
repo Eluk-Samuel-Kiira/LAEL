@@ -46,15 +46,16 @@ class POSController extends Controller
                         ->where('start_date', '<=', $now)
                         ->where('end_date', '>=', $now),
                 ])
+                ->where('tenant_id', $tenantId) // Added tenant filter
                 ->where('is_active', 1)
                 ->whereHas('variants') // Only products that have variants
                 ->latest()
                 ->get();
 
         } else {
-            // Multi-shop: Use department-based filtering with inventory
-            $user_departments = $user->departments()->get();
-            $departments_id = $user_departments->pluck('id')->toArray();
+            // Multi-shop: Filter variants by inventory in user's departments (same location)
+            $user_departments = $user->departments()->pluck('departments.id');
+            $user_location_id = $user->location_id;
 
             $products = Product::with([
                     'departments',
@@ -63,24 +64,58 @@ class POSController extends Controller
                         ->where('is_active', 1)
                         ->where('start_date', '<=', $now)
                         ->where('end_date', '>=', $now),
-                    'variants' => function($query) {
+                    'variants' => function($query) use ($user_departments, $user_location_id) {
                         $query->where('is_active', 1)
-                            ->orderBy('name');
+                            ->whereHas('inventory')
+                            ->with(['inventory' => function($q) use ($user_departments, $user_location_id) {
+                                $q->whereIn('department_id', $user_departments)
+                                ->where('location_id', $user_location_id);
+                            }]);
                     },
-                    'variants.inventory', // Changed from inventory to inventoryItems
                     'variants.variantTaxes' => fn($q) => $q->where('is_active', 1),
                     'variants.variantPromotions' => fn($q) => $q
                         ->where('is_active', 1)
                         ->where('start_date', '<=', $now)
                         ->where('end_date', '>=', $now),
                 ])
-                ->whereHas('departments', fn($q) => $q->whereIn('departments.id', $departments_id))
+                ->where('tenant_id', $tenantId)
                 ->where('is_active', 1)
-                ->whereHas('variants') // Only products that have variants
+                ->whereHas('variants', function($q) use ($user_departments, $user_location_id) {
+                    $q->where('is_active', 1)
+                    ->whereHas('inventory', function($query) use ($user_departments, $user_location_id) {
+                        $query->whereIn('department_id', $user_departments)
+                                ->where('location_id', $user_location_id);
+                    });
+                })
                 ->latest()
                 ->get();
+
+                    // DEBUG: Check what inventory is actually being loaded
+    \Log::info("=== INVENTORY DEBUG ===");
+    foreach ($products as $product) {
+        foreach ($product->variants as $variant) {
+            \Log::info("Variant {$variant->id} inventory count: " . $variant->inventory->count());
+            foreach ($variant->inventory as $inv) {
+                \Log::info("  - Inventory ID: {$inv->id}, Dept: {$inv->department_id}, Loc: {$inv->location_id}");
+            }
+        }
+    }
+
+    // Also check if there are any inventory records that should match but aren't being loaded
+    $expectedInventory = \DB::table('inventory_items')
+        ->whereIn('variant_id', [228, 229])
+        ->whereIn('department_id', $user_departments)
+        ->where('location_id', $user_location_id)
+        ->get();
+
+    \Log::info("Expected inventory records from DB: " . $expectedInventory->count());
+    foreach ($expectedInventory as $inv) {
+        \Log::info("  - Variant: {$inv->variant_id}, Dept: {$inv->department_id}, Loc: {$inv->location_id}");
+    }
         }
 
+
+        
         // Compute applicable taxes and promotions per variant
         foreach ($products as $product) {
             foreach ($product->variants as $variant) {
@@ -147,12 +182,12 @@ class POSController extends Controller
                     $variant->quantity_available = $variant->overal_quantity_at_hand ?? 0;
                     $variant->quantity_source = 'overall';
                 } else {
-                    
                     // Multi-shop: Calculate from inventory using quantity_allocated
-                    $inventory = $variant->inventory; // Now using singular 'inventory'
+                    $inventory = $variant->inventory; // Now a Collection due to hasMany relationship
 
-                    if ($inventory) {
-                        $variant->quantity_available = $inventory->quantity_allocated ?? 0;
+                    if ($inventory->isNotEmpty()) {
+                        // Sum up quantity_allocated from all inventory records in the collection
+                        $variant->quantity_available = $inventory->sum('quantity_allocated') ?? 0;
                     } else {
                         $variant->quantity_available = 0;
                     }

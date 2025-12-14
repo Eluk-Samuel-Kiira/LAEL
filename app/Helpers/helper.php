@@ -89,42 +89,94 @@ if (!function_exists('employeeProfileImage')) {
 
 
 if (!function_exists('getLogoImage')) {
-    function getLogoImage()
+    function getLogoImage($tenantId = null)
     {
-        $setting = Setting::find(1);
-
-        if ($setting && !empty($setting->logo)) {
-            $path = 'logos/' . $setting->logo;
-
-            // Check if file exists in storage/app/public/logos
+        // Get tenant ID from authenticated user if not provided
+        $tenantId = $tenantId ?? (Auth::check() ? Auth::user()->tenant_id : null);
+        
+        // Try to get tenant-specific logo
+        if ($tenantId) {
+            $setting = Setting::where('tenant_id', $tenantId)->first();
+            
+            if ($setting && !empty($setting->logo)) {
+                $path = 'logos/' . $setting->logo;
+                
+                // Check if file exists in storage/app/public/logos
+                if (Storage::disk('public')->exists($path)) {
+                    return asset('storage/' . $path);
+                }
+            }
+        }
+        
+        // Fallback: try global settings (for super admin or public pages)
+        $globalSetting = Setting::whereNull('tenant_id')->first();
+        
+        if ($globalSetting && !empty($globalSetting->logo)) {
+            $path = 'logos/' . $globalSetting->logo;
+            
             if (Storage::disk('public')->exists($path)) {
                 return asset('storage/' . $path);
             }
         }
-
-        // Fallback: return default logo
+        
+        // Final fallback: return default logo
         return asset('assets/media/logos/default-dark.svg');
     }
 }
 
 
-
 if (!function_exists('getFaviconImage')) {
-    function getFaviconImage()
+    function getFaviconImage($tenantId = null, $forceRefresh = false)
     {
-        $setting = Setting::find(1);
-
-        if ($setting && !empty($setting->favicon)) {
-            $path = 'favicons/' . $setting->favicon;
-
-            // Check if file exists in storage/app/public/favicons
-            if (Storage::disk('public')->exists($path)) {
-                return asset('storage/' . $path);
+        // Get tenant ID from authenticated user if not provided
+        $tenantId = $tenantId ?? (Auth::check() ? Auth::user()->tenant_id : null);
+        
+        // Create cache key
+        $cacheKey = "favicon_{$tenantId}";
+        
+        // Return cached version if exists and not forcing refresh
+        if (!$forceRefresh && Cache::has($cacheKey)) {
+            return Cache::get($cacheKey);
+        }
+        
+        $faviconUrl = null;
+        
+        // Try to get tenant-specific favicon
+        if ($tenantId) {
+            $setting = Setting::where('tenant_id', $tenantId)->first();
+            
+            if ($setting && !empty($setting->favicon)) {
+                $path = 'favicons/' . $setting->favicon;
+                
+                // Check if file exists in storage/app/public/favicons
+                if (Storage::disk('public')->exists($path)) {
+                    $faviconUrl = asset('storage/' . $path);
+                }
             }
         }
-
-        // Fallback: return default favicon
-        return asset('assets/media/logos/favicon.png');
+        
+        // If no tenant favicon found, try global settings
+        if (!$faviconUrl) {
+            $globalSetting = Setting::whereNull('tenant_id')->first();
+            
+            if ($globalSetting && !empty($globalSetting->favicon)) {
+                $path = 'favicons/' . $globalSetting->favicon;
+                
+                if (Storage::disk('public')->exists($path)) {
+                    $faviconUrl = asset('storage/' . $path);
+                }
+            }
+        }
+        
+        // Final fallback: default favicon
+        if (!$faviconUrl) {
+            $faviconUrl = asset('assets/media/logos/favicon.png');
+        }
+        
+        // Cache the result for 1 hour
+        Cache::put($cacheKey, $faviconUrl, 3600);
+        
+        return $faviconUrl;
     }
 }
 
@@ -155,6 +207,9 @@ if (! function_exists('formatCurrency')) {
 if (! function_exists('toUSD')) {
     function toUSD($amount, $currencyCode = null)
     {
+        // Clean the amount first
+        $cleanAmount = cleanCurrencyValue($amount);
+        
         // Get system default currency from settings if not passed
         $systemCurrency = $currencyCode ?? getMailOptions('currency');
 
@@ -166,15 +221,26 @@ if (! function_exists('toUSD')) {
         }
 
         // Convert from target currency → USD
-        return $amount / $currency->exchange_rate;
+        return $cleanAmount / $currency->exchange_rate;
+    }
+}
+
+if (! function_exists('cleanCurrencyValue')) {
+    function cleanCurrencyValue($value)
+    {
+        if (is_string($value)) {
+            // Remove currency symbols, commas, spaces
+            return (float) preg_replace('/[^\d.]/', '', $value);
+        }
+        
+        return (float) $value;
     }
 }
 
 
-
 // Pretty display
 if (! function_exists('currencySymbol')) {
-    function currencySymbol()
+    function currencySymbol($currencyCode = null)
     {
         // Get system default currency from settings if not passed
         $systemCurrency = $currencyCode ?? getMailOptions('currency');
@@ -185,6 +251,7 @@ if (! function_exists('currencySymbol')) {
         return $currency->symbol;
     }
 }
+
 
 // Pretty display
 if (! function_exists('displayFormatedCurrency')) {
@@ -198,31 +265,108 @@ if (! function_exists('displayFormatedCurrency')) {
 
 
 
-function getMailOptions($option_key){
-    $app_details = Setting::first();
-    if ($option_key && isset($app_details[$option_key])) {
-        return $app_details[$option_key];
-    } else {
-        $default = '';
-        return $default;
+if (!function_exists('getMailOptions')) {
+    function getMailOptions($optionKey = null, $tenantId = null)
+    {
+        // Get tenant ID from authenticated user if not provided
+        $tenantId = $tenantId ?? (Auth::check() ? Auth::user()->tenant_id : null);
+        
+        // Try to get tenant-specific mail settings
+        if ($tenantId) {
+            $setting = Setting::where('tenant_id', $tenantId)->first();
+            
+            if ($setting) {
+                // If specific option requested
+                if ($optionKey && isset($setting[$optionKey])) {
+                    return $setting[$optionKey];
+                }
+                // If no specific option, return all mail-related settings
+                return [
+                    'mail_status' => $setting->mail_status ?? 'enabled',
+                    'mail_mailer' => $setting->mail_mailer ?? 'smtp',
+                    'mail_host' => $setting->mail_host ?? 'smtp.gmail.com',
+                    'mail_port' => $setting->mail_port ?? '465',
+                    'mail_username' => $setting->mail_username ?? '',
+                    'mail_password' => $setting->mail_password ?? '',
+                    'mail_encryption' => $setting->mail_encryption ?? 'tls',
+                    'mail_address' => $setting->mail_address ?? '',
+                    'mail_name' => $setting->mail_name ?? 'no_reply',
+                ];
+            }
+        }
+        
+        // Fallback to global mail settings
+        $globalSetting = Setting::whereNull('tenant_id')->first();
+        
+        if ($globalSetting) {
+            if ($optionKey && isset($globalSetting[$optionKey])) {
+                return $globalSetting[$optionKey];
+            }
+            
+            return [
+                'mail_status' => $globalSetting->mail_status ?? 'enabled',
+                'mail_mailer' => $globalSetting->mail_mailer ?? 'smtp',
+                'mail_host' => $globalSetting->mail_host ?? 'smtp.gmail.com',
+                'mail_port' => $globalSetting->mail_port ?? '465',
+                'mail_username' => $globalSetting->mail_username ?? '',
+                'mail_password' => $globalSetting->mail_password ?? '',
+                'mail_encryption' => $globalSetting->mail_encryption ?? 'tls',
+                'mail_address' => $globalSetting->mail_address ?? '',
+                'mail_name' => $globalSetting->mail_name ?? 'no_reply',
+            ];
+        }
+        
+        // Final fallback to env or defaults
+        if ($optionKey) {
+            $envKey = strtoupper($optionKey);
+            return env($envKey, '');
+        }
+        
+        return [
+            'mail_status' => 'enabled',
+            'mail_mailer' => env('MAIL_MAILER', 'smtp'),
+            'mail_host' => env('MAIL_HOST', 'smtp.gmail.com'),
+            'mail_port' => env('MAIL_PORT', '465'),
+            'mail_username' => env('MAIL_USERNAME', ''),
+            'mail_password' => env('MAIL_PASSWORD', ''),
+            'mail_encryption' => env('MAIL_ENCRYPTION', 'tls'),
+            'mail_address' => env('MAIL_FROM_ADDRESS', ''),
+            'mail_name' => env('MAIL_FROM_NAME', 'no_reply'),
+        ];
     }
 }
 
 
 if (!function_exists('appDefaultName')) {
-    function appDefaultName()
+    function appDefaultName($tenantId = null)
     {
-        $setting = Setting::find(1);
+        // Get tenant ID from authenticated user if not provided
+        $tenantId = $tenantId ?? (Auth::check() ? Auth::user()->tenant_id : null);
         
-        if ($setting && !empty($setting->app_name)) {
-            // Extract the first word from the app_name
-            $firstWord = explode(' ', trim($setting->app_name))[0];
+        // Try to get tenant-specific app name
+        if ($tenantId) {
+            $setting = Setting::where('tenant_id', $tenantId)->first();
+            
+            if ($setting && !empty($setting->app_name)) {
+                // Extract the first word from the app_name
+                $firstWord = explode(' ', trim($setting->app_name))[0];
+                return $firstWord;
+            }
+        }
+        
+        // Fallback to global settings
+        $globalSetting = Setting::whereNull('tenant_id')->first();
+        
+        if ($globalSetting && !empty($globalSetting->app_name)) {
+            $firstWord = explode(' ', trim($globalSetting->app_name))[0];
             return $firstWord;
         }
-
+        
+        // Final fallback
         return 'Lael';
     }
 }
+
 
 if (!function_exists('productCategoryImage')) {
     function productCategoryImage($categoryImagePath = '')

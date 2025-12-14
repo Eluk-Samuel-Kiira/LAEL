@@ -38,6 +38,19 @@ class ProductVariant extends Model
         return formatCurrency($value);
     }
 
+    // 👇 MUTATORS - Convert to USD when WRITING to database
+    public function setPriceAttribute($value)
+    {
+        $this->attributes['price'] = toUSD($value);
+    }
+
+    public function setCostPriceAttribute($value)
+    {
+        $this->attributes['cost_price'] = toUSD($value);
+    }
+
+
+
     public function product()
     {
         return $this->belongsTo(Product::class, 'product_id', 'id');
@@ -55,7 +68,7 @@ class ProductVariant extends Model
     
     public function inventory()
     {   
-        return $this->hasOne(InventoryItems::class, 'variant_id', 'id');
+        return $this->hasMany(InventoryItems::class, 'variant_id', 'id');
     }
 
     public function variantTaxes()

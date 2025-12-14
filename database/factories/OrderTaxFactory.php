@@ -22,7 +22,7 @@ class OrderTaxFactory extends Factory
         $amount = $this->faker->randomFloat(2, 5, 200);
 
         return [
-            'order_id' => Order::factory(),
+            'order_id' => Order::inRandomOrder()->first()->id,
             'tax_name' => $this->faker->randomElement(['VAT', 'GST', 'Sales Tax']),
             'tax_rate' => $rate,
             'tax_amount' => $amount,

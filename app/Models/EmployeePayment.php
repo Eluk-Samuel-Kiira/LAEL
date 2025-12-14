@@ -92,6 +92,18 @@ class EmployeePayment extends Model
         return formatCurrency($value);
     }
 
+    // 👇 Mutators for monetary fields - Convert to USD when WRITING to database
+    public function setAmountAttribute($value)
+    {
+        $this->attributes['amount'] = toUSD($value);
+    }
+
+    public function setHourlyRateAttribute($value)
+    {
+        $this->attributes['hourly_rate'] = toUSD($value);
+    }
+
+    
     /**
      * Scope completed payments.
      */
@@ -155,5 +167,13 @@ class EmployeePayment extends Model
             self::STATUS_FAILED,
             self::STATUS_CANCELLED,
         ];
+    }
+
+    /**
+     * Scope a query to only include expenses for a specific tenant.
+     */
+    public function scopeForTenant($query, $tenantId)
+    {
+        return $query->where('tenant_id', $tenantId);
     }
 }

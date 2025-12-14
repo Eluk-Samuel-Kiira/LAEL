@@ -138,6 +138,15 @@ class UserSeeder extends Seeder
             'delete employee',
             'update employee',
 
+            // employee payment Management
+            'create employee payment',
+            'view employee payment',
+            'edit employee payment',
+            'delete employee payment',
+            'update employee payment',
+            'edit completed payment',
+            'delete completed payment',
+
             // tax Management
             'create employee-payment',
             'view employee-payment',
@@ -151,6 +160,22 @@ class UserSeeder extends Seeder
             'edit promotion',
             'delete promotion',
             'update promotion',
+
+            // category-expense Management
+            'create category-expense',
+            'view category-expense',
+            'edit category-expense',
+            'delete category-expense',
+            'update category-expense',
+
+            // expense Management
+            'create expense',
+            'view expense',
+            'edit expense',
+            'delete expense',
+            'update expense',
+            'approve expense',
+            'upload expense',
 
             // supplier Management
             'create supplier',

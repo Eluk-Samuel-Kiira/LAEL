@@ -20,7 +20,7 @@ class LocationFactory extends Factory
     public function definition(): array
     {
         return [
-            'tenant_id' => 1,
+            'tenant_id' => Tenant::inRandomOrder()->first()->id,
             'name' => $this->faker->unique()->company(),
             'address' => $this->faker->address(),
             'is_primary' => $this->faker->boolean(20),

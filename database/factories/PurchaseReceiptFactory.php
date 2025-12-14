@@ -14,8 +14,8 @@ class PurchaseReceiptFactory extends Factory
     public function definition()
     {
         return [
-            'purchase_order_id' => PurchaseOrder::factory(), // Changed from po_id
-            'received_by' => User::factory(),
+            'purchase_order_id' => PurchaseOrder::inRandomOrder()->first()->id, // Changed from po_id
+            'received_by' => User::inRandomOrder()->first()->id,
             'received_at' => $this->faker->dateTimeBetween('-6 months', 'now'),
             'notes' => $this->faker->optional()->paragraph(),
         ];

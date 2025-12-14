@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Catalog;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\ProductVariant;
-use App\Models\Product;
-use Illuminate\Support\Facades\Auth;
+use App\Models\{ Product, UnitOfMeasure };
+use Illuminate\Support\Facades\{ Auth, DB };
 use Illuminate\Validation\Rule;
 
 class ProductVariantController extends Controller
@@ -32,45 +32,121 @@ class ProductVariantController extends Controller
      */
     public function store(Request $request)
     {
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
+
         $validated = $request->validate([
-            'product_id' => 'required|integer',
+            'product_id' => [
+                'required',
+                'integer',
+                function ($attribute, $value, $fail) use ($tenantId) {
+                    $product = Product::where('id', $value)
+                                    ->where('tenant_id', $tenantId)
+                                    ->first();
+                    if (!$product) {
+                        $fail('The selected product is invalid.');
+                    }
+                }
+            ],
             'variants' => 'required|array|min:1',
-            'variants.*.name' => 'required|string|max:255|unique:product_variants,name',
-            'variants.*.sku' => 'required|string|max:50|unique:product_variants,sku',
-            'variants.*.barcode' => 'nullable|string|max:255|unique:product_variants,barcode',
+            'variants.*.name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('product_variants')->where(function ($query) use ($tenantId) {
+                    return $query->where('tenant_id', $tenantId);
+                })
+            ],
+            'variants.*.sku' => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('product_variants')->where(function ($query) use ($tenantId) {
+                    return $query->where('tenant_id', $tenantId);
+                })
+            ],
+            'variants.*.barcode' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::unique('product_variants')->where(function ($query) use ($tenantId) {
+                    return $query->where('tenant_id', $tenantId);
+                })
+            ],
             'variants.*.price' => 'required|numeric|min:0',
             'variants.*.cost_price' => 'required|numeric|min:0',
             'variants.*.overal_quantity_at_hand' => 'nullable|integer',
             'variants.*.weight' => 'required|numeric|min:0',
-            'variants.*.weight_unit' => 'required|exists:unit_of_measures,id',
+            'variants.*.weight_unit' => [
+                'required',
+                'exists:unit_of_measures,id',
+                function ($attribute, $value, $fail) use ($tenantId) {
+                    $uom = UnitOfMeasure::where('id', $value)
+                                    ->where('tenant_id', $tenantId)
+                                    ->first();
+                    if (!$uom) {
+                        $fail('The selected weight unit is invalid.');
+                    }
+                }
+            ],
             'variants.*.image' => 'required|image|mimes:jpg,jpeg,png,gif|max:4048',
         ]);
 
-        foreach ($validated['variants'] as $variantData) {
-            $variantData['product_id'] = $request->product_id;
-            $variantData['created_by'] = Auth::id();
-            $variantData['tenant_id'] = 1;
-            
-            $variantData['cost_price'] = toUSD($variantData['cost_price']);
-            $variantData['price'] = toUSD($variantData['price']);
+        // Check maximum variants limit for this product
+        $currentVariantCount = ProductVariant::where('product_id', $validated['product_id'])
+                                            ->where('tenant_id', $tenantId)
+                                            ->count();
+        $maxVariants = tenant_setting($tenantId, 'max_variants_per_product', 10); // Default to 10 if not set
 
-            if (isset($variantData['image'])) {
-                $variantData['image_url'] = $variantData['image'];
-                $path = $variantData['image_url']->store('variants', 'public');
-                $variantData['image_url'] = $path;
-            }
-
-            ProductVariant::create($variantData);
+        if (($currentVariantCount + count($validated['variants'])) > $maxVariants) {
+            session()->flash('toast', [
+                'type' => 'error',
+                'message' => __('auth.maximum_variants_reached', ['max' => $maxVariants]),
+            ]);
+            return redirect()->back();
         }
 
+        DB::beginTransaction();
 
-        session()->flash('toast', [
-            'type' => 'success',
-            'message' => __('auth._created'),
-        ]);
+        try {
+            foreach ($validated['variants'] as $variantData) {
+                $variantData['product_id'] = $request->product_id;
+                $variantData['created_by'] = $user->id;
+                $variantData['tenant_id'] = $tenantId;
+                
+                // Handle image upload
+                if (isset($variantData['image'])) {
+                    $path = $variantData['image']->store('variants', 'public');
+                    $variantData['image_url'] = $path;
+                    unset($variantData['image']); // Remove the image object from array
+                }
+
+                ProductVariant::create($variantData);
+            }
+
+            DB::commit();
+
+            session()->flash('toast', [
+                'type' => 'success',
+                'message' => __('auth._created'),
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            \Log::error('Product variant creation failed', [
+                'product_id' => $request->product_id,
+                'tenant_id' => $tenantId,
+                'error' => $e->getMessage()
+            ]);
+
+            session()->flash('toast', [
+                'type' => 'error',
+                'message' => __('auth.variant_creation_failed'),
+            ]);
+        }
 
         return redirect()->route('products.show', $request['product_id']);
-
     }
 
 
@@ -79,7 +155,14 @@ class ProductVariantController extends Controller
      */
     public function show(string $id)
     {
-        $product = Product::findOrFail($id);
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
+
+        // Find product and ensure it belongs to tenant
+        $product = Product::where('id', $id)
+                        ->where('tenant_id', $tenantId)
+                        ->firstOrFail();
+
         return view('inventory.product-variant.create', compact('product'));
     }
 
@@ -96,31 +179,82 @@ class ProductVariantController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $product = ProductVariant::find($id);
-        
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
+
+        // Find product variant and ensure it belongs to tenant
+        $productVariant = ProductVariant::where('id', $id)
+                                    ->where('tenant_id', $tenantId)
+                                    ->first();
+
+        if (!$productVariant) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth._not_found'),
+            ]);
+        }
+
         $data = $request->validate([
             'name' => [
                 'required',
                 'max:100',
-                Rule::unique('product_variants', 'name')->ignore($id),
+                Rule::unique('product_variants')->where(function ($query) use ($tenantId, $id) {
+                    return $query->where('tenant_id', $tenantId)
+                            ->where('id', '!=', $id);
+                })->ignore($productVariant->id),
             ],
-            'product_id' => 'required|exists:products,id',
-            'sku' => 'required|string|max:50|unique:products,sku',
-            'barcode' => 'required|string',
-            'price' => 'required|',
-            'cost_price' => 'required|string',
+            'product_id' => [
+                'required',
+                'exists:products,id',
+                function ($attribute, $value, $fail) use ($tenantId) {
+                    $product = Product::where('id', $value)
+                                    ->where('tenant_id', $tenantId)
+                                    ->first();
+                    if (!$product) {
+                        $fail('The selected product is invalid.');
+                    }
+                }
+            ],
+            'sku' => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('product_variants')->where(function ($query) use ($tenantId, $id) {
+                    return $query->where('tenant_id', $tenantId)
+                            ->where('id', '!=', $id);
+                })->ignore($productVariant->id),
+            ],
+            'barcode' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::unique('product_variants')->where(function ($query) use ($tenantId, $id) {
+                    return $query->where('tenant_id', $tenantId)
+                            ->where('id', '!=', $id);
+                })->ignore($productVariant->id),
+            ],
+            'price' => 'required|numeric|min:0',
+            'cost_price' => 'required|numeric|min:0',
             'overal_quantity_at_hand' => 'required|integer|min:0',
-            'weight' => 'required|string',
-            'weight_unit' => 'required|integer',
+            'weight' => 'required|numeric|min:0',
+            'weight_unit' => [
+                'required',
+                'integer',
+                function ($attribute, $value, $fail) use ($tenantId) {
+                    $uom = UnitOfMeasure::where('id', $value)
+                                    ->where('tenant_id', $tenantId)
+                                    ->first();
+                    if (!$uom) {
+                        $fail('The selected weight unit is invalid.');
+                    }
+                }
+            ],
         ]);
 
-        $data['created_by'] = Auth::id();
-        $data['tenant_id'] = 1;
-        $data['cost_price'] = toUSD($data['cost_price']);
-        $data['price'] = toUSD($data['price']);
+        $data['created_by'] = $user->id;
+        // Don't update tenant_id
 
-
-        $product->update($data);
+        $productVariant->update($data);
 
         return response()->json([
             'success' => true,
@@ -159,161 +293,245 @@ class ProductVariantController extends Controller
 
     public function changeVariantStatus(Request $request, $id) 
     {
-        // \Log::info($id);
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
+
         // Validate the request data for status
         $validated = $request->validate([
-            'status' => 'required|in:1,0',  // Ensures only 'active' or 'inactive' are allowed
+            'status' => 'required|in:1,0',
         ]);
         
-        $product = ProductVariant::find($id);
-    
-        if ($product) {
-            $product->is_active = $validated['status']; 
-            if ($product->save()) {  // Save the user object
-                return response()->json([
-                    'success' => true,
-                    'reload' => true,
-                    'refresh' => false,
-                    'componentId' => 'reloadProductComponent',
-                    'message' => __('auth._updated'),
-                ]);
-            }
+        // Find product variant and ensure it belongs to tenant
+        $product = ProductVariant::where('id', $id)
+                                ->where('tenant_id', $tenantId)
+                                ->first();
+
+        if (!$product) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth._not_found'),
+            ]);
         }
-    
-        // If user not found or status update failed
+
+        $product->is_active = $validated['status']; 
+        if ($product->save()) {
+            return response()->json([
+                'success' => true,
+                'reload' => true,
+                'refresh' => false,
+                'componentId' => 'reloadVariantComponent',
+                'message' => __('auth._updated'),
+                'redirect' => route('products.show', $product->product_id),
+            ]);
+        }
+
         return response()->json([
             'success' => false,
-            'message' => __('auth._not_found'),
+            'message' => __('auth.update_failed'),
         ]);
     }
 
     public function uploadVariantImage(Request $request)
     {
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
+
         // Validate the request to ensure the file exists
         $request->validate([
             'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', 
-            'variant_id' => 'required|integer',
+            'variant_id' => [
+                'required',
+                'integer',
+                function ($attribute, $value, $fail) use ($tenantId) {
+                    $variant = ProductVariant::where('id', $value)
+                                        ->where('tenant_id', $tenantId)
+                                        ->first();
+                    if (!$variant) {
+                        $fail('The selected variant is invalid.');
+                    }
+                }
+            ],
         ]);
 
-        if ($request->hasFile('image')) {
-            $product = ProductVariant::find($request['variant_id']);
+        // Find product variant and ensure it belongs to tenant
+        $product = ProductVariant::where('id', $request->variant_id)
+                                ->where('tenant_id', $tenantId)
+                                ->first();
 
-            $path = $request->file('image')->store('variants', 'public');
-            $product->update(['image_url' => $path]);
-
-
-            // Respond with success if it's an AJAX request
+        if (!$product) {
             return response()->json([
-                'success' => true,
-                'message' => __('auth._uploaded '),
+                'success' => false,
+                'message' => __('auth._not_found'),
             ]);
         }
 
-        // Return an error response if something goes wrong upload_failed
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('variants', 'public');
+            $product->update(['image_url' => $path]);
+
+            return response()->json([
+                'success' => true,
+                'message' => __('auth._uploaded'),
+            ]);
+        }
+
         return response()->json([
             'success' => false,
-            'message' => __('auth.upload_failed '),
+            'message' => __('auth.upload_failed'),
         ]);
     }
 
     public function changeProductVariantTaxStatus(Request $request, $id) 
     {
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
+
         // Validate the request data for status
         $validated = $request->validate([
-            'status' => 'required|in:1,0',  // Ensures only 'active' or 'inactive' are allowed
+            'status' => 'required|in:1,0',
         ]);
         
-        $product = ProductVariant::find($id);
-    
-        if ($product) {
-            $product->is_taxable = $validated['status']; 
-            $product->save();
-            if ($validated['status'] == 1) {  
-                $message = __('pagination.variant_taxable_now');
-            } else {
-                $message = __('pagination.variant_not_taxable');
-            }
+        // Find product variant and ensure it belongs to tenant
+        $product = ProductVariant::where('id', $id)
+                                ->where('tenant_id', $tenantId)
+                                ->first();
+
+        if (!$product) {
             return response()->json([
-                'success' => true,
-                'reload' => true,
-                'refresh' => false,
-                'componentId' => 'reloadProductComponent',
-                'message' => $message,
+                'success' => false,
+                'message' => __('auth._not_found'),
             ]);
         }
-    
-        // If user not found or status update failed
+
+        $product->is_taxable = $validated['status']; 
+        $product->save();
+        
+        if ($validated['status'] == 1) {  
+            $message = __('pagination.variant_taxable_now');
+        } else {
+            $message = __('pagination.variant_not_taxable');
+            
+            // Remove all taxes when variant becomes non-taxable
+            $product->variantTaxes()->sync([]);
+        }
+        
         return response()->json([
-            'success' => false,
-            'message' => __('auth._not_found'),
+            'success' => true,
+            'reload' => true,
+            'refresh' => false,
+            'componentId' => 'reloadVariantComponent',
+            'message' => $message,
+            'redirect' => route('products.show', $product->product_id),
         ]);
     }
 
     public function updateVariantAssignments(Request $request, $id)
     {
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
+
         try {
+            // Find product variant and ensure it belongs to tenant
+            $product = ProductVariant::where('id', $id)
+                                    ->where('tenant_id', $tenantId)
+                                    ->first();
+
+            if (!$product) {
+                session()->flash('toast', [
+                    'type' => 'error',
+                    'message' => __('auth._not_found'),
+                ]);
+                return redirect()->back();
+            }
+
             $validated = $request->validate([
-                'variant_id' => ['required', 'exists:product_variants,id'],
-                'created_by' => ['required', 'exists:users,id'],
-                'tenant_id' => ['required', 'exists:tenants,id'],
                 'taxes' => ['nullable', 'array'],
-                'taxes.*' => ['exists:taxes,id'],
+                'taxes.*' => [
+                    'exists:taxes,id',
+                    function ($attribute, $value, $fail) use ($tenantId) {
+                        $tax = Tax::where('id', $value)
+                                ->where('tenant_id', $tenantId)
+                                ->where('is_active', 1)
+                                ->first();
+                        if (!$tax) {
+                            $fail('The selected tax is invalid or inactive.');
+                        }
+                    }
+                ],
                 'promotions' => ['nullable', 'array'],
-                'promotions.*' => ['exists:promotions,id'],
+                'promotions.*' => [
+                    'exists:promotions,id',
+                    function ($attribute, $value, $fail) use ($tenantId) {
+                        $promotion = Promotion::where('id', $value)
+                                            ->where('tenant_id', $tenantId)
+                                            ->where('is_active', 1)
+                                            ->first();
+                        if (!$promotion) {
+                            $fail('The selected promotion is invalid or inactive.');
+                        }
+                    }
+                ],
             ]);
 
-            // Get the variant
-            $product = ProductVariant::findOrFail($id);
+            // Start database transaction
+            DB::beginTransaction();
 
-            if ($product->is_taxable == 0) {
+            // Sync promotions
+            $product->Variantpromotions()->sync($validated['promotions'] ?? []);
+
+            // Handle taxes based on taxable status
+            if ($product->is_taxable == 1) {
+                $pivotData = [];
+                if (!empty($validated['taxes'])) {
+                    foreach ($validated['taxes'] as $taxId) {
+                        $pivotData[$taxId] = [
+                            'created_by' => $user->id,
+                            'tenant_id' => $tenantId,
+                        ];
+                    }
+                }
+                $product->variantTaxes()->sync($pivotData);
+            } else {
+                // Remove all taxes if variant is not taxable
+                $product->variantTaxes()->sync([]);
+                
                 session()->flash('toast', [
                     'type' => 'warning',
                     'message' => __('pagination.variant_not_taxable_now'),
                 ]);
-
-                return redirect()->back();
             }
 
-            $pivotData = [];
-            if (!empty($validated['taxes'])) {
-                foreach ($validated['taxes'] as $taxId) {
-                    $pivotData[$taxId] = [
-                        'created_by' => $validated['created_by'],
-                        'tenant_id' => $validated['tenant_id'],
-                    ];
-                }
-                $product->variantTaxes()->sync($pivotData);
-            } else {
-                $product->variantTaxes()->detach();
-            }
-            
-            // Sync promotions to product variant
-            $product->Variantpromotions()->sync($validated['promotions'] ?? []);
-
-            // \Log::info('Taxes synced for variant ' . $id, ['taxes' => $validated['taxes'] ?? []]);
+            DB::commit();
 
             session()->flash('toast', [
                 'type' => 'success',
                 'message' => __('auth._updated'),
             ]);
 
-            return redirect()->back();
         } catch (\Illuminate\Validation\ValidationException $e) {
-            \Log::error('Validation failed for variant ' . $id, ['errors' => $e->errors()]);
+            DB::rollBack();
+            \Log::error('Validation failed for variant assignments', [
+                'variant_id' => $id,
+                'tenant_id' => $tenantId,
+                'errors' => $e->errors()
+            ]);
             return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
-            \Log::error('Failed to update variant ' . $id, ['message' => $e->getMessage()]);
+            DB::rollBack();
+            \Log::error('Failed to update variant assignments', [
+                'variant_id' => $id,
+                'tenant_id' => $tenantId,
+                'error' => $e->getMessage()
+            ]);
             session()->flash('toast', [
                 'type' => 'error',
-                'message' => 'Failed to update variant: ' . $e->getMessage(),
+                'message' => __('auth.update_failed'),
             ]);
             return redirect()->back()->withInput();
         }
+
+        return redirect()->back();
     }
-
-    
-
-
 
 
 }

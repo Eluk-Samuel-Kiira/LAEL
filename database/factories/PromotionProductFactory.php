@@ -22,9 +22,9 @@ class PromotionProductFactory extends Factory
     public function definition(): array
     {
         return [
-            'promotion_id' => Promotion::factory(),
-            'product_id' => Product::factory(),
-            'variant_id' => ProductVariant::factory(),
+            'promotion_id' => Promotion::inRandomOrder()->first()->id,
+            'product_id' => Product::inRandomOrder()->first()->id,
+            'variant_id' => ProductVariant::inRandomOrder()->first()->id,
             'applies_to' => $this->faker->randomElement(['specific_products', 'product_categories', 'all_products']),
         ];
     }
