@@ -17,7 +17,7 @@ return new class extends Migration
             $table->enum('payment_type', ['salary', 'allowance', 'bonus', 'overtime', 'advance', 'other']);
             $table->string('description');
             $table->decimal('amount', 12, 2);
-            $table->enum('payment_method', ['cash', 'bank_transfer', 'check', 'digital_wallet']);
+            $table->foreignId('payment_method_id')->nullable()->constrained('payment_methods')->nullOnDelete();            
             $table->string('reference_number')->nullable();
             $table->enum('status', ['pending', 'completed', 'failed', 'cancelled'])->default('pending');
             $table->date('pay_period_start')->nullable();

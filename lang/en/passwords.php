@@ -283,5 +283,23 @@ return [
     'expense_index' => 'Expenses Management',
     'expense_table' => 'Expenses Table',
     'expense_new' => 'New Expense',
+    'error' => 'Error',
+
+    'payment_method' => 'Payment Method',
+    'payment_date' => 'Payment Date',
+    'payment_status' => 'Payment Status',
+    'no_payment_method' => 'No Payment Method',
+    'group_total' => 'Group Total',
+    'items' => 'Items',
+    'quantity' => 'Quantity',
+    'received' => 'Received',
+    'pending' => 'Pending',
+    'unit_cost' => 'Unit Cost',
+    'tax' => 'Tax',
+    'total' => 'Total',
+    'payment_method_summary' => 'Payment Method Summary',
+    'items_count' => 'Items Count',
+    'status' => 'Status',
+    'subtotal' => 'Subtotal',
 
 ];

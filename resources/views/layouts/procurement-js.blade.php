@@ -825,8 +825,6 @@
         handleFormSubmission(formData, submitButton, discardButtonId);
     }
 
-
-    
     // Expense
     function createExpense(formId, submitButtonId, url, method = 'POST', discardButtonId = 'discardButton') {
         const form = document.getElementById(formId);
@@ -905,4 +903,172 @@
     }
 
    
+</script>
+
+
+<!-- Employee Payment -->
+<script>
+    
+    function submitFormEmployeePayment(formId, submitButtonId, url, method = 'POST', discardButtonId = 'discardButton') {
+        const form = document.getElementById(formId);
+        const submitButton = document.getElementById(submitButtonId);
+
+        if (!form || !submitButton) {
+            console.error('Form or button not found:', formId, submitButtonId);
+            return;
+        }
+
+        // Collect form data
+        const formData = Object.fromEntries(new FormData(form));
+        formData._method = method;
+        formData.routeName = url;
+
+        // Start loading
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Pass handling + data to reusable handler
+        handleFormSubmission(formData, submitButton, discardButtonId);
+    }
+
+
+    function editEmployeePayment(uniqueId) {
+        const submitButton = document.getElementById('editEmployeePaymentButton' + uniqueId);
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Select the form and create FormData from it
+        var form = document.getElementById('editPaymentForm' + uniqueId);
+        var formData = new FormData(form);
+
+        var data = Object.fromEntries(formData.entries());
+        // console.log(data);
+
+        // Set up the URL dynamically
+        var updateUrl = '{{ route('payment.update', ['payment' => ':id']) }}'.replace(':id', uniqueId);
+        
+        // Submit form data asynchronously
+        handleEditResponse(data, updateUrl, uniqueId, submitButton);
+
+    }
+    
+    function updatePaymentStatus(uniqueId, selectedStatus) {
+        // Get the current status from the select element
+        const selectElement = event.target;
+        const currentStatus = selectElement.dataset.currentStatus || 
+                            document.querySelector(`select[name="status"][data-payment-id="${uniqueId}"]`)?.dataset.currentStatus;
+        
+        // Prevent changing from completed status
+        if (currentStatus === 'completed') {
+            // Reset to completed
+            selectElement.value = 'completed';
+            
+            // Show error message
+            showErrorNotification('{{ __("auth.cannot_change_completed_payment") }}');
+            return;
+        }
+
+        // Update label instantly
+        const label = document.getElementById('supplier-label-' + uniqueId);
+        if (label) {
+            // You might want to adjust this based on your actual label logic
+            label.innerText = selectedStatus === 'completed' ? '{{ __("payments.completed") }}' : 
+                            selectedStatus === 'failed' ? '{{ __("payments.failed") }}' : 
+                            selectedStatus === 'cancelled' ? '{{ __("payments.cancelled") }}' : 
+                            '{{ __("payments.pending") }}';
+        }
+
+        // Send update to backend
+        const updateRoute = '/payment-status/' + uniqueId;
+        
+        // You'll need to adjust this based on your actual LiveBlade implementation
+        LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
+    }
+
+
+</script>
+
+
+
+<script>
+    function togglePaymentMethodFields() {
+        const type = document.getElementById('paymentTypeSelect').value;
+        const bankFields = document.getElementById('bankFields');
+        const providerField = document.getElementById('providerField');
+        
+        // Show/hide bank fields
+        if (type === 'bank_account' || type === 'mobile_money') {
+            bankFields.style.display = 'flex';
+        } else {
+            bankFields.style.display = 'none';
+        }
+        
+        // Set placeholder for provider based on type
+        if (type === 'bank_account') {
+            providerField.placeholder = "{{__('payments.e.g._bank_name')}}";
+        } else if (type === 'digital_wallet') {
+            providerField.placeholder = "{{__('payments.e.g._paypal_stripe')}}";
+        } else if (type === 'mobile_money') {
+            providerField.placeholder = "{{__('payments.e.g._mtn_airtel')}}";
+        } else {
+            providerField.placeholder = "{{__('payments._provider')}}";
+        }
+    }
+
+    function submitPaymentMethodForm(formId, submitButtonId, url, method = 'POST', discardButtonId = 'discardButton') {
+        const form = document.getElementById(formId);
+        const submitButton = document.getElementById(submitButtonId);
+
+        if (!form || !submitButton) {
+            console.error('Form or button not found:', formId, submitButtonId);
+            return;
+        }
+
+        // Collect form data
+        const formData = Object.fromEntries(new FormData(form));
+        formData._method = method;
+        formData.routeName = url;
+
+        // Start loading
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Pass handling + data to reusable handler
+        handleFormSubmission(formData, submitButton, discardButtonId);
+    }
+
+    function toggleEditPaymentMethodFields(id) {
+        const type = document.getElementById('paymentTypeSelect' + id).value;
+        const bankFields = document.getElementById('bankFields' + id);
+        const providerField = document.getElementById('providerField' + id);
+        
+        // Show/hide bank fields
+        if (type === 'bank_account' || type === 'mobile_money') {
+            bankFields.style.display = 'flex';
+        } else {
+            bankFields.style.display = 'none';
+        }
+    }
+
+    function editPaymentMethodInstance(uniqueId) {
+        const submitButton = document.getElementById('editPaymentMethodButton' + uniqueId);
+        LiveBlade.toggleButtonLoading(submitButton, true);
+
+        // Select the form and create FormData from it
+        var form = document.getElementById('kt_modal_edit_payment_method_form' + uniqueId);
+        var formData = new FormData(form);
+
+        var data = Object.fromEntries(formData.entries());
+        // console.log(data);
+
+        // Set up the URL dynamically
+        var updateUrl = '{{ route('paymentmethod.update', ['paymentmethod' => ':id']) }}'.replace(':id', uniqueId);
+        
+        // Submit form data asynchronously
+        handleEditResponse(data, updateUrl, uniqueId, submitButton);
+
+    }
+
+    function updatePaymentMethodStatus(uniqueId, selectedStatus) {
+        // console.log(" ID:", uniqueId, "Selected status:", selectedStatus);
+        const updateRoute = '/payment-methods-status/' + uniqueId;
+        LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
+    }
 </script>

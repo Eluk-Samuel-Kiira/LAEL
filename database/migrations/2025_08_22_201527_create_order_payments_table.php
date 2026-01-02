@@ -15,10 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('order_id')->constrained('orders')->cascadeOnDelete();
             $table->decimal('amount', 12, 2);
-            $table->enum('payment_method', [
-                'cash', 'credit_card', 'debit_card', 'gift_card', 
-                'store_credit', 'bank_transfer', 'mobile', 'other'
-            ])->default('cash');
+            $table->foreignId('payment_method_id')->nullable()->constrained('payment_methods')->nullOnDelete(); 
             $table->string('transaction_id', 100)->nullable();
             $table->enum('status', ['pending', 'completed', 'failed', 'refunded']);
             $table->char('card_last_four', 4)->nullable();

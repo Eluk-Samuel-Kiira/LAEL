@@ -181,7 +181,6 @@ class PurchaseOrderController extends Controller
     }
 
 
-    // For future use
     /**
      * Update the specified resource in storage.
      */
@@ -609,6 +608,9 @@ class PurchaseOrderController extends Controller
             'items.*.purchase_order_item_id' => 'required|exists:purchase_order_items,id',
             'items.*.product_variant_id' => 'required|exists:product_variants,id',
             'items.*.quantity_received' => 'required|integer|min:0',
+            'payment_method_id' => 'nullable|exists:payment_methods,id',
+            'payment_status' => 'nullable|in:pending,partial,paid,overdue',
+            'payment_date' => 'nullable|date',
             'batch_number' => 'nullable|string|max:100',
             'expiry_date' => 'nullable|date|after_or_equal:today',
             'notes' => 'nullable|string|max:500',
@@ -655,7 +657,7 @@ class PurchaseOrderController extends Controller
                     // Get current inventory quantity before update
                     $quantityBefore = $variant->overal_quantity_at_hand;
 
-                    // Update received quantity in purchase order item
+                    // Update purchase order item
                     $purchaseOrderItem->received_quantity = $newReceivedQuantity;
                     $purchaseOrderItem->save();
 
@@ -699,12 +701,12 @@ class PurchaseOrderController extends Controller
                     if ($isSingleShop) {
                         SingleShopInventoryLog::create([
                             'variant_id' => $variant->id,
-                            'order_id' => $purchaseOrder->id, // Use purchase order ID
+                            'order_id' => $purchaseOrder->id,
                             'tenant_id' => $tenantId,
                             'created_by' => auth()->id(),
                             'quantity_before' => $quantityBefore,
                             'quantity_after' => $quantityAfter,
-                            'quantity_change' => $quantityReceived, // Positive for stock increase
+                            'quantity_change' => $quantityReceived,
                             'reason' => 'purchase_receipt',
                             'notes' => 'Stock received from Purchase Order #' . $purchaseOrder->po_number . 
                                     ' - Receipt #' . $purchaseReceipt->id,
@@ -726,6 +728,32 @@ class PurchaseOrderController extends Controller
                 }
             }
 
+            // Update payment information for ALL items that were received
+            // Only update if payment information was provided
+            if (isset($validated['payment_method_id']) || isset($validated['payment_status'])) {
+                $itemIds = collect($validated['items'])
+                    ->pluck('purchase_order_item_id')
+                    ->toArray();
+                
+                $updateData = [];
+                
+                if (isset($validated['payment_method_id'])) {
+                    $updateData['payment_method_id'] = $validated['payment_method_id'];
+                }
+                
+                if (isset($validated['payment_status'])) {
+                    $updateData['payment_status'] = $validated['payment_status'];
+                }
+                
+                if (isset($validated['payment_date'])) {
+                    $updateData['payment_date'] = $validated['payment_date'];
+                }
+                
+                // Update all received items with the same payment information
+                PurchaseOrderItem::whereIn('id', $itemIds)
+                    ->update($updateData);
+            }
+
             // Update purchase order status
             $purchaseOrder->status = $validated['status'];
             $purchaseOrder->received_at = now();
@@ -740,11 +768,6 @@ class PurchaseOrderController extends Controller
                     ? __('passwords.items_fully_received_success')
                     : __('passwords.items_partially_received_success'),
                 'reload' => true,
-                // 'data' => [
-                //     'total_received' => $totalReceived,
-                //     'items_received' => count($receiptItems),
-                //     'receipt_id' => $purchaseReceipt->id,
-                // ]
             ]);
 
         } catch (\Exception $e) {

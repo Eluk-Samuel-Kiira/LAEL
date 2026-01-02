@@ -305,12 +305,10 @@
 
         // Get selected payment method
         const selectedMethod = document.querySelector('input[name="method"]:checked');
-        const paymentMethod = selectedMethod ? selectedMethod.value : '1';
-        // console.log(paymentMethod);
-        if (paymentMethod == 3 || paymentMethod == 2) {
-            toastr['warning']('{{ __("pagination.Payment_method_coming_soon") }}');
-            return;
-        }
+        const paymentMethod = selectedMethod ? selectedMethod.value : 'cash';
+
+        // console.log('Selected payment method:', paymentMethod);
+
 
         const cartData = {
             items: cart.map(item => {
@@ -453,37 +451,213 @@
 
 
 <script>
+    @if(isset($active_payment_methods))
+        window.activePaymentMethods = @json($active_payment_methods ?? []);
+    @endif
+
     // Function to open appropriate modal
     function openPaymentModal(paymentMethod, cartData) {
         // Set order data globally for access in modal functions
         window.currentOrder = cartData;
-        // console.log(cartData);
+        window.currentPaymentMethodType = paymentMethod; // This is already 'cash', 'bank_account', 'card', etc.
         
-        switch(paymentMethod) {
-            case '1': // Cash
-                openCashModal(cartData);
-                break;
-            case '2': // Mobile Money
-                openMobileMoneyModal(cartData);
-                break;
-            case '3': // Card
-                openCardModal(cartData);
-                break;
-            default:
-                openReceiptModal(cartData);
-        }
+        openCashModal(paymentMethod, cartData)
     }
 
-    // Cash Modal Functions
-    function openCashModal(cartData) {
+    // Cash Modal Function with account dropdown
+    function openCashModal(paymentMethod, cartData) {
+        currentCartData = cartData;
+        currentPaymentMethodType = paymentMethod;
+        selectedPaymentAccountId = null;
+        
+        // Update modal title based on payment method
+        updateModalTitle(paymentMethod);
+        
+        // Update total amount
         document.getElementById('cashTotalAmount').textContent = `${formatCurrency(cartData.total)}`;
         document.getElementById('cashAmountInput').value = '';
-        document.getElementById('cashAmountTendered').textContent = '$0.00';
-        document.getElementById('cashChangeDue').textContent = '$0.00';
+        document.getElementById('cashAmountTendered').textContent = '0.00';
+        document.getElementById('cashChangeDue').textContent = '0.00';
         
+        // Reset account info card
+        document.getElementById('selectedAccountInfoCard').classList.add('d-none');
+        
+        // Populate accounts dropdown based on payment method
+        populateAccountsByType(currentPaymentMethodType);
+
+        
+        // Show modal
         const cashModal = new bootstrap.Modal(document.getElementById('cashModal'));
         cashModal.show();
     }
+
+    // Update modal title based on payment method
+    function updateModalTitle(paymentMethod) {
+        const modalTitle = document.querySelector('#cashModal .modal-title');
+        const titles = {
+            'cash': '{{__("pagination.cash_payment")}}',
+            'mobile_money': '{{__("pagination.mobile_money_payment")}}',
+            'card': '{{__("pagination.card_payment")}}',
+            'bank_account': '{{__("pagination.bank_account_payment")}}',
+            'digital_wallet': '{{__("pagination.digital_wallet_payment")}}',
+            'check': '{{__("pagination.check_payment")}}',
+            'credit': '{{__("pagination.credit_payment")}}',
+            'other': '{{__("pagination.other_payment")}}'
+        };
+        
+        modalTitle.textContent = titles[paymentMethod] || '{{__("pagination.payment")}}';
+    }
+
+    // Populate accounts in dropdown by payment method type
+    function populateAccountsByType(paymentMethodType) {
+        const dropdown = document.getElementById('cashAccountSelect');
+        dropdown.innerHTML = '<option value="">{{ __("pagination.select_account") }}</option>';
+        
+        if (!window.activePaymentMethods) {
+            console.error('activePaymentMethods is not defined');
+            return;
+        }
+        
+        // Filter accounts by the current payment method type
+        const filteredAccounts = window.activePaymentMethods.filter(account => 
+            account.type === paymentMethodType
+        );
+        
+        if (filteredAccounts.length === 0) {
+            const noAccountsText = {
+                'cash': '{{ __("pagination.no_cash_accounts") }}',
+                'mobile_money': '{{ __("pagination.no_mobile_money_accounts") }}',
+                'card': '{{ __("pagination.no_card_accounts") }}',
+                'bank_account': '{{ __("pagination.no_bank_accounts") }}',
+                'digital_wallet': '{{ __("pagination.no_digital_wallet_accounts") }}',
+                'check': '{{ __("pagination.no_check_accounts") }}',
+                'credit': '{{ __("pagination.no_credit_accounts") }}',
+                'other': '{{ __("pagination.no_other_accounts") }}'
+            };
+            
+            dropdown.innerHTML = `<option value="" disabled>${noAccountsText[paymentMethodType] || '{{ __("pagination.no_accounts_found") }}'}</option>`;
+            return;
+        }
+        
+        // Add filtered accounts to dropdown
+        filteredAccounts.forEach(account => {
+            const option = document.createElement('option');
+            option.value = account.id;
+            option.setAttribute('data-account', JSON.stringify(account)); // Store full account data
+            
+            // Create display text with name, account number, and account name
+            let displayText = account.name;
+            if (account.account_number) {
+                displayText += ` - ${account.account_number}`;
+            }
+            if (account.account_name) {
+                displayText += ` (${account.account_name})`;
+            }
+            
+            option.textContent = displayText;
+            dropdown.appendChild(option);
+        });
+        
+        // Remove existing event listeners and add new one
+        const newDropdown = dropdown.cloneNode(true);
+        dropdown.parentNode.replaceChild(newDropdown, dropdown);
+        
+        // Add event listener for account selection
+        newDropdown.addEventListener('change', function() {
+            selectedPaymentAccountId = this.value;
+            
+            if (this.value) {
+                // Get selected account data
+                const selectedOption = this.options[this.selectedIndex];
+                const accountData = JSON.parse(selectedOption.getAttribute('data-account') || '{}');
+                
+                // Display account information
+                displayAccountInfo(accountData);
+                
+                // Show/hide cash amount section based on payment type
+                if (currentPaymentMethodType === 'cash') {
+                    document.getElementById('cashAmountSection').classList.remove('d-none');
+                    document.getElementById('cashAmountInput').focus();
+                } else {
+                    document.getElementById('cashAmountSection').classList.add('d-none');
+                }
+                
+            } else {
+                // Hide account info card
+                document.getElementById('selectedAccountInfoCard').classList.add('d-none');
+                
+                // Hide cash amount section
+                // document.getElementById('cashAmountSection').classList.add('d-none');
+            }
+        });
+    }
+
+    // Display selected account information
+    function displayAccountInfo(account) {
+        const infoCard = document.getElementById('selectedAccountInfoCard');
+        if (!infoCard) {
+            console.error('selectedAccountInfoCard element not found');
+            return;
+        }
+        
+        // Safely update account information
+        const accountNameEl = document.getElementById('selectedAccountName');
+        const accountNumberEl = document.getElementById('selectedAccountNumber');
+        const accountHolderEl = document.getElementById('selectedAccountHolder');
+        const accountProviderEl = document.getElementById('selectedAccountProvider');
+        
+        if (accountNameEl) accountNameEl.textContent = account.name || '-';
+        if (accountNumberEl) accountNumberEl.textContent = account.account_number || '-';
+        if (accountHolderEl) accountHolderEl.textContent = account.account_name || '-';
+        if (accountProviderEl) accountProviderEl.textContent = account.provider || '-';
+        
+        // Show the info card
+        infoCard.classList.remove('d-none');
+    }
+
+    // Also update the event listener to be more robust:
+    dropdown.addEventListener('change', function() {
+        selectedPaymentAccountId = this.value;
+        
+        // Get account info card element
+        const infoCard = document.getElementById('selectedAccountInfoCard');
+        
+        if (this.value) {
+            // Get selected account data
+            try {
+                const selectedOption = this.options[this.selectedIndex];
+                const accountData = JSON.parse(selectedOption.getAttribute('data-account') || '{}');
+                
+                // Display account information
+                displayAccountInfo(accountData);
+                
+            } catch (error) {
+                console.error('Error processing account selection:', error);
+                if (infoCard) infoCard.classList.add('d-none');
+            }
+        } else {
+            // Hide account info card
+            if (infoCard) {
+                infoCard.classList.add('d-none');
+            }
+        }
+    });
+
+
+
+
+
+
+
+    // Calculate change (for cash payments)
+    document.getElementById('cashAmountInput').addEventListener('input', function() {
+        const amountTendered = parseFloat(this.value) || 0;
+        const total = parseFloat(currentCartData.total) || 0;
+        const change = amountTendered - total;
+        document.getElementById('changeDue').value = change >= 0 ? formatCurrency(change) : '0.00';
+    });
+
+
 
     function calculateChange() {
         const total = window.currentOrder.total;
@@ -497,7 +671,16 @@
     function completeCashPayment() {
         const submitButton = document.getElementById('cashCheckout');
         const tendered = parseFloat(document.getElementById('cashAmountInput').value) || 0;
+        const transactionId = document.getElementById('transactionIdInput').value || '';
+
+        const accountSelect = document.getElementById('cashAccountSelect');
+        const selectedPaymentMethodId = accountSelect ? accountSelect.value : null;
         
+        if (!selectedPaymentMethodId) {
+            toastr['error']('{{ __("pagination.select_payment_method") }}');
+            return;
+        }
+
         if (tendered < window.currentOrder.total) {
             toastr['error']('{{ __("pagination.insufficient_amount") }}');
             return;
@@ -506,72 +689,26 @@
         // Spinning
         LiveBlade.toggleButtonLoading(submitButton, true);
         // Process cash payment
-        processFinalPayment('cash', {
+        processFinalPayment(selectedPaymentMethodId, {
             amount_tendered: tendered,
+            transaction_id: transactionId,
             change_due: tendered - window.currentOrder.total
         });
 
     }
 
-    // Mobile Money Modal Functions
-    function openMobileMoneyModal(cartData) {
-        document.getElementById('mobileTotalAmount').textContent = `${formatCurrency(cartData.total)}`;
-        document.getElementById('mobilePhoneNumber').value = '';
-        document.getElementById('mobileTransactionId').value = '';
-        
-        const mobileModal = new bootstrap.Modal(document.getElementById('mobileMoneyModal'));
-        mobileModal.show();
-    }
-
-    function completeMobilePayment() {
-        const phoneNumber = document.getElementById('mobilePhoneNumber').value;
-        const transactionId = document.getElementById('mobileTransactionId').value;
-        
-        if (!phoneNumber || !transactionId) {
-            showToast('error', '{{__("pagination.fill_all_fields")}}');
-            return;
-        }
-        
-        processFinalPayment('mobile_money', {
-            phone_number: phoneNumber,
-            transaction_id: transactionId
-        });
-    }
-
-    // Card Modal Functions
-    function openCardModal(cartData) {
-        document.getElementById('cardTotalAmount').textContent = `${formatCurrency(cartData.total)}`;
-        document.getElementById('cardLastDigits').value = '';
-        document.getElementById('cardAuthCode').value = '';
-        
-        const cardModal = new bootstrap.Modal(document.getElementById('cardModal'));
-        cardModal.show();
-    }
-
-    function completeCardPayment() {
-        const lastDigits = document.getElementById('cardLastDigits').value;
-        const authCode = document.getElementById('cardAuthCode').value;
-        
-        if (!lastDigits || !authCode) {
-            toastr['error']('{{ __("pagination.fill_all_fields") }}');
-            return;
-        }
-        
-        processFinalPayment('card', {
-            last_digits: lastDigits,
-            auth_code: authCode
-        });
-    }
 
     // Final Payment Processing
-    function processFinalPayment(method, paymentDetails) {
+    function processFinalPayment(payment_method_id, paymentDetails) {
         const submitButton = document.getElementById('cashCheckout');
 
         const order = window.currentOrder;
-        order.payment_method = method;
+        order.payment_method_id = payment_method_id;
+
         order.payment_details = {
             amount_tendered: paymentDetails.amount_tendered,
-            change_due: paymentDetails.change_due
+            change_due: paymentDetails.change_due,
+            transaction_id: paymentDetails.transaction_id
         };
 
         fetch("/orders/checkout", {
@@ -592,8 +729,6 @@
 
             // Close current modal
             bootstrap.Modal.getInstance(document.getElementById('cashModal'))?.hide();
-            // bootstrap.Modal.getInstance(document.getElementById('mobileMoneyModal'))?.hide();
-            // bootstrap.Modal.getInstance(document.getElementById('cardModal'))?.hide();
 
             setTimeout(() => {
                 generateReceipt(order.payment_method, order);
@@ -609,6 +744,7 @@
         .catch(err => {
             console.error("❌ Error saving order:", err);
             toastr['error'](err.message || '{{ __("pagination.order_saved_error") }}');
+            LiveBlade.toggleButtonLoading(submitButton, false);
         });
 
         

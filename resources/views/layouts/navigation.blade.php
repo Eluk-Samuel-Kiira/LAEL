@@ -350,6 +350,15 @@
                         </div>
 
                         <div class="menu-item">
+                            <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('paymentmethod.index') }}')">
+                                <span class="menu-bullet">
+                                    <span class="bullet bullet-dot"></span>
+                                </span>
+                                <span class="menu-title">{{ __('payments._payment_methods') }}</span>
+                            </a>
+                        </div>
+
+                        <div class="menu-item">
                             <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('department.index') }}')">
                                 <span class="menu-bullet">
                                     <span class="bullet bullet-dot"></span>

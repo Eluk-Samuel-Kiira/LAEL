@@ -55,7 +55,18 @@ class ExpenseSeeder extends Seeder
             ->where('is_active', 1)
             ->get();
         
-        if ($users->isEmpty() || $employees->isEmpty() || $categories->isEmpty()) {
+        // Get payment methods for this tenant
+        $paymentMethods = DB::table('payment_methods')
+            ->where('tenant_id', $tenantId)
+            ->where('is_active', 1)
+            ->get();
+        
+        // If no payment methods exist, create some default ones
+        if ($paymentMethods->isEmpty()) {
+            $paymentMethods = $this->createDefaultPaymentMethods($tenantId, $users);
+        }
+        
+        if ($users->isEmpty() || $employees->isEmpty() || $categories->isEmpty() || $paymentMethods->isEmpty()) {
             $this->command->warn("Missing data for tenant {$tenantId}. Skipping...");
             return 0;
         }
@@ -73,9 +84,10 @@ class ExpenseSeeder extends Seeder
                 
                 $amount = rand(5000, 50000) / 100; // $50.00 - $500.00
                 $taxAmount = $amount * 0.10;
-                // DO NOT include total_amount - MySQL will calculate it automatically
                 
-                $paymentMethods = ['cash', 'card', 'transfer', 'check', 'credit'];
+                // Get random payment method
+                $paymentMethod = $paymentMethods->random();
+                
                 $paymentStatuses = ['pending', 'paid', 'reimbursed'];
                 
                 $expenseNumber = 'EXP-' . date('ym') . '-' . str_pad($expenseCounter, 5, '0', STR_PAD_LEFT);
@@ -90,8 +102,7 @@ class ExpenseSeeder extends Seeder
                     'vendor_name' => $this->getRandomVendor(),
                     'amount' => $amount,
                     'tax_amount' => $taxAmount,
-                    // 'total_amount' => $amount + $taxAmount, // REMOVE THIS - it's generated
-                    'payment_method' => $paymentMethods[array_rand($paymentMethods)],
+                    'payment_method_id' => $paymentMethod->id, // Changed from payment_method
                     'payment_status' => $paymentStatuses[array_rand($paymentStatuses)],
                     'paid_date' => rand(0, 1) ? $date->addDays(rand(1, 30))->format('Y-m-d') : null,
                     'is_recurring' => rand(0, 4) === 0, // 20% chance
@@ -112,6 +123,71 @@ class ExpenseSeeder extends Seeder
         DB::table('expenses')->insert($expenses);
         
         return count($expenses);
+    }
+    
+    private function createDefaultPaymentMethods($tenantId, $users)
+    {
+        $paymentMethodData = [
+            [
+                'name' => 'Cash Payment',
+                'type' => 'cash',
+                'code' => 'CASH_' . $tenantId,
+                'description' => 'Physical cash payments',
+                'is_active' => true,
+                'is_default' => true,
+                'is_online' => false,
+                'is_verified' => true,
+                'verified_at' => Carbon::now(),
+            ],
+            [
+                'name' => 'Bank Transfer',
+                'type' => 'bank_account',
+                'code' => 'BANK_TRANSFER_' . $tenantId,
+                'description' => 'Direct bank transfer',
+                'provider' => 'Bank',
+                'account_name' => 'Business Account',
+                'account_number' => '****1234',
+                'is_active' => true,
+                'is_default' => false,
+                'is_online' => true,
+                'is_verified' => true,
+                'verified_at' => Carbon::now(),
+            ],
+            [
+                'name' => 'Credit Card',
+                'type' => 'card',
+                'code' => 'CREDIT_CARD_' . $tenantId,
+                'description' => 'Company credit card',
+                'card_last_four' => '4321',
+                'card_type' => 'visa',
+                'is_active' => true,
+                'is_default' => false,
+                'is_online' => true,
+                'is_verified' => true,
+                'verified_at' => Carbon::now(),
+            ],
+        ];
+        
+        $createdMethods = collect();
+        $now = Carbon::now();
+        $userId = $users->first()->id ?? 1;
+        
+        foreach ($paymentMethodData as $method) {
+            $id = DB::table('payment_methods')->insertGetId(array_merge($method, [
+                'tenant_id' => $tenantId,
+                'created_by' => $userId,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]));
+            
+            $createdMethods->push((object) array_merge($method, [
+                'id' => $id,
+                'tenant_id' => $tenantId,
+                'created_by' => $userId,
+            ]));
+        }
+        
+        return $createdMethods;
     }
     
     private function getRandomDescription($categoryName)

@@ -28,7 +28,7 @@ return new class extends Migration
             $table->decimal('total_amount', 12, 2)->storedAs('amount + tax_amount');
             
             // Payment Info
-            $table->enum('payment_method', ['cash', 'card', 'transfer', 'check', 'credit'])->nullable();
+            $table->foreignId('payment_method_id')->nullable()->constrained('payment_methods')->nullOnDelete();  
             $table->enum('payment_status', ['pending', 'paid', 'reimbursed'])->default('pending');
             $table->date('paid_date')->nullable();
             

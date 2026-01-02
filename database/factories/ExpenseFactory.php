@@ -8,6 +8,7 @@ use App\Models\Tenant;
 use App\Models\ExpenseCategory;
 use App\Models\User;
 use App\Models\Employee;
+use App\Models\PaymentMethod;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ExpenseFactory extends Factory
@@ -49,6 +50,21 @@ class ExpenseFactory extends Factory
             throw new \Exception("No employees found for tenant {$tenantId}. Please create employees first.");
         }
         
+        // Get existing payment method (MUST exist)
+        $paymentMethod = PaymentMethod::where('tenant_id', $tenantId)
+            ->where('is_active', true)
+            ->inRandomOrder()
+            ->first();
+        
+        if (!$paymentMethod) {
+            // If no payment method exists, create one
+            $paymentMethod = PaymentMethod::factory()->create([
+                'tenant_id' => $tenantId,
+                'created_by' => $users->random()->id,
+                'is_active' => true,
+            ]);
+        }
+        
         $createdBy = $users->random()->id;
         $approvedBy = $this->faker->optional(0.8)->passthrough($users->random()->id);
         
@@ -61,7 +77,7 @@ class ExpenseFactory extends Factory
             'vendor_name' => $this->faker->company(),
             'amount' => $this->faker->randomFloat(2, 10, 1000),
             'tax_amount' => $this->faker->randomFloat(2, 0, 200),
-            'payment_method' => $this->faker->randomElement(['cash', 'card', 'transfer', 'check', 'credit']),
+            'payment_method_id' => $paymentMethod->id, // Changed from payment_method
             'payment_status' => $this->faker->randomElement(['pending', 'paid', 'reimbursed']),
             'paid_date' => $this->faker->optional(0.7)->dateTimeBetween($date, 'now'),
             'is_recurring' => $this->faker->boolean(20),
@@ -109,6 +125,15 @@ class ExpenseFactory extends Factory
         return $this->state(function (array $attributes) use ($userId) {
             return [
                 'created_by' => $userId,
+            ];
+        });
+    }
+    
+    public function withPaymentMethod($paymentMethodId)
+    {
+        return $this->state(function (array $attributes) use ($paymentMethodId) {
+            return [
+                'payment_method_id' => $paymentMethodId,
             ];
         });
     }

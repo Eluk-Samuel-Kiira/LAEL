@@ -85,6 +85,40 @@
                         </div>
                     </div>
 
+                    <!-- Payment Information -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label">{{ __('payments.payment_method') }}</label>
+                            <select name="payment_method_id" class="form-select">
+                                <option value="">{{ __('payments.select_payment_method') }}</option>
+                                @foreach($active_payment_methods as $method)
+                                    <option value="{{ $method->id }}" 
+                                        {{ old('payment_method_id') == $method->id ? 'selected' : '' }}>
+                                        {{ $method->name }}
+                                        @if($method->is_default)
+                                            <span class="text-muted">({{ __('payments._default') }})</span>
+                                        @endif
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label">{{ __('payments.payment_status') }}</label>
+                            <select name="payment_status" class="form-select">
+                                <option value="pending">{{ __('payments.pending') }}</option>
+                                <option value="partial">{{ __('payments.partial') }}</option>
+                                <option value="paid" selected>{{ __('payments.paid') }}</option>
+                                <option value="overdue">{{ __('payments.overdue') }}</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label">{{ __('payments.payment_date') }}</label>
+                            <input type="date" name="payment_date" class="form-control" value="{{ date('Y-m-d') }}">
+                        </div>
+                    </div>
+
                     <!-- Receiving Summary -->
                     <div class="border rounded p-4 mb-4">
                         <h5 class="fw-bold mb-3">{{ __('passwords.receiving_summary') }}</h5>

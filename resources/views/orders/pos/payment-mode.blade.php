@@ -1,4 +1,4 @@
-<!-- Cash Payment Modal -->
+<!-- Cash Payment Modal with Account Selection -->
 <div class="modal fade" id="cashModal" tabindex="-1" aria-hidden="true"  data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered mw-750px">
         <div class="modal-content" style="font-size: 1.4rem;">
@@ -22,7 +22,69 @@
                               $0.00
                         </span>
                     </div>
-                    
+                </div>
+                
+                <!-- Payment Account Selection Dropdown -->
+                <div class="mb-6">
+                    <label class="form-label fw-bold" style="font-size: 1.5rem;">
+                        {{ __('pagination.select_account') }}
+                    </label>
+                    <select class="form-select form-select-lg" id="cashAccountSelect" style="font-size: 1.4rem; height: 60px;">
+                        <option value="">{{ __('pagination.select_account') }}</option>
+                        <!-- Accounts will be populated here -->
+                    </select>
+                </div>
+                
+                <!-- Selected Account Information (Hidden by default) -->
+                <div class="alert alert-light-primary mb-6 d-none" id="selectedAccountInfoCard">
+                    <div class="d-flex align-items-start">
+                        <i class="ki-duotone ki-wallet fs-2 text-primary me-3 mt-1"></i>
+                        <div class="flex-grow-1">
+                            <h6 class="fw-bold mb-2">{{ __('pagination.selected_account') }}</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-2">
+                                        <small class="text-muted">{{ __('payments.account_name') }}:</small>
+                                        <div class="fw-bold" id="selectedAccountName">-</div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <small class="text-muted">{{ __('payments.account_number') }}:</small>
+                                        <div class="fw-bold" id="selectedAccountNumber">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-2">
+                                        <small class="text-muted">{{ __('payments.account_holder') }}:</small>
+                                        <div class="fw-bold" id="selectedAccountHolder">-</div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <small class="text-muted">{{ __('payments.provider') }}:</small>
+                                        <div class="fw-bold" id="selectedAccountProvider">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transaction ID Field (Optional) -->
+                <div class="mb-6" id="transactionIdSection">
+                    <label class="form-label fw-bold" style="font-size: 1.5rem;">
+                        {{ __('pagination.transaction_id') }} <span class="text-muted">({{ __('pagination.optional') }})</span>
+                    </label>
+                    <input type="text" 
+                           class="form-control form-control-lg" 
+                           id="transactionIdInput"
+                           placeholder="{{ __('pagination.enter_transaction_id') }}"
+                           style="font-size: 1.4rem; height: 60px;"
+                           maxlength="100">
+                    <div class="form-text text-muted" style="font-size: 1.2rem;">
+                        {{ __('pagination.transaction_id_help') }}
+                    </div>
+                </div>
+                
+                <!-- Cash Details Section -->
+                <div class="mb-8">
                     <div class="d-flex justify-content-between mb-3">
                         <span style="font-size: 1.5rem;">{{__('pagination.amount_tendered')}}:</span>
                         <span id="cashAmountTendered" 
@@ -38,9 +100,7 @@
                               $0.00
                         </span>
                     </div>
-                </div>
-                
-                <div class="mb-8">
+                    
                     <label class="form-label fw-bold" style="font-size: 1.5rem;">
                         {{ __('pagination.enter_amount_tendered') }}
                     </label>
@@ -50,7 +110,7 @@
                         placeholder="0.00" 
                         step="0.01" 
                         min="0" 
-                        oninput="calculateChange(this)"
+                        oninput="calculateChange()"
                         style="font-size: 2.5rem; height: 90px; line-height: 90px;">
                 </div>
 
@@ -73,104 +133,6 @@
                     <span class="indicator-progress">{{__('pagination.complete_checkout')}}
                         <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
                     </span>
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-
-<!-- Mobile Money Modal -->
-<div class="modal fade" id="mobileMoneyModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title fw-bold text-gray-800">{{__('pagination.mobile_money_payment')}}</h2>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-6">
-                    <h4 class="fw-bold text-gray-600 mb-3">{{__('pagination.cartData')}}: 
-                        <span class="text-primary" id="mobileTotalAmount">$0.00</span>
-                    </h4>
-                </div>
-                
-                <div class="mb-4">
-                    <label class="form-label fw-bold">{{__('pagination.phone_number')}}</label>
-                    <input type="tel" class="form-control" id="mobilePhoneNumber" 
-                           placeholder="+256 XXX XXX XXX">
-                </div>
-                
-                <div class="mb-4">
-                    <label class="form-label fw-bold">{{__('pagination.transaction_id')}}</label>
-                    <input type="text" class="form-control" id="mobileTransactionId" 
-                           placeholder="Enter transaction ID">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-light" data-bs-dismiss="modal">{{__('pagination.cancel')}}</button>
-                <button type="button" class="btn btn-primary" onclick="completeMobilePayment()">
-                    {{__('pagination.confirm_payment')}}
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Card Payment Modal -->
-<div class="modal fade" id="cardModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title fw-bold text-gray-800">{{__('pagination.card_payment')}}</h2>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-6">
-                    <h4 class="fw-bold text-gray-600 mb-3">{{__('pagination.cartData')}}: 
-                        <span class="text-primary" id="cardTotalAmount">$0.00</span>
-                    </h4>
-                </div>
-                
-                <div class="mb-4">
-                    <label class="form-label fw-bold">{{__('pagination.last_4_digits')}}</label>
-                    <input type="text" class="form-control" id="cardLastDigits" 
-                           placeholder="1234" maxlength="4">
-                </div>
-                
-                <div class="mb-4">
-                    <label class="form-label fw-bold">{{__('pagination.auth_code')}}</label>
-                    <input type="text" class="form-control" id="cardAuthCode" 
-                           placeholder="Enter authorization code">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-light" data-bs-dismiss="modal">{{__('pagination.cancel')}}</button>
-                <button type="button" class="btn btn-primary" onclick="completeCardPayment()">
-                    {{__('pagination.confirm_payment')}}
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Receipt Modal -->
-<div class="modal fade" id="receiptModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title fw-bold text-gray-800">{{__('pagination.payment_receipt')}}</h2>
-                <!-- Remove close button completely -->
-            </div>
-            <div class="modal-body" id="receiptContent">
-                <!-- Receipt content will be generated here -->
-            </div>
-            <div class="modal-footer">
-                <!-- Only show print button - no close button -->
-                <button type="button" class="btn btn-primary" onclick="printReceipt()" id="printReceiptBtn">
-                    <i class="ki-duotone ki-printer fs-2 me-2"></i>
-                    {{__('pagination.print_receipt')}}
                 </button>
             </div>
         </div>

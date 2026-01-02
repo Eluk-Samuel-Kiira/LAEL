@@ -24,7 +24,7 @@ class Expense extends Model
         'amount',
         'tax_amount',
         'total_amount',
-        'payment_method',
+        'payment_method_id',
         'payment_status',
         'paid_date',
         'is_recurring',
@@ -73,6 +73,14 @@ class Expense extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(ExpenseCategory::class, 'category_id');
+    }
+
+    /**
+     * Get the payment method for this payment.
+     */
+    public function paymentMethod(): BelongsTo
+    {
+        return $this->belongsTo(PaymentMethod::class, 'payment_method_id');
     }
 
     /**

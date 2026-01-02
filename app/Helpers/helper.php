@@ -4,7 +4,7 @@
 use App\Models\Setting;
 use App\Models\Currency;
 // protected array $cache = [];
-use App\Models\TenantSetting;
+use App\Models\{ TenantSetting, PaymentMethod };
 use Illuminate\Support\Facades\Auth;
 
 if (! function_exists('is_tab_show')) {
@@ -31,6 +31,22 @@ if (!function_exists('trim_description')) {
         }
         return $text;
     }
+}
+
+/**
+ * Get default or first available payment method
+ */
+function getPaymentMethod(int $tenantId = null): ?PaymentMethod
+{
+    if (!$tenantId) {
+        $tenantId = current_tenant_id() ?? Auth::user()->tenant_id ?? null;
+    }
+    
+    if (!$tenantId) {
+        return null;
+    }
+    
+    return PaymentMethod::getDefaultOrFirstForTenant($tenantId);
 }
 
 

@@ -106,37 +106,343 @@
                 <hr class="my-4">
 
                 @php
+                    // Get items - using your original method
                     $items = is_string($order->items) ? json_decode($order->items, true) : $order->items;
+                    
+                    // Also get grouped items for payment method display
+                    $groupedItems = [];
+                    if (!empty($items) && count($items) > 0) {
+                        // Manually group items by payment method and date
+                        foreach ($items as $item) {
+                            $paymentMethodId = $item['payment_method_id'] ?? 'none';
+                            $paymentDate = $item['payment_date'] ?? 'no-date';
+                            $key = $paymentMethodId . '_' . $paymentDate;
+                            
+                            if (!isset($groupedItems[$key])) {
+                                $groupedItems[$key] = [
+                                    'method' => isset($item['payment_method_id']) ? 
+                                        \App\Models\PaymentMethod::find($item['payment_method_id']) : null,
+                                    'payment_date' => $item['payment_date'] ?? null,
+                                    'items' => [],
+                                    'subtotal' => 0,
+                                    'tax' => 0,
+                                    'total' => 0,
+                                ];
+                            }
+                            
+                            $quantity = $item['quantity'] ?? 0;
+                            $unitCost = $item['unit_cost'] ?? 0;
+                            $taxAmount = $item['tax_amount'] ?? 0;
+                            $totalCost = $item['total_cost'] ?? 0;
+                            
+                            $groupedItems[$key]['items'][] = $item;
+                            $groupedItems[$key]['subtotal'] += ($quantity * $unitCost);
+                            $groupedItems[$key]['tax'] += $taxAmount;
+                            $groupedItems[$key]['total'] += $totalCost;
+                        }
+                    }
                 @endphp
 
                 @if(!empty($items) && count($items) > 0)
-                    <ul class="list-group list-group-flush mb-5">
-                        @foreach($items as $item)
-                            <li class="list-group-item px-4 py-3 border-bottom">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    
-                                    <!-- Left side: Product details -->
-                                    <div class="me-4">
-                                        <h6 class="fw-bold text-gray-800 mb-1">{{ $item['product_name'] ?? '—' }}</h6>
-                                        <div class="text-muted fs-7 mb-1">SKU: {{ $item['sku'] ?? 'N/A' }}</div>
-                                        <div class="text-muted fs-7">
-                                            Quantity: <span class="fw-semibold">{{ $item['quantity'] ?? 0 }}</span> | 
-                                            Received: <span class="badge bg-success">{{ $item['received_quantity'] ?? 0 }}</span> | 
-                                            Pending: <span class="badge bg-danger">{{ (($item['quantity'] ?? 0) - ($item['received_quantity'] ?? 0)) }}</span>
+                    <!-- Tabs for different views -->
+                    <div class="mb-6">
+                        <ul class="nav nav-tabs nav-line-tabs mb-5 fs-6" id="itemsTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="grouped-tab" data-bs-toggle="tab" data-bs-target="#grouped-items" type="button" role="tab">
+                                    <i class="bi bi-credit-card me-2"></i>Grouped by Payment Method
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="all-tab" data-bs-toggle="tab" data-bs-target="#all-items" type="button" role="tab">
+                                    <i class="bi bi-list-ul me-2"></i>All Items List
+                                </button>
+                            </li>
+                        </ul>
+                        
+                        <div class="tab-content" id="itemsTabContent">
+                            <!-- Tab 1: Grouped by Payment Method -->
+                            <div class="tab-pane fade show active" id="grouped-items" role="tabpanel">
+                                <!-- Group items by payment method and payment date -->
+                                @if(!empty($groupedItems))
+                                    @foreach($groupedItems as $paymentMethodId => $paymentGroup)
+                                        @php
+                                            $paymentMethod = $paymentGroup['method'] ?? null;
+                                            $groupItems = $paymentGroup['items'] ?? [];
+                                            $paymentDate = $paymentGroup['payment_date'] ?? null;
+                                            $groupSubtotal = $paymentGroup['subtotal'] ?? 0;
+                                            $groupTax = $paymentGroup['tax'] ?? 0;
+                                            $groupTotal = $paymentGroup['total'] ?? 0;
+                                        @endphp
+
+                                        <!-- Payment Method Group Card -->
+                                        <div class="card card-flush mb-6">
+                                            <div class="card-header border-bottom">
+                                                <div class="card-title d-flex align-items-center justify-content-between w-100">
+                                                    <div>
+                                                        <h5 class="fw-bold text-gray-800 mb-1">
+                                                            @if($paymentMethod)
+                                                                <i class="bi bi-credit-card-2-front me-2"></i>
+                                                                {{ $paymentMethod->name ?? 'Unknown' }}
+                                                                @if($paymentMethod->account_number ?? false)
+                                                                    <span class="text-muted fs-7">({{ $paymentMethod->account_number }})</span>
+                                                                @endif
+                                                            @else
+                                                                <i class="bi bi-question-circle me-2"></i>
+                                                                No Payment Method
+                                                            @endif
+                                                        </h5>
+                                                        <div class="d-flex align-items-center gap-4 mt-2">
+                                                            @if($paymentDate && $paymentDate !== 'no-date')
+                                                                <div class="text-muted fs-7">
+                                                                    <i class="bi bi-calendar3 me-1"></i>
+                                                                    Payment Date: 
+                                                                    <span class="fw-semibold">{{ \Carbon\Carbon::parse($paymentDate)->format('M d, Y') }}</span>
+                                                                </div>
+                                                            @endif
+                                                            <div class="text-primary fs-6 fw-bold">
+                                                                <i class="bi bi-cash-coin me-1"></i>
+                                                                Group Total: {{ number_format($groupTotal, 2) }} {{ currencySymbol() }}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="badge badge-light-primary fs-7 py-2 px-3">
+                                                        {{ count($groupItems) }} Items
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="card-body pt-0">
+                                                <!-- Items in this payment method group -->
+                                                <ul class="list-group list-group-flush">
+                                                    @foreach($groupItems as $item)
+                                                        <li class="list-group-item px-4 py-3 border-bottom">
+                                                            <div class="d-flex justify-content-between align-items-start">
+                                                                <!-- Left side: Product details -->
+                                                                <div class="me-4 flex-grow-1">
+                                                                    <h6 class="fw-bold text-gray-800 mb-1">{{ $item['product_name'] ?? '—' }}</h6>
+                                                                    <div class="row">
+                                                                        <div class="col-md-6">
+                                                                            <div class="text-muted fs-7 mb-1">SKU: {{ $item['sku'] ?? 'N/A' }}</div>
+                                                                            <div class="text-muted fs-7">
+                                                                                Quantity: 
+                                                                                <span class="fw-semibold">{{ $item['quantity'] ?? 0 }}</span> | 
+                                                                                Received: 
+                                                                                <span class="badge bg-success">{{ $item['received_quantity'] ?? 0 }}</span> | 
+                                                                                Pending: 
+                                                                                <span class="badge bg-danger">{{ (($item['quantity'] ?? 0) - ($item['received_quantity'] ?? 0)) }}</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="col-md-6">
+                                                                            <div class="fs-7">
+                                                                                <span class="text-muted">Payment Status:</span>
+                                                                                @php
+                                                                                    $statusClass = [
+                                                                                        'pending' => 'warning',
+                                                                                        'partial' => 'info',
+                                                                                        'paid' => 'success',
+                                                                                        'overdue' => 'danger'
+                                                                                    ][$item['payment_status'] ?? 'pending'] ?? 'secondary';
+                                                                                @endphp
+                                                                                <span class="badge bg-{{ $statusClass }} ms-2">
+                                                                                    {{ ucfirst($item['payment_status'] ?? 'pending') }}
+                                                                                </span>
+                                                                            </div>
+                                                                            @if($item['payment_date'] && $item['payment_date'] !== 'no-date')
+                                                                            <div class="fs-7 text-muted">
+                                                                                <i class="bi bi-calendar-check me-1"></i>
+                                                                                {{ \Carbon\Carbon::parse($item['payment_date'])->format('M d, Y') }}
+                                                                            </div>
+                                                                            @endif
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <!-- Right side: Costs -->
+                                                                <div class="text-end ms-4" style="min-width: 150px;">
+                                                                    <div class="fs-7">
+                                                                        <strong>Unit Cost:</strong> 
+                                                                        {{ number_format($item['unit_cost'] ?? 0, 2) }} {{ currencySymbol() }}
+                                                                    </div>
+                                                                    <div class="fs-7">
+                                                                        <strong>Tax:</strong> 
+                                                                        {{ number_format($item['tax_amount'] ?? 0, 2) }} {{ currencySymbol() }}
+                                                                    </div>
+                                                                    <div class="fw-bold text-primary fs-6 mt-1">
+                                                                        <strong>Total:</strong> 
+                                                                        {{ number_format($item['total_cost'] ?? 0, 2) }} {{ currencySymbol() }}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    @endforeach
+
+                                    <!-- Payment Method Summary Table -->
+                                    <div class="card card-flush mb-8">
+                                        <div class="card-header">
+                                            <h5 class="card-title text-gray-800">
+                                                <i class="bi bi-credit-card-2-front me-2"></i>
+                                                Payment Method Summary
+                                            </h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-hover table-row-bordered gy-3">
+                                                    <thead>
+                                                        <tr class="fw-bold text-gray-700">
+                                                            <th>Payment Method</th>
+                                                            <th>Payment Date</th>
+                                                            <th>Items Count</th>
+                                                            <th>Subtotal</th>
+                                                            <th>Tax</th>
+                                                            <th>Total</th>
+                                                            <th>Status</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach($groupedItems as $paymentMethodId => $paymentGroup)
+                                                            @php
+                                                                $paymentMethod = $paymentGroup['method'] ?? null;
+                                                                $groupItems = $paymentGroup['items'] ?? [];
+                                                                $groupTotal = $paymentGroup['total'] ?? 0;
+                                                                $groupSubtotal = $paymentGroup['subtotal'] ?? 0;
+                                                                $groupTax = $paymentGroup['tax'] ?? 0;
+                                                                $paymentDate = $paymentGroup['payment_date'] ?? null;
+                                                                
+                                                                // Get overall status for this payment method group
+                                                                $statuses = collect($groupItems)->pluck('payment_status')->unique();
+                                                                $hasOverdue = $statuses->contains('overdue');
+                                                                $hasPending = $statuses->contains('pending');
+                                                                $hasPartial = $statuses->contains('partial');
+                                                                
+                                                                if ($hasOverdue) {
+                                                                    $overallStatus = 'overdue';
+                                                                    $statusClass = 'danger';
+                                                                } elseif ($hasPending) {
+                                                                    $overallStatus = 'pending';
+                                                                    $statusClass = 'warning';
+                                                                } elseif ($hasPartial) {
+                                                                    $overallStatus = 'partial';
+                                                                    $statusClass = 'info';
+                                                                } else {
+                                                                    $overallStatus = 'paid';
+                                                                    $statusClass = 'success';
+                                                                }
+                                                            @endphp
+                                                            <tr>
+                                                                <td>
+                                                                    <div class="d-flex align-items-center">
+                                                                        @if($paymentMethod && ($paymentMethod->icon ?? false))
+                                                                            <i class="{{ $paymentMethod->icon }} fs-3 me-3 text-primary"></i>
+                                                                        @elseif($paymentMethod)
+                                                                            <i class="bi bi-credit-card fs-3 me-3 text-primary"></i>
+                                                                        @else
+                                                                            <i class="bi bi-question-circle fs-3 me-3 text-muted"></i>
+                                                                        @endif
+                                                                        <div>
+                                                                            <div class="fw-bold">{{ $paymentMethod->name ?? 'No Payment Method' }}</div>
+                                                                            @if($paymentMethod && $paymentMethod->account_number)
+                                                                                <small class="text-muted">{{ $paymentMethod->account_number }}</small>
+                                                                            @endif
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    @if($paymentDate && $paymentDate !== 'no-date')
+                                                                        <span class="badge badge-light-primary">
+                                                                            {{ \Carbon\Carbon::parse($paymentDate)->format('M d, Y') }}
+                                                                        </span>
+                                                                    @else
+                                                                        <span class="text-muted">—</span>
+                                                                    @endif
+                                                                </td>
+                                                                <td>
+                                                                    <span class="badge badge-light-info">{{ count($groupItems) }}</span>
+                                                                </td>
+                                                                <td class="fw-bold">{{ number_format($groupSubtotal, 2) }} {{ currencySymbol() }}</td>
+                                                                <td class="fw-bold">{{ number_format($groupTax, 2) }} {{ currencySymbol() }}</td>
+                                                                <td class="fw-bold text-primary">{{ number_format($groupTotal, 2) }} {{ currencySymbol() }}</td>
+                                                                <td>
+                                                                    <span class="badge bg-{{ $statusClass }}">
+                                                                        {{ ucfirst($overallStatus) }}
+                                                                    </span>
+                                                                </td>
+                                                            </tr>
+                                                        @endforeach
+                                                        <!-- Total Row -->
+                                                        <tr class="fw-bold text-gray-800 border-top">
+                                                            <td colspan="3" class="text-end">Grand Total:</td>
+                                                            <td class="fw-bold">{{ displayFormatedCurrency($order->subtotal) }} {{ currencySymbol() }}</td>
+                                                            <td class="fw-bold">{{ displayFormatedCurrency($order->tax_total) }} {{ currencySymbol() }}</td>
+                                                            <td class="fw-bold text-primary">{{ displayFormatedCurrency($order->total) }} {{ currencySymbol() }}</td>
+                                                            <td></td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
                                         </div>
                                     </div>
+                                @endif
+                            </div>
+                            
+                            <!-- Tab 2: All Items List (Original View) -->
+                            <div class="tab-pane fade" id="all-items" role="tabpanel">
+                                <ul class="list-group list-group-flush mb-5">
+                                    @foreach($items as $item)
+                                        <li class="list-group-item px-4 py-3 border-bottom">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                
+                                                <!-- Left side: Product details -->
+                                                <div class="me-4">
+                                                    <h6 class="fw-bold text-gray-800 mb-1">{{ $item['product_name'] ?? '—' }}</h6>
+                                                    <div class="text-muted fs-7 mb-1">SKU: {{ $item['sku'] ?? 'N/A' }}</div>
+                                                    <div class="text-muted fs-7">
+                                                        Quantity: <span class="fw-semibold">{{ $item['quantity'] ?? 0 }}</span> | 
+                                                        Received: <span class="badge bg-success">{{ $item['received_quantity'] ?? 0 }}</span> | 
+                                                        Pending: <span class="badge bg-danger">{{ (($item['quantity'] ?? 0) - ($item['received_quantity'] ?? 0)) }}</span>
+                                                    </div>
+                                                    @if($item['payment_status'] ?? false)
+                                                    <div class="fs-7 mt-1">
+                                                        <span class="text-muted">Payment:</span>
+                                                        @php
+                                                            $statusClass = [
+                                                                'pending' => 'warning',
+                                                                'partial' => 'info',
+                                                                'paid' => 'success',
+                                                                'overdue' => 'danger'
+                                                            ][$item['payment_status']] ?? 'secondary';
+                                                        @endphp
+                                                        <span class="badge bg-{{ $statusClass }} ms-2">
+                                                            {{ ucfirst($item['payment_status']) }}
+                                                        </span>
+                                                        @if($item['payment_date'] ?? false)
+                                                            <span class="text-muted ms-2">
+                                                                <i class="bi bi-calendar-check me-1"></i>
+                                                                {{ \Carbon\Carbon::parse($item['payment_date'])->format('M d, Y') }}
+                                                            </span>
+                                                        @endif
+                                                    </div>
+                                                    @endif
+                                                </div>
 
-                                    <!-- Right side: Costs -->
-                                    <div class="text-end">
-                                        <div class="fs-7"><strong>Unit Cost:</strong> {{ number_format($item['unit_cost'] ?? 0, 2) }} {{ currencySymbol() }}</div>
-                                        <div class="fs-7"><strong>Tax:</strong> {{ number_format($item['tax_amount'] ?? 0, 2) }} {{ currencySymbol() }}</div>
-                                        <div class="fw-bold text-primary fs-6 mt-1"><strong>Total:</strong> {{ number_format($item['total_cost'] ?? 0, 2) }} {{ currencySymbol() }}</div>
-                                    </div>
+                                                <!-- Right side: Costs -->
+                                                <div class="text-end">
+                                                    <div class="fs-7"><strong>Unit Cost:</strong> {{ number_format($item['unit_cost'] ?? 0, 2) }} {{ currencySymbol() }}</div>
+                                                    <div class="fs-7"><strong>Tax:</strong> {{ number_format($item['tax_amount'] ?? 0, 2) }} {{ currencySymbol() }}</div>
+                                                    <div class="fw-bold text-primary fs-6 mt-1"><strong>Total:</strong> {{ number_format($item['total_cost'] ?? 0, 2) }} {{ currencySymbol() }}</div>
+                                                </div>
 
-                                </div>
-                            </li>
-                        @endforeach
-                    </ul>
+                                            </div>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
                 @else
                     <div class="alert alert-secondary text-center">{{ __('passwords.no_items_found') }}</div>
                 @endif
@@ -246,6 +552,26 @@
         const closeButton = modalContent.querySelector('.text-end.mt-6');
         if (closeButton) {
             closeButton.remove();
+        }
+
+        // Remove tabs and show only grouped view for printing
+        const tabContainer = modalContent.querySelector('#itemsTab');
+        const tabContent = modalContent.querySelector('#itemsTabContent');
+        
+        if (tabContainer && tabContent) {
+            // Show only the grouped items (first tab)
+            tabContainer.remove();
+            const allItemsTab = modalContent.querySelector('#all-items');
+            if (allItemsTab) {
+                allItemsTab.remove();
+            }
+            // Keep only grouped items
+            const groupedItemsTab = modalContent.querySelector('#grouped-items');
+            if (groupedItemsTab) {
+                groupedItemsTab.classList.remove('tab-pane', 'fade');
+                groupedItemsTab.classList.add('show', 'active');
+            }
+            tabContent.classList.remove('tab-content');
         }
 
         // Create a new window for printing

@@ -60,15 +60,28 @@
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
                                     <span>{{__('pagination.payment_method')}} </span>
                                 </label>
-                                <select class="form-select form-select-solid" name="payment_method">
-                                    <option value="">{{__('pagination.select_payment_method')}}</option>
-                                    <option value="cash">{{__('pagination.cash')}}</option>
-                                    <option value="card">{{__('pagination.card')}}</option>
-                                    <option value="transfer">{{__('pagination.transfer')}}</option>
-                                    <option value="check">{{__('pagination.check')}}</option>
-                                    <option value="credit">{{__('pagination.credit')}}</option>
+                                <select name="payment_method_id" class="form-select" required>
+                                    <option value="">{{ __('payments.select_payment_method') }}</option>
+                                    @foreach($active_payment_methods as $method)
+                                        @php
+                                            // Check if this is the default payment method
+                                            $isDefault = $method->is_default;
+                                            // Check if this method was previously selected
+                                            $isSelected = old('payment_method_id') == $method->id;
+                                            // Auto-select default if nothing else is selected
+                                            $shouldSelect = $isSelected || (!$isSelected && $isDefault && !old('payment_method_id'));
+                                        @endphp
+                                        
+                                        <option value="{{ $method->id }}" 
+                                            {{ $shouldSelect ? 'selected' : '' }}>
+                                            {{ $method->name }}
+                                            @if($method->is_default)
+                                                ({{ __('payments._default') }})
+                                            @endif
+                                        </option>
+                                    @endforeach
                                 </select>
-                                <div id="payment_method"></div>
+                                <div id="payment_method_id"></div>
                             </div>
                             
                             <div class="d-flex flex-column mb-8 fv-row col-md-6">
@@ -120,8 +133,8 @@
                                 </label>
                                 <select class="form-select form-select-solid" name="payment_status">
                                     <option value="pending">{{__('pagination.pending')}}</option>
-                                    <option value="paid">{{__('pagination.paid')}}</option>
-                                    <option value="reimbursed">{{__('pagination.reimbursed')}}</option>
+                                    <!-- <option value="paid">{{__('pagination.paid')}}</option> -->
+                                    <!-- <option value="reimbursed">{{__('pagination.reimbursed')}}</option> -->
                                 </select>
                                 <div id="payment_status"></div>
                             </div>

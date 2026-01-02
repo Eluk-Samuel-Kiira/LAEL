@@ -92,6 +92,13 @@ class EmployeeController extends Controller
                 ]);
             }
 
+            if ($employee->termination_date) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('auth.terminated_empl'),
+                ]);
+            }
+
             // Validate the request
             $validated = $request->validate([
                 'salary' => 'required|numeric|min:0',
@@ -136,13 +143,13 @@ class EmployeeController extends Controller
                 'success' => false,
                 'message' => 'Validation error',
                 'errors' => $e->errors()
-            ], 422);
+            ]);
         } catch (\Exception $e) {
             \Log::error('Error updating employee', ['error' => $e->getMessage(), 'employee_id' => $id]);
             return response()->json([
                 'success' => false,
                 'message' => 'Error updating employee: ' . $e->getMessage()
-            ], 500);
+            ]);
         }
     }
 
@@ -181,12 +188,22 @@ class EmployeeController extends Controller
         if ($employee->user && $employee->user->hasAnyRole(['super_admin', 'admin'])) {
             return response()->json([
                 'success' => false,
-                'message' => __('auth.protected_user_not_updatable'),
+                'message' => __('auth.protected_user_not_updatable_status'),
             ]);
         }
 
-        // Update the employee status
+        // Update the employee status and handle termination date
         $employee->is_active = $validated['status'];
+        
+        // If changing status to active (1), set termination_date to null
+        if ($validated['status'] == 1) {
+            $employee->termination_date = null;
+        } 
+        // If changing status to inactive (0) and termination_date is null, set it to current date
+        else if ($validated['status'] == 0 && !$employee->termination_date) {
+            $employee->termination_date = now()->toDateString(); // or Carbon::today()
+        }
+        // If changing status to inactive (0) and already has termination_date, keep it as is
         
         if ($employee->save()) {
             return response()->json([

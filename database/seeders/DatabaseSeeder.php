@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             SettingSeeder::class,
             UnitOfMeasureSeeder::class,
             CurrencySeeder::class,
+            PaymentMethodSeeder::class,
             CategorySeeder::class,
             ProductCategorySeeder::class,
             ProductSeeder::class,
@@ -61,6 +62,7 @@ class DatabaseSeeder extends Seeder
 
             BillingPlanSeeder::class,
             TenantUsageTrackingSeeder::class,
+
         ]);
     }
 }

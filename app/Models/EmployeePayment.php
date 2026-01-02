@@ -18,7 +18,7 @@ class EmployeePayment extends Model
         'payment_type',
         'description',
         'amount',
-        'payment_method',
+        'payment_method_id', // Changed from payment_method
         'reference_number',
         'status',
         'pay_period_start',
@@ -50,14 +50,6 @@ class EmployeePayment extends Model
     const TYPE_OTHER = 'other';
 
     /**
-     * Payment method constants.
-     */
-    const METHOD_CASH = 'cash';
-    const METHOD_BANK_TRANSFER = 'bank_transfer';
-    const METHOD_CHECK = 'check';
-    const METHOD_DIGITAL_WALLET = 'digital_wallet';
-
-    /**
      * Status constants.
      */
     const STATUS_PENDING = 'pending';
@@ -79,6 +71,14 @@ class EmployeePayment extends Model
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
+    }
+
+    /**
+     * Get the payment method for this payment.
+     */
+    public function paymentMethod(): BelongsTo
+    {
+        return $this->belongsTo(PaymentMethod::class, 'payment_method_id');
     }
 
     // 👇 Accessors for monetary fields
@@ -103,7 +103,30 @@ class EmployeePayment extends Model
         $this->attributes['hourly_rate'] = toUSD($value);
     }
 
-    
+    /**
+     * Get the payment method name (for backward compatibility)
+     */
+    public function getPaymentMethodNameAttribute()
+    {
+        return $this->paymentMethod ? $this->paymentMethod->name : null;
+    }
+
+    /**
+     * Get the payment method type (for backward compatibility)
+     */
+    public function getPaymentMethodTypeAttribute()
+    {
+        return $this->paymentMethod ? $this->paymentMethod->type : null;
+    }
+
+    /**
+     * Get the payment method code (for backward compatibility)
+     */
+    public function getPaymentMethodCodeAttribute()
+    {
+        return $this->paymentMethod ? $this->paymentMethod->code : null;
+    }
+
     /**
      * Scope completed payments.
      */
@@ -129,30 +152,25 @@ class EmployeePayment extends Model
     }
 
     /**
+     * Scope payments by payment method.
+     */
+    public function scopeByPaymentMethod($query, $paymentMethodId)
+    {
+        return $query->where('payment_method_id', $paymentMethodId);
+    }
+
+    /**
      * Get payment type options.
      */
     public static function getPaymentTypes(): array
     {
         return [
-            self::TYPE_SALARY,
-            self::TYPE_ALLOWANCE,
-            self::TYPE_BONUS,
-            self::TYPE_OVERTIME,
-            self::TYPE_ADVANCE,
-            self::TYPE_OTHER,
-        ];
-    }
-
-    /**
-     * Get payment method options.
-     */
-    public static function getPaymentMethods(): array
-    {
-        return [
-            self::METHOD_CASH,
-            self::METHOD_BANK_TRANSFER,
-            self::METHOD_CHECK,
-            self::METHOD_DIGITAL_WALLET,
+            self::TYPE_SALARY => 'Salary',
+            self::TYPE_ALLOWANCE => 'Allowance',
+            self::TYPE_BONUS => 'Bonus',
+            self::TYPE_OVERTIME => 'Overtime',
+            self::TYPE_ADVANCE => 'Advance',
+            self::TYPE_OTHER => 'Other',
         ];
     }
 
@@ -162,18 +180,57 @@ class EmployeePayment extends Model
     public static function getStatuses(): array
     {
         return [
-            self::STATUS_PENDING,
-            self::STATUS_COMPLETED,
-            self::STATUS_FAILED,
-            self::STATUS_CANCELLED,
+            self::STATUS_PENDING => 'Pending',
+            self::STATUS_COMPLETED => 'Completed',
+            self::STATUS_FAILED => 'Failed',
+            self::STATUS_CANCELLED => 'Cancelled',
         ];
     }
 
     /**
-     * Scope a query to only include expenses for a specific tenant.
+     * Get status color.
+     */
+    public function getStatusColorAttribute(): string
+    {
+        return match($this->status) {
+            self::STATUS_COMPLETED => 'success',
+            self::STATUS_PENDING => 'warning',
+            self::STATUS_FAILED => 'danger',
+            self::STATUS_CANCELLED => 'secondary',
+            default => 'info',
+        };
+    }
+
+    /**
+     * Scope a query to only include payments for a specific tenant.
      */
     public function scopeForTenant($query, $tenantId)
     {
         return $query->where('tenant_id', $tenantId);
+    }
+
+    /**
+     * Calculate total paid amount for an employee.
+     */
+    public static function getTotalPaidForEmployee($employeeId)
+    {
+        return self::where('employee_id', $employeeId)
+            ->where('status', self::STATUS_COMPLETED)
+            ->sum('amount');
+    }
+
+    /**
+     * Get payments by employee with payment method details.
+     */
+    public static function getPaymentsWithDetails($employeeId = null)
+    {
+        $query = self::with(['employee', 'paymentMethod'])
+            ->orderBy('payment_date', 'desc');
+
+        if ($employeeId) {
+            $query->where('employee_id', $employeeId);
+        }
+
+        return $query;
     }
 }

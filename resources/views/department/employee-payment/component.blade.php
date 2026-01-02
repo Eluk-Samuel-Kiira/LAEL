@@ -12,6 +12,7 @@
                     <th class="min-w-125px">{{__('payments.payment_id')}}</th>
                     <th class="min-w-125px">{{__('payments.employee')}}</th>
                     <th class="min-w-125px">{{__('payments.payment_type')}}</th>
+                    <th class="min-w-125px">{{__('payments.payment_method')}}</th>
                     <th class="min-w-125px">{{__('payments.description')}}</th>
                     <th class="min-w-125px">{{__('payments.amount')}}</th>
                     <th class="min-w-125px">{{__('payments.payment_date')}}</th>
@@ -31,9 +32,60 @@
                             <td>
                                 <div class="badge badge-light fw-bold">{{__('ID-')}}{{ $payment->id }}</div>
                             </td>
-                            <td>{{ $payment->employee->name ?? 'N/A' }}</td>
+                            <td>{{ $payment->employee->first_name.' '.$payment->employee->last_name ?? 'N/A' }}</td>
                             <td>
-                                <span class="badge badge-light">{{ __('payments.' . $payment->payment_type) }}</span>
+                                <span class="badge badge-light">{{  $payment->payment_type }}</span>
+                            </td>
+                            <td>
+                                @php
+                                    $type = $payment->paymentMethod->type ?? 'other';
+                                    $typeColors = [
+                                        'cash' => 'warning',
+                                        'bank_account' => 'info', 
+                                        'digital_wallet' => 'primary',
+                                        'card' => 'success',
+                                        'check' => 'secondary',
+                                        'mobile_money' => 'danger',
+                                        'other' => 'dark'
+                                    ];
+                                    $color = $typeColors[$type] ?? 'dark';
+                                    
+                                    // Short names for common types
+                                    $typeNames = [
+                                        'cash' => 'Cash',
+                                        'bank_account' => 'Bank',
+                                        'digital_wallet' => 'Wallet',
+                                        'card' => 'Card',
+                                        'check' => 'Check',
+                                        'mobile_money' => 'Mobile',
+                                        'other' => 'Other'
+                                    ];
+                                    $typeName = $typeNames[$type] ?? 'Other';
+                                @endphp
+                                
+                                <span class="badge badge-light-{{ $color }} me-2">
+                                    <i class="fas fa-@switch($type)
+                                        @case('cash') money-bill-wave @break
+                                        @case('bank_account') bank @break
+                                        @case('digital_wallet') wallet @break
+                                        @case('card') credit-card @break
+                                        @case('check') file-invoice @break
+                                        @case('mobile_money') mobile-alt @break
+                                        @default credit-card @break
+                                    @endswitch me-1"></i>
+                                    {{ $typeName }}
+                                </span><br>
+                                
+                                @if($payment->paymentMethod->is_default)
+                                    <span class="badge badge-light-success">
+                                        <i class="fas fa-star me-1"></i>
+                                        {{ $payment->paymentMethod->name }}
+                                    </span>
+                                @else
+                                    <span class="badge badge-light-primary">
+                                        {{ $payment->paymentMethod->name }}
+                                    </span>
+                                @endif
                             </td>
                             <td>{{ $payment->description }}</td>
                             <td>
@@ -41,23 +93,29 @@
                             </td>
                             <td>{{ $payment->payment_date->format('d M Y') }}</td>
                             <td>
-                                <select name="status" class="form-select form-select-solid form-select-sm" 
-                                        onchange="updatePaymentStatus({{ $payment->id }}, this.value)"
-                                        @cannot('update employee payment') disabled @endcannot>
-                                    <option value="pending" {{ $payment->status == 'pending' ? 'selected' : '' }}>
-                                        {{__('payments.pending')}}
-                                    </option>
-                                    <option value="completed" {{ $payment->status == 'completed' ? 'selected' : '' }}
-                                            {{ $payment->status == 'completed' ? 'selected' : '' }}>
-                                        {{__('payments.completed')}}
-                                    </option>
-                                    <option value="failed" {{ $payment->status == 'failed' ? 'selected' : '' }}>
-                                        {{__('payments.failed')}}
-                                    </option>
-                                    <option value="cancelled" {{ $payment->status == 'cancelled' ? 'selected' : '' }}>
-                                        {{__('payments.cancelled')}}
-                                    </option>
-                                </select>
+                                @if($payment->status === 'completed')
+                                    <span class="badge badge-light-success">
+                                        {{ __('payments.completed') }}
+                                    </span>
+                                @else
+                                    <select name="status" 
+                                            class="form-select form-select-solid form-select-sm" 
+                                            onchange="updatePaymentStatus({{ $payment->id }}, this.value)"
+                                            @cannot('update employee payment') disabled @endcannot>
+                                        <option value="pending" {{ $payment->status == 'pending' ? 'selected' : '' }}>
+                                            {{__('payments.pending')}}
+                                        </option>
+                                        <option value="completed" {{ $payment->status == 'completed' ? 'selected' : '' }}>
+                                            {{__('payments.completed')}}
+                                        </option>
+                                        <option value="failed" {{ $payment->status == 'failed' ? 'selected' : '' }}>
+                                            {{__('payments.failed')}}
+                                        </option>
+                                        <option value="cancelled" {{ $payment->status == 'cancelled' ? 'selected' : '' }}>
+                                            {{__('payments.cancelled')}}
+                                        </option>
+                                    </select>
+                                @endif
                             </td>
                             <td>
                                 <div class="d-flex gap-2">
@@ -65,8 +123,7 @@
                                         <button 
                                             class="btn btn-sm btn-light btn-active-color-primary d-flex align-items-center px-3 py-2" 
                                             data-bs-toggle="modal"
-                                            data-bs-target="#editPaymentModal{{$payment->id}}"
-                                            {{ $payment->status === 'completed' ? 'disabled' : '' }}>
+                                            data-bs-target="#editPaymentModal{{$payment->id}}">
                                             <i class="bi bi-pencil-square me-1 fs-5"></i> <span>{{ __('auth._edit') }}</span>
                                         </button>
                                     @endcan

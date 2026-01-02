@@ -14,6 +14,7 @@ class PurchaseOrderItem extends Model
     protected $fillable = [
         'purchase_order_id',
         'product_variant_id',
+        'payment_method_id',
         'product_name',
         'sku',
         'quantity',
@@ -76,5 +77,81 @@ class PurchaseOrderItem extends Model
     public function receiptItems(): HasMany
     {
         return $this->hasMany(PurchaseReceiptItem::class, 'purchase_order_item_id');
+    }
+
+    public function scopeByPaymentMethod($query, $paymentMethodId)
+    {
+        return $query->where('payment_method_id', $paymentMethodId);
+    }
+
+    public function scopeByPaymentStatus($query, $status)
+    {
+        return $query->where('payment_status', $status);
+    }
+
+    public function scopePendingPayment($query)
+    {
+        return $query->whereIn('payment_status', [self::PAYMENT_STATUS_PENDING, self::PAYMENT_STATUS_PARTIAL]);
+    }
+
+    public function scopePaid($query)
+    {
+        return $query->where('payment_status', self::PAYMENT_STATUS_PAID);
+    }
+
+    // Methods
+    public function paymentMethod(): BelongsTo
+    {
+        return $this->belongsTo(PaymentMethod::class);
+    }
+    public function getPaymentMethodNameAttribute()
+    {
+        return $this->paymentMethod ? $this->paymentMethod->name : 'Not assigned';
+    }
+
+    public function getPaymentMethodTypeAttribute()
+    {
+        return $this->paymentMethod ? $this->paymentMethod->type : 'N/A';
+    }
+
+    public function getFormattedPaymentDateAttribute()
+    {
+        return $this->payment_date ? $this->payment_date->format('M d, Y') : 'Not paid';
+    }
+
+    public function getRemainingQuantityAttribute()
+    {
+        return max(0, $this->quantity - $this->received_quantity);
+    }
+
+    public function getPaymentStatusColorAttribute(): string
+    {
+        return match($this->payment_status) {
+            self::PAYMENT_STATUS_PENDING => 'warning',
+            self::PAYMENT_STATUS_PARTIAL => 'info',
+            self::PAYMENT_STATUS_PAID => 'success',
+            self::PAYMENT_STATUS_OVERDUE => 'danger',
+            default => 'secondary',
+        };
+    }
+
+    public function isFullyPaid(): bool
+    {
+        return $this->payment_status === self::PAYMENT_STATUS_PAID;
+    }
+
+    public function isPartiallyPaid(): bool
+    {
+        return $this->payment_status === self::PAYMENT_STATUS_PARTIAL;
+    }
+
+    public function isPendingPayment(): bool
+    {
+        return $this->payment_status === self::PAYMENT_STATUS_PENDING;
+    }
+
+    public function isOverdue(): bool
+    {
+        return $this->payment_status === self::PAYMENT_STATUS_OVERDUE;
     }
 }

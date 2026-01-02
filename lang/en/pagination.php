@@ -350,4 +350,28 @@ return [
     'confirm_approve_expense' => 'Are you sure you want to approve this expense?',
     'processing' => 'Processing...',
     'approval_error' => 'Error processing approval',
+    'subtotal_for_this_method' => 'Subtotal for this method',
+    'items' => 'items',
+
+    'select_payment_account' => 'Select Payment Account',
+    'no_payment_accounts_available' => 'No payment accounts available for this payment method.',
+    'selected_account' => 'Selected Account',
+    'cash_details' => 'Cash Details',
+    'complete_payment' => 'Complete Payment',
+    'select_account' => 'Select Account',
+    'cash_payment' => 'Cash Payment',
+    'mobile_money_payment' => 'Mobile Money Payment',
+    'card_payment' => 'Card Payment',
+    'bank_account_payment' => 'Bank Account Payment',
+    'digital_wallet_payment' => 'Digital Wallet Payment',
+    'check_payment' => 'Check Payment',
+    'credit_payment' => 'Credit Payment',
+    'other_payment' => 'Other Payment',
+
+    'transaction_id' => 'Transaction ID',
+    'optional' => 'Optional',
+    'select_payment_method' => 'Select Account Please',
+    'enter_transaction_id' => 'Enter transaction/reference number',
+    'transaction_id_help' => 'Enter reference number, transaction ID, or receipt number for tracking',
+
 ];

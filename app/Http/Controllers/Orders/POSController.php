@@ -324,6 +324,7 @@ class POSController extends Controller
         try {
             $cartData = $request->items; 
             $paymentDetails = $request->payment_details;  
+            // \Log::info($paymentDetails);
             $user = Auth::user();
             $tenantId = $user->tenant_id;
             $isSingleShop = tenant_is_single_shop($tenantId);
@@ -337,16 +338,16 @@ class POSController extends Controller
             ]);
 
             // Payment Details
-            $transactionId = ($request->payment_method === 'cash') 
-                                ? (string) Str::uuid() 
-                                : null;
+            $transactionId = $request->input('payment_details.transaction_id') ?: (string) Str::uuid();
+            // \Log::info($request->payment_method_id);
+            // die();
 
             // Create Payment
             OrderPayment::updateOrCreate(
                 ['order_id' => $order->id],
                 [
                     'amount' => $request->total ?? 0,
-                    'payment_method' => $request->payment_method,
+                    'payment_method_id' => $request->payment_method_id,
                     'transaction_id' => $transactionId,
                     'status' => 'completed',
                     'notes' => __('pagination.payment_completed'),
@@ -504,7 +505,7 @@ class POSController extends Controller
     //         ['order_id' => $order->id],
     //         [
     //             'amount'          => $request->total ?? 0,
-    //             'payment_method'  => $request->payment_method, // Fixed this line too
+    //             'payment_method_id' => $request->payment_method_id, // Fixed this line too
     //             'transaction_id'  => $transactionId,
     //             'status'          => 'completed',
     //             'notes'           => __('pagination.payment_completed'),

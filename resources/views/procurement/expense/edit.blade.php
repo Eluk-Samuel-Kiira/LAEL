@@ -15,6 +15,7 @@
                         <div class="col-md-6">
                             <label class="form-label required">{{ __('pagination.expense_date') }}</label>
                             <input type="date" name="date" class="form-control" required value="{{ old('date', $expense->date->format('Y-m-d')) }}">
+                            <div id="date{{ $expense->id }}"></div>
                         </div>
                         
                         <div class="col-md-6">
@@ -27,16 +28,19 @@
                                     </option>
                                 @endforeach
                             </select>
+                            <div id="category_id{{ $expense->id }}"></div>
                         </div>
                         
                         <div class="col-12">
                             <label class="form-label required">{{ __('pagination.description') }}</label>
                             <textarea name="description" class="form-control" rows="2" required>{{ old('description', $expense->description) }}</textarea>
+                            <div id="description{{ $expense->id }}"></div>
                         </div>
                         
                         <div class="col-md-6">
                             <label class="form-label required">{{ __('pagination.vendor') }}</label>
                             <input type="text" name="vendor_name" class="form-control" value="{{ old('vendor_name', $expense->vendor_name) }}" required>
+                            <div id="vendor_name{{ $expense->id }}"></div>
                         </div>
                         
                         <div class="col-md-6">
@@ -49,6 +53,7 @@
                                     </option>
                                 @endforeach
                             </select>
+                            <div id="employee_id{{ $expense->id }}"></div>
                         </div>
                         
                         <!-- Amount Information -->
@@ -59,6 +64,7 @@
                                 <input type="number" name="amount" class="form-control" step="0.01" min="0" required 
                                        value="{{ old('amount', $expense->amount) }}" 
                                        id="editAmount{{$expense->id}}">
+                                <div id="amount{{ $expense->id }}"></div>
                             </div>
                         </div>
                         
@@ -69,6 +75,7 @@
                                 <input type="number" name="tax_amount" class="form-control" step="0.01" min="0" 
                                        value="{{ old('tax_amount', $expense->tax_amount) }}"
                                        id="editTax{{$expense->id}}">
+                                <div id="tax_amount{{ $expense->id }}"></div>
                             </div>
                         </div>
                         
@@ -78,20 +85,37 @@
                                 <span class="input-group-text">{{ config('app.currency') ?? '$' }}</span>
                                 <input type="text" class="form-control" id="editTotal{{$expense->id}}" readonly 
                                        value="{{ number_format($expense->total_amount, 2) }}">
+                                <div id="editTotal{{ $expense->id }}"></div>
                             </div>
                         </div>
                         
                         <!-- Payment Information -->
                         <div class="col-md-6">
                             <label class="form-label">{{ __('pagination.payment_method') }}</label>
-                            <select name="payment_method" class="form-select">
-                                <option value="">{{ __('pagination.select_payment_method') }}</option>
-                                <option value="cash" {{ $expense->payment_method == 'cash' ? 'selected' : '' }}>Cash</option>
-                                <option value="card" {{ $expense->payment_method == 'card' ? 'selected' : '' }}>Card</option>
-                                <option value="transfer" {{ $expense->payment_method == 'transfer' ? 'selected' : '' }}>Bank Transfer</option>
-                                <option value="check" {{ $expense->payment_method == 'check' ? 'selected' : '' }}>Check</option>
-                                <option value="credit" {{ $expense->payment_method == 'credit' ? 'selected' : '' }}>Credit</option>
-                            </select>
+                            @if(isset($expense) && $expense->payment_status === 'paid' && $expense->payment_method_id)
+                                <!-- For paid expenses, show readonly field with hidden input -->
+                                <input type="text" 
+                                    class="form-control" 
+                                    value="{{ $expense->paymentMethod->name ?? 'N/A' }}" 
+                                    readonly
+                                    style="background-color: #f8f9fa; cursor: not-allowed;">
+                                <input type="hidden" name="payment_method_id" value="{{ $expense->payment_method_id }}">
+                            @else
+                                <!-- For non-paid expenses or new expenses, show select dropdown -->
+                                <select name="payment_method_id" class="form-select">
+                                    <option value="">{{ __('pagination.select_payment_method') }}</option>
+                                    @foreach($active_payment_methods as $method)
+                                        <option value="{{ $method->id }}" 
+                                            {{ (isset($expense) ? $expense->payment_method_id : old('payment_method_id')) == $method->id ? 'selected' : '' }}>
+                                            {{ $method->name }}
+                                            @if($method->is_default)
+                                                ({{ __('payments._default') }})
+                                            @endif
+                                        </option>
+                                    @endforeach
+                                </select>
+                            @endif
+                            <div id="payment_method_id{{ isset($expense) ? $expense->id : '' }}"></div>
                         </div>
                         
                         <div class="col-md-6">
@@ -101,12 +125,14 @@
                                 <option value="paid" {{ $expense->payment_status == 'paid' ? 'selected' : '' }}>Paid</option>
                                 <option value="reimbursed" {{ $expense->payment_status == 'reimbursed' ? 'selected' : '' }}>Reimbursed</option>
                             </select>
+                            <div id="payment_status{{ $expense->id }}"></div>
                         </div>
                         
                         <div class="col-md-6">
                             <label class="form-label">{{ __('pagination.paid_date') }}</label>
                             <input type="date" name="paid_date" class="form-control" 
                                    value="{{ old('paid_date', $expense->paid_date ? $expense->paid_date->format('Y-m-d') : '') }}">
+                            <div id="paid_date{{ $expense->id }}"></div>
                         </div>
                         
                         <!-- Recurring Expenses -->
@@ -124,7 +150,8 @@
                                 <label class="form-check-label" for="editRecurringSwitch{{$expense->id}}">
                                     {{ __('pagination.recurring_expense') }}
                                 </label>
-                            </div>
+                            </div>                            
+                            <div id="is_recurring{{ $expense->id }}"></div>
                         </div>
 
                         <div class="col-md-6 edit-recurring-fields{{$expense->id}}" 
@@ -138,21 +165,22 @@
                                 <option value="quarterly" {{ $expense->recurring_frequency == 'quarterly' ? 'selected' : '' }}>Quarterly</option>
                                 <option value="annually" {{ $expense->recurring_frequency == 'annually' ? 'selected' : '' }}>Annually</option>
                             </select>
+                            <div id="recurring_frequency{{ $expense->id }}"></div>
                         </div>
 
                         <script>
-                        function toggleRecurringFields{{$expense->id}}() {
-                            const checkbox = document.getElementById('editRecurringSwitch{{$expense->id}}');
-                            const recurringFields = document.getElementById('recurringFields{{$expense->id}}');
-                            
-                            if (checkbox.checked) {
-                                recurringFields.style.display = 'block';
-                            } else {
-                                recurringFields.style.display = 'none';
-                                // Optional: Clear the frequency selection when hiding
-                                recurringFields.querySelector('select').value = '';
+                            function toggleRecurringFields{{$expense->id}}() {
+                                const checkbox = document.getElementById('editRecurringSwitch{{$expense->id}}');
+                                const recurringFields = document.getElementById('recurringFields{{$expense->id}}');
+                                
+                                if (checkbox.checked) {
+                                    recurringFields.style.display = 'block';
+                                } else {
+                                    recurringFields.style.display = 'none';
+                                    // Optional: Clear the frequency selection when hiding
+                                    recurringFields.querySelector('select').value = '';
+                                }
                             }
-                        }
                         </script>
                         
                         <div class="col-md-6 edit-recurring-fields{{$expense->id}}" style="display: {{ $expense->is_recurring ? 'block' : 'none' }};">
@@ -160,6 +188,7 @@
                             <input type="date" name="next_recurring_date" class="form-control" 
                                    value="{{ old('next_recurring_date', $expense->next_recurring_date ? $expense->next_recurring_date->format('Y-m-d') : '') }}">
                         </div>
+                        <div id="next_recurring_date{{ $expense->id }}"></div>
                         
                         <!-- Approval Information -->
                         @if($expense->approved_at)
@@ -185,7 +214,8 @@
                             <button type="button" id="closeModalEditButton{{$expense->id}}" class="btn btn-light me-3" data-bs-dismiss="modal">
                                 {{ __('auth._discard') }}
                             </button>
-                            <button onclick="updateExpense({{$expense->id}})" id="editExpenseButton{{ $expense->id }}" type="button" class="btn btn-primary">
+                            <button onclick="updateExpense({{$expense->id}})" id="editExpenseButton{{ $expense->id }}" type="button" class="btn btn-primary"
+                            @if($expense->payment_status === 'paid') disabled @endif>
                                 <span class="indicator-label">{{__('auth._update')}}</span>
                                 <span class="indicator-progress">
                                     {{__('auth.please_wait') }}

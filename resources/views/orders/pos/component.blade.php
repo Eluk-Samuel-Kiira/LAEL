@@ -309,53 +309,210 @@
                 <!--begin::Payment Method-->
                 <div class="m-0">
                     <h3 class="fw-bold text-gray-800 mb-5">{{__('pagination.payment_method')}}</h3>
-                    <!--begin::Radio group-->
-                    <div class="d-flex flex-equal gap-5 gap-xxl-9 px-0 mb-12" data-kt-buttons="true" >
-
-                        <!--begin::Radio-->
-                        <label class="btn bg-light btn-color-gray-600 btn-active-text-gray-800 border border-3 border-gray-100 border-active-primary btn-active-light-primary w-100 px-4" >
-                            <input class="btn-check" type="radio" name="method" value="2" />
-                            <i class="ki-duotone ki-finance-calculator fs-2hx mb-2 pe-0">
-                                <span class="path1"></span>
-                                <span class="path2"></span>
-                            </i>
-                            <span class="fs-7 fw-bold d-block">{{__('pagination.mobile_money')}}</span>
-                        </label>
+                    
+                    <!--begin::Radio group - Row 1 (3 items)-->
+                    <div class="row g-4 mb-8">
+                        <!-- Mobile Money -->
+                        <div class="col-lg-4 col-xxl-3">
+                            <label class="btn bg-light btn-color-gray-600 btn-active-text-gray-800 border border-3 border-gray-100 border-active-primary btn-active-light-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center p-4">
+                                <input class="btn-check" type="radio" name="method" value="mobile_money" />
+                                <i class="ki-duotone ki-finance-calculator fs-2hx mb-3">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                                <span class="fs-7 fw-bold text-center">{{__('pagination.mobile_money')}}</span>
+                            </label>
+                        </div>
                         
-                        <!--begin::Radio-->
-                        <label class="btn bg-light btn-color-gray-600 btn-active-text-gray-800 border border-3 border-gray-100 border-active-primary btn-active-light-primary w-100 px-4 active" >
-                            <input class="btn-check" type="radio" name="method" value="1" checked="checked"/>
-                            <i class="ki-duotone ki-dollar fs-2hx mb-2 pe-0">
-                                <span class="path1"></span>
-                                <span class="path2"></span>
-                                <span class="path3"></span>
-                            </i>
-                            <span class="fs-7 fw-bold d-block">{{__('pagination._cash')}}</span>
-                        </label>
+                        <!-- Cash (Default) -->
+                        <div class="col-lg-4 col-xxl-3">
+                            <label class="btn bg-light btn-color-gray-600 btn-active-text-gray-800 border border-3 border-gray-100 border-active-primary btn-active-light-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center p-4 active">
+                                <input class="btn-check" type="radio" name="method" value="cash" checked="checked"/>
+                                <i class="ki-duotone ki-dollar fs-2hx mb-3">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                    <span class="path3"></span>
+                                </i>
+                                <span class="fs-7 fw-bold text-center">{{__('pagination._cash')}}</span>
+                            </label>
+                        </div>
                         
-                        <!--begin::Radio-->
-                        <label class="btn bg-light btn-color-gray-600 btn-active-text-gray-800 border border-3 border-gray-100 border-active-primary btn-active-light-primary w-100 px-4" >
-                            <input class="btn-check" type="radio" name="method" value="3" />
-                            <i class="ki-duotone ki-credit-cart fs-2hx mb-2 pe-0">
-                                <span class="path1"></span>
-                                <span class="path2"></span>
-                            </i>
-                            <span class="fs-7 fw-bold d-block">{{__('pagination._card')}}</span>
-                        </label>
+                        <!-- Card -->
+                        <div class="col-lg-4 col-xxl-3">
+                            <label class="btn bg-light btn-color-gray-600 btn-active-text-gray-800 border border-3 border-gray-100 border-active-primary btn-active-light-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center p-4">
+                                <input class="btn-check" type="radio" name="method" value="card" />
+                                <i class="ki-duotone ki-credit-cart fs-2hx mb-3">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                                <span class="fs-7 fw-bold text-center">{{__('pagination._card')}}</span>
+                            </label>
+                        </div>
+                        
+                        <!-- Bank Account -->
+                        <div class="col-lg-4 col-xxl-3">
+                            <label class="btn bg-light btn-color-gray-600 btn-active-text-gray-800 border border-3 border-gray-100 border-active-primary btn-active-light-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center p-4">
+                                <input class="btn-check" type="radio" name="method" value="bank_account" />
+                                <i class="ki-duotone ki-bank fs-2hx mb-3">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                                <span class="fs-7 fw-bold text-center">{{__('payments.bank_account')}}</span>
+                            </label>
+                        </div>
                     </div>
                     
-                    <button 
-                        id="processBill" 
-                        type="button" 
-                        class="btn btn-primary fs-1 w-100 py-4"
-                        onclick="processPayment()">
+                    <!--begin::Radio group - Row 2 (3 items)-->
+                    <div class="row g-4 mb-8">
+                        <!-- Digital Wallet -->
+                        <div class="col-lg-4 col-xxl-3">
+                            <label class="btn bg-light btn-color-gray-600 btn-active-text-gray-800 border border-3 border-gray-100 border-active-primary btn-active-light-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center p-4">
+                                <input class="btn-check" type="radio" name="method" value="digital_wallet" />
+                                <i class="ki-duotone ki-wallet fs-2hx mb-3">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                                <span class="fs-7 fw-bold text-center">{{__('payments.digital_wallet')}}</span>
+                            </label>
+                        </div>
                         
-                        <span class="indicator-label">{{__('pagination.print_bill')}}</span>
-                        <span class="indicator-progress">{{__('pagination.processing_payments')}}
-                            <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
-                        </span>
-                    </button>
+                        <!-- Check -->
+                        <div class="col-lg-4 col-xxl-3">
+                            <label class="btn bg-light btn-color-gray-600 btn-active-text-gray-800 border border-3 border-gray-100 border-active-primary btn-active-light-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center p-4">
+                                <input class="btn-check" type="radio" name="method" value="check" />
+                                <i class="ki-duotone ki-document fs-2hx mb-3">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                                <span class="fs-7 fw-bold text-center">{{__('payments.check')}}</span>
+                            </label>
+                        </div>
+                        
+                        <!-- Credit -->
+                        <div class="col-lg-4 col-xxl-3">
+                            <label class="btn bg-light btn-color-gray-600 btn-active-text-gray-800 border border-3 border-gray-100 border-active-primary btn-active-light-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center p-4">
+                                <input class="btn-check" type="radio" name="method" value="credit" />
+                                <i class="ki-duotone ki-time fs-2hx mb-3">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                                <span class="fs-7 fw-bold text-center">{{__('payments.credit')}}</span>
+                            </label>
+                        </div>
+                        
+                        <!-- Other -->
+                        <div class="col-lg-4 col-xxl-3">
+                            <label class="btn bg-light btn-color-gray-600 btn-active-text-gray-800 border border-3 border-gray-100 border-active-primary btn-active-light-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center p-4">
+                                <input class="btn-check" type="radio" name="method" value="other" />
+                                <i class="ki-duotone ki-add-files fs-2hx mb-3">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                                <span class="fs-7 fw-bold text-center">{{__('payments.other')}}</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Process Bill Button -->
+                    <div class="mt-8">
+                        <button 
+                            id="processBill" 
+                            type="button" 
+                            class="btn btn-primary fs-1 w-100 py-4"
+                            onclick="processPayment()">
+                            <span class="indicator-label">{{__('pagination.print_bill')}}</span>
+                            <span class="indicator-progress">{{__('pagination.processing_payments')}}
+                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                            </span>
+                        </button>
+                    </div>
                 </div>
+
+                <style>
+                    /* Custom styles for payment method buttons */
+                    .btn-check:checked + .btn {
+                        background-color: var(--kt-primary-light) !important;
+                        border-color: var(--kt-primary) !important;
+                        color: var(--kt-primary) !important;
+                    }
+
+                    .btn-check:focus + .btn {
+                        box-shadow: 0 0 0 0.25rem rgba(0, 158, 247, 0.25);
+                    }
+
+                    /* Ensure consistent button height */
+                    .btn.h-100 {
+                        min-height: 120px;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        transition: all 0.2s ease;
+                    }
+
+                    .btn.h-100:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                    }
+
+                    /* Responsive adjustments */
+                    @media (max-width: 768px) {
+                        .btn.h-100 {
+                            min-height: 100px;
+                        }
+                        
+                        .row.g-4 > div {
+                            margin-bottom: 1rem;
+                        }
+                    }
+
+                    @media (max-width: 576px) {
+                        .row.g-4 {
+                            --bs-gutter-x: 0.5rem;
+                            --bs-gutter-y: 0.5rem;
+                        }
+                        
+                        .btn.h-100 {
+                            min-height: 90px;
+                            padding: 1rem !important;
+                        }
+                        
+                        .fs-2hx {
+                            font-size: 1.75rem !important;
+                        }
+                    }
+                </style>
+
+                <script>
+                    // Ensure only one payment method can be selected at a time
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const paymentRadios = document.querySelectorAll('input[name="method"]');
+                        
+                        // Set cash as default
+                        const cashRadio = document.querySelector('input[value="cash"]');
+                        if (cashRadio) {
+                            cashRadio.checked = true;
+                        }
+                        
+                        // Handle radio button changes
+                        paymentRadios.forEach(radio => {
+                            radio.addEventListener('change', function() {
+                                // Remove active class from all labels
+                                document.querySelectorAll('label.btn').forEach(label => {
+                                    label.classList.remove('active');
+                                });
+                                
+                                // Add active class to parent label of selected radio
+                                if (this.checked) {
+                                    this.closest('label').classList.add('active');
+                                }
+                                
+                                // Log selected method (for debugging)
+                                console.log('Selected payment method:', this.value);
+                            });
+                        });
+                    });
+                </script>
             </div>
         </div>
     </div>

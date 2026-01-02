@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Procurement;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\{ ExpenseCategory, Expense };
+use App\Models\{ ExpenseCategory, Expense, Employee };
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\{ Auth, Log, Storage };
 use Illuminate\Validation\Rule;
@@ -67,7 +67,13 @@ class ExpenseController extends Controller
             'employee_id' => 'nullable|exists:employees,id',
             'date' => 'required|date',
             'paid_date' => 'nullable|date|after_or_equal:date',
-            'payment_method' => 'nullable|in:cash,card,transfer,check,credit',
+            'payment_method_id' => [
+                'nullable',
+                Rule::exists('payment_methods', 'id')->where(function ($query) use ($tenantId) {
+                    $query->where('tenant_id', $tenantId)
+                        ->where('is_active', true);
+                })
+            ],
             'payment_status' => 'required|in:pending,paid,reimbursed',
             'is_recurring' => 'boolean',
             'recurring_frequency' => 'nullable|required_if:is_recurring,true|in:weekly,monthly,quarterly,annually',
@@ -85,6 +91,20 @@ class ExpenseController extends Controller
                 'success' => false,
                 'message' => __('auth.category_not_found'),
             ]);
+        }
+
+        // Check if employee belongs to tenant
+        if ($validated['employee_id']) {
+            $employee = Employee::where('id', $validated['employee_id'])
+                ->where('tenant_id', $tenantId)
+                ->first();
+                
+            if (!$employee) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('auth.employee_not_found'),
+                ]);
+            }
         }
 
         // Generate unique expense number
@@ -114,15 +134,13 @@ class ExpenseController extends Controller
             'employee_id' => $validated['employee_id'] ?? null,
             'date' => $validated['date'],
             'paid_date' => $validated['paid_date'] ?? null,
-            'payment_method' => $validated['payment_method'] ?? null,
+            'payment_method_id' => $validated['payment_method_id'] ?? null, 
             'payment_status' => $validated['payment_status'],
             'is_recurring' => $validated['is_recurring'] ?? false,
             'recurring_frequency' => $validated['recurring_frequency'] ?? null,
             'next_recurring_date' => $validated['next_recurring_date'] ?? null,
             'receipt_url' => $receiptUrl,
             'created_by' => $user->id,
-            'created_at' => now(),
-            'updated_at' => now(),
         ]);
 
         return response()->json([
@@ -156,7 +174,6 @@ class ExpenseController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // \Log::info($request);
         $user = Auth::user();
         $tenantId = $user->tenant_id;
 
@@ -190,7 +207,13 @@ class ExpenseController extends Controller
             'employee_id' => 'nullable|exists:employees,id',
             'date' => 'required|date',
             'paid_date' => 'nullable|date|after_or_equal:date',
-            'payment_method' => 'nullable|in:cash,card,transfer,check,credit',
+            'payment_method_id' => [
+                'nullable',
+                Rule::exists('payment_methods', 'id')->where(function ($query) use ($tenantId) {
+                    $query->where('tenant_id', $tenantId)
+                        ->where('is_active', true);
+                })
+            ],
             'payment_status' => 'required|in:pending,paid,reimbursed',
             'is_recurring' => 'boolean',
             'recurring_frequency' => 'nullable|required_if:is_recurring,true|in:weekly,monthly,quarterly,annually',
@@ -208,6 +231,20 @@ class ExpenseController extends Controller
                 'success' => false,
                 'message' => __('auth.category_not_found'),
             ]);
+        }
+
+        // Check if employee belongs to tenant
+        if ($validated['employee_id']) {
+            $employee = Employee::where('id', $validated['employee_id'])
+                ->where('tenant_id', $tenantId)
+                ->first();
+                
+            if (!$employee) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('auth.employee_not_found'),
+                ]);
+            }
         }
 
         // Handle receipt upload if new file provided
@@ -236,12 +273,12 @@ class ExpenseController extends Controller
             'employee_id' => $validated['employee_id'] ?? null,
             'date' => $validated['date'],
             'paid_date' => $validated['paid_date'] ?? null,
-            'payment_method' => $validated['payment_method'] ?? null,
+            'payment_method_id' => $validated['payment_method_id'] ?? null, // Use payment_method_id
             'payment_status' => $validated['payment_status'],
             'is_recurring' => $validated['is_recurring'] ?? false,
             'recurring_frequency' => $validated['recurring_frequency'] ?? null,
             'next_recurring_date' => $validated['next_recurring_date'] ?? null,
-            'updated_at' => now(),
+            // 'receipt_url' => $receiptUrl,
         ]);
 
         // Reset approval if significant changes were made

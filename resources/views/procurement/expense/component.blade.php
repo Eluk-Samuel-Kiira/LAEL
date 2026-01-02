@@ -13,6 +13,7 @@
                     <th class="min-w-125px">{{__('pagination.expense_number')}}</th>
                     <th class="min-w-125px">{{__('pagination.description')}}</th> 
                     <th class="min-w-125px">{{__('pagination.amount')}}</th> 
+                    <th class="min-w-125px">{{__('payments.payment_method')}}</th>
                     <th class="min-w-125px">{{__('auth.created_at')}}</th>
                     <th class="min-w-125px">{{__('pagination.approve')}}</th>
                     <th class="min-w-125px">{{__('pagination.payment_status')}}</th>
@@ -35,6 +36,57 @@
                             <td>{{ $expense->description }}</td>
                             <td>
                                 <div class="badge badge-light fw-bold">${{ number_format($expense->total_amount, 2) }}</div>
+                            </td>
+                            <td>
+                                @php
+                                    $type = $expense->paymentMethod->type ?? 'other';
+                                    $typeColors = [
+                                        'cash' => 'warning',
+                                        'bank_account' => 'info', 
+                                        'digital_wallet' => 'primary',
+                                        'card' => 'success',
+                                        'check' => 'secondary',
+                                        'mobile_money' => 'danger',
+                                        'other' => 'dark'
+                                    ];
+                                    $color = $typeColors[$type] ?? 'dark';
+                                    
+                                    // Short names for common types
+                                    $typeNames = [
+                                        'cash' => 'Cash',
+                                        'bank_account' => 'Bank',
+                                        'digital_wallet' => 'Wallet',
+                                        'card' => 'Card',
+                                        'check' => 'Check',
+                                        'mobile_money' => 'Mobile',
+                                        'other' => 'Other'
+                                    ];
+                                    $typeName = $typeNames[$type] ?? 'Other';
+                                @endphp
+                                
+                                <span class="badge badge-light-{{ $color }} me-2">
+                                    <i class="fas fa-@switch($type)
+                                        @case('cash') money-bill-wave @break
+                                        @case('bank_account') bank @break
+                                        @case('digital_wallet') wallet @break
+                                        @case('card') credit-card @break
+                                        @case('check') file-invoice @break
+                                        @case('mobile_money') mobile-alt @break
+                                        @default credit-card @break
+                                    @endswitch me-1"></i>
+                                    {{ $typeName }}
+                                </span><br>
+                                
+                                @if($expense->paymentMethod->is_default)
+                                    <span class="badge badge-light-success">
+                                        <i class="fas fa-star me-1"></i>
+                                        {{ $expense->paymentMethod->name }}
+                                    </span>
+                                @else
+                                    <span class="badge badge-light-primary">
+                                        {{ $expense->paymentMethod->name }}
+                                    </span>
+                                @endif
                             </td>
                             <td>{{ $expense->created_at->format('d M Y, h:i a') }}</td>
                             <td>
@@ -61,14 +113,14 @@
                                     </label>
                                 @endif
                             </td>
-                            <td>
-                                <select name="status" class="form-select form-select-solid form-select-sm" onchange="updateExpenseStatus({{ $expense->id }}, this.value)"
-                                    @cannot('update expense') disabled @endcannot>
-                                    <option value="pending" {{ $expense->payment_status == 'pending' ? 'selected' : '' }}>{{__('pagination.pending')}}</option>
-                                    <option value="paid" {{ $expense->payment_status == 'paid' ? 'selected' : '' }}>{{__('pagination.paid')}}</option>
-                                    <option value="reimbursed" {{ $expense->payment_status == 'reimbursed' ? 'selected' : '' }}>{{__('pagination.reimbursed')}}</option>
-                                </select>
-                            </td>
+                                <td>
+                                    <select name="status" class="form-select form-select-solid form-select-sm" onchange="updateExpenseStatus({{ $expense->id }}, this.value)"
+                                        @cannot('update expense') disabled @endcannot>
+                                        <option value="pending" {{ $expense->payment_status == 'pending' ? 'selected' : '' }}>{{__('pagination.pending')}}</option>
+                                        <option value="paid" {{ $expense->payment_status == 'paid' ? 'selected' : '' }}>{{__('pagination.paid')}}</option>
+                                        <option value="reimbursed" {{ $expense->payment_status == 'reimbursed' ? 'selected' : '' }}>{{__('pagination.reimbursed')}}</option>
+                                    </select>
+                                </td>
                             <td>
                                 <div class="d-flex gap-2">
                                     @can('edit expense')

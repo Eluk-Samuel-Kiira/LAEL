@@ -16,7 +16,7 @@ use App\Models\ProductVariant;
 use App\Models\Currency;
 use App\Models\Location;
 use App\Models\Customer;
-use App\Models\{ Tax, Employee };
+use App\Models\{ Tax, Employee, PaymentMethod };
 use App\Models\{ Promotion, Supplier, GeneralLedger, ChartOfAccount, ExpenseCategory };
 use Illuminate\Support\Facades\Auth;
 
@@ -56,6 +56,7 @@ class AppServiceProvider extends ServiceProvider
                 'chartOfAccounts' => collect(),
                 'expenseCategories' => collect(),
                 'active_employees' => collect(),
+                'active_payment_methods' => collect(),
             ];
 
             // Only query if user is authenticated
@@ -91,7 +92,7 @@ class AppServiceProvider extends ServiceProvider
                     'suppliers' => Supplier::where('tenant_id', $tenantId)->where('is_active', 1)->get(),
                     'expenseCategories' => ExpenseCategory::where('tenant_id', $tenantId)->where('is_active', 1)->orderBy('name')->get(),
                     'active_employees' => Employee::where('tenant_id', $tenantId)->where('is_active', 1)->get(),
-                    // 'suppliers' => Supplier::where('tenant_id', $tenantId)->where('is_active', 1)->get(),
+                    'active_payment_methods' => PaymentMethod::where('tenant_id', $tenantId)->where('is_active', 1)->get(),
                     'chartOfAccounts' => ChartOfAccount::where('tenant_id', $tenantId)
                                         ->where('is_active', true)
                                         // ->where('account_type', 'like', '%expense%') // Filter for expense accounts

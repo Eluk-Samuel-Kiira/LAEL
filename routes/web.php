@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Tenant\{ DepartmentController, EmployeeController, EmployeePaymentController };
 use App\Http\Controllers\Catalog\ {CategoryController, InventoryItemController, ProductVariantController, InventoryAdjustmentsController, ProductController, ProductCategoryController};
 use App\Http\Controllers\Orders\{ OrderController, POSController};
-use App\Http\Controllers\Setting\{ TaxController,PromotionController };
+use App\Http\Controllers\Setting\{ TaxController,PromotionController, PaymentMethodController };
 use App\Http\Controllers\Procurement\{ SupplierController, PurchaseOrderController, ExpenseCategoryController, ExpenseController };
 
 // 
@@ -70,9 +70,10 @@ use App\Http\Controllers\Accounting\ReportController;
         Route::post('/user-status/{id}', [EmployeeController::class, 'changeUserStatus']);
 
         Route::resource('payment', EmployeePaymentController::class);
-        Route::post('/employee-payment/{id}/update-status', [EmployeePaymentController::class, 'updatePaymentStatus'])
-            ->name('employee-payment.update-status');
+        Route::post('/payment-status/{id}', [EmployeePaymentController::class, 'updatePaymentStatus']);
 
+        Route::resource('paymentmethod', PaymentMethodController::class);
+        Route::post('/payment-methods-status/{id}', [PaymentMethodController::class, 'changePaymentMethodStatus'])->name('payment-methods.status');
 
 
         // Roles n Permissions

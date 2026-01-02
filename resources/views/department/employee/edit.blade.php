@@ -19,8 +19,8 @@
                             <div class="alert alert-primary d-flex align-items-center p-5">
                                 <i class="ki-duotone ki-information fs-2hx me-4"></i>
                                 <div class="d-flex flex-column">
-                                    <h4 class="mb-1 text-primary">Employee Information</h4>
-                                    <span>Employee ID: <strong>ID-{{ $employee->id }}</strong></span>
+                                    <h4 class="mb-1 text-primary">{{ __('auth.employee_info') }}</h4>
+                                    <span>{{ __('auth.employee_id') }}: <strong>ID-{{ $employee->id }}</strong></span>
                                 </div>
                             </div>
                         </div>
@@ -62,10 +62,10 @@
                                 </label>
                                 <select class="form-select form-select-solid" name="salary_type">
                                     <option value="">Select Salary Type</option>
-                                    <option value="hourly" {{ $employee->salary_type == 'hourly' ? 'selected' : '' }}>Hourly</option>
-                                    <option value="weekly" {{ $employee->salary_type == 'weekly' ? 'selected' : '' }}>Weekly</option>
-                                    <option value="monthly" {{ $employee->salary_type == 'monthly' ? 'selected' : '' }}>Monthly</option>
-                                    <option value="annual" {{ $employee->salary_type == 'annual' ? 'selected' : '' }}>Annual</option>
+                                    <option value="hourly" {{ $employee->salary_type == 'hourly' ? 'selected' : '' }}>{{__('auth.Hourly')}}</option>
+                                    <option value="weekly" {{ $employee->salary_type == 'weekly' ? 'selected' : '' }}>{{__('auth.Weekly')}}</option>
+                                    <option value="monthly" {{ $employee->salary_type == 'monthly' ? 'selected' : '' }}>{{__('auth.Monthly')}}</option>
+                                    <option value="annual" {{ $employee->salary_type == 'annual' ? 'selected' : '' }}>{{__('auth.Annual')}}</option>
                                 </select>
                                 <div id="salary_type{{ $employee->id }}"></div>
                             </div>

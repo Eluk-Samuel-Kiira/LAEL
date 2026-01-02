@@ -40,7 +40,7 @@ class EmployeePaymentController extends Controller
                 ]);
         }
     }
-
+    
     /**
      * Store a newly created resource in storage.
      */
@@ -55,7 +55,13 @@ class EmployeePaymentController extends Controller
             'payment_type' => 'required|in:salary,allowance,bonus,overtime,advance,other',
             'description' => 'required|string|max:255',
             'amount' => 'required|numeric|min:0.01|decimal:0,2',
-            'payment_method' => 'required|in:cash,bank_transfer,check,digital_wallet',
+            'payment_method_id' => [
+                'required',
+                Rule::exists('payment_methods', 'id')->where(function ($query) use ($tenantId) {
+                    $query->where('tenant_id', $tenantId)
+                        ->where('is_active', true);
+                })
+            ],
             'reference_number' => 'nullable|string|max:100',
             'status' => 'required|in:pending,completed,failed,cancelled',
             'pay_period_start' => 'nullable|date',
@@ -99,7 +105,7 @@ class EmployeePaymentController extends Controller
             'payment_type' => $validated['payment_type'],
             'description' => $validated['description'],
             'amount' => $validated['amount'],
-            'payment_method' => $validated['payment_method'],
+            'payment_method_id' => $validated['payment_method_id'], // Use ID instead of string
             'reference_number' => $validated['reference_number'] ?? null,
             'status' => $validated['status'],
             'pay_period_start' => $validated['pay_period_start'] ?? null,
@@ -108,16 +114,15 @@ class EmployeePaymentController extends Controller
             'hourly_rate' => $validated['hourly_rate'] ?? null,
             'breakdown' => $breakdown,
             'notes' => $validated['notes'] ?? null,
-            'created_at' => now(),
-            'updated_at' => now(),
         ]);
 
         return response()->json([
             'success' => true,
             'reload' => true,
             'componentId' => 'reloadPaymentComponent',
+            'refresh' => false,
             'message' => __('auth.payment_created'),
-            'redirect' => route('employee-payment.index'),
+            'redirect' => route('payment.index'),
         ]);
     }
 
@@ -129,9 +134,13 @@ class EmployeePaymentController extends Controller
         $user = Auth::user();
         $tenantId = $user->tenant_id;
 
+        // \Log::info($id);
+
         $payment = EmployeePayment::where('id', $id)
             ->where('tenant_id', $tenantId)
             ->first();
+
+        // \Log::info($payment);
 
         if (!$payment) {
             return response()->json([
@@ -146,7 +155,13 @@ class EmployeePaymentController extends Controller
             'payment_type' => 'required|in:salary,allowance,bonus,overtime,advance,other',
             'description' => 'required|string|max:255',
             'amount' => 'required|numeric|min:0.01|decimal:0,2',
-            'payment_method' => 'required|in:cash,bank_transfer,check,digital_wallet',
+            'payment_method_id' => [
+                'required',
+                Rule::exists('payment_methods', 'id')->where(function ($query) use ($tenantId) {
+                    $query->where('tenant_id', $tenantId)
+                        ->where('is_active', true);
+                })
+            ],
             'reference_number' => 'nullable|string|max:100',
             'status' => 'required|in:pending,completed,failed,cancelled',
             'pay_period_start' => 'nullable|date',
@@ -189,7 +204,7 @@ class EmployeePaymentController extends Controller
             'payment_type' => $validated['payment_type'],
             'description' => $validated['description'],
             'amount' => $validated['amount'],
-            'payment_method' => $validated['payment_method'],
+            'payment_method_id' => $validated['payment_method_id'], // Use ID instead of string
             'reference_number' => $validated['reference_number'] ?? null,
             'status' => $validated['status'],
             'pay_period_start' => $validated['pay_period_start'] ?? null,
@@ -198,15 +213,15 @@ class EmployeePaymentController extends Controller
             'hourly_rate' => $validated['hourly_rate'] ?? null,
             'breakdown' => $breakdown,
             'notes' => $validated['notes'] ?? null,
-            'updated_at' => now(),
         ]);
 
         return response()->json([
             'success' => true,
             'reload' => true,
             'componentId' => 'reloadPaymentComponent',
+            'refresh' => false,
             'message' => __('auth.payment_updated'),
-            'redirect' => route('employee-payment.index'),
+            'redirect' => route('payment.index'),
         ]);
     }
 
@@ -239,12 +254,14 @@ class EmployeePaymentController extends Controller
 
         $payment->delete();
 
+        
         return response()->json([
             'success' => true,
             'reload' => true,
             'componentId' => 'reloadPaymentComponent',
+            'refresh' => false,
             'message' => __('auth.payment_deleted'),
-            'redirect' => route('employee-payment.index'),
+            'redirect' => route('payment.index'),
         ]);
     }
 
@@ -271,26 +288,62 @@ class EmployeePaymentController extends Controller
             ]);
         }
 
-        // Prevent changing from completed/failed/cancelled to pending
-        if ($request->status === 'pending' && 
-            in_array($payment->status, ['completed', 'failed', 'cancelled'])) {
+        // Prevent changing from completed to any other status
+        if ($payment->status === 'completed') {
             return response()->json([
                 'success' => false,
-                'message' => __('auth.cannot_revert_completed_payment'),
+                'message' => __('auth.cannot_change_completed_payment'),
             ]);
         }
 
+        // Optional: Prevent changing from failed/cancelled to pending
+        if ($request->status === 'pending' && 
+            in_array($payment->status, ['failed', 'cancelled'])) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.cannot_revert_failed_payment'),
+            ]);
+        }
+
+        // Optional: Add validation for business logic
+        if ($request->status === 'completed') {
+            // Check if payment can be marked as completed
+            if ($payment->status === 'failed' && $payment->failed_at && 
+                now()->diffInDays($payment->failed_at) > 30) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('auth.cannot_complete_old_failed_payment'),
+                ]);
+            }
+        }
+
+        // Update payment status
         $payment->update([
             'status' => $request->status,
             'updated_at' => now(),
         ]);
 
+        // If marking as completed, you might want to update related records
+        // if ($request->status === 'completed') {
+        //     // Update related employee salary paid status if needed
+        //     if ($payment->employee_id) {
+        //         // Example: Update last_payment_date on employee
+        //         Employee::where('id', $payment->employee_id)
+        //             ->update(['last_payment_date' => now()]);
+        //     }
+            
+        //     // You could also trigger payment completion events here
+        //     event(new PaymentCompleted($payment));
+        // }
+
+
         return response()->json([
             'success' => true,
-            'message' => __('auth.status_updated'),
             'reload' => true,
             'componentId' => 'reloadPaymentComponent',
-            'redirect' => route('employee-payment.index'),
+            'refresh' => false,
+            'message' => __('auth.status_updated'),
+            'redirect' => route('payment.index'),
         ]);
     }
 }

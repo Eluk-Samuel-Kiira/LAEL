@@ -253,7 +253,7 @@ return [
     
     'user_not_updatable' => 'Cannot update status for admin or super admin users.',
     'update_failed' => 'Update failed. Please try again.',
-    'protected_user_not_updatable' => 'Cannot update status for protected role users.',
+    'protected_user_not_updatable_status' => 'Cannot update status for protected role users.',
 
     'role_not_found' => 'Role not found.',
     'maximum_roles_reached' => 'Maximum roles limit reached. You can only create up to :max roles.',
@@ -352,4 +352,25 @@ return [
     'payment_created' => 'Payment created successfully',
     'payment_updated' => 'Payment updated successfully',
     'payment_deleted' => 'Payment deleted successfully',
+
+    
+    'employee_info' => 'Employee Information',
+    'employee_id' => 'Employee ID',
+    'salary' => 'Salary',
+    'salary_type' => 'Salary Type',
+    'hire_date' => 'Hire Date',
+    'termination_date' => 'Terminate Date',
+    'Hourly' => 'Hourly',
+    'Weekly' => 'Weekly',
+    'Monthly' => 'Monthly',
+    'processed_at' => 'Processed At',
+    'processed_by' => 'Processed By',
+    'Annual' => 'Annual',
+    'terminated_empl' => 'Terminated employees cannot be edited',
+
+    'cannot_change_completed_payment' => 'Completed payments cannot be modified.',
+    'cannot_revert_failed_payment' => 'Failed payments cannot be reverted to pending.',
+    'cannot_complete_old_failed_payment' => 'Failed payments older than 30 days cannot be completed.',
+    'status_updated' => 'Payment status updated successfully.',
+    'payment_not_found' => 'Payment not found.',
 ];
