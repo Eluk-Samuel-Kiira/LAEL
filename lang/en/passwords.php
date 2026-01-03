@@ -301,5 +301,9 @@ return [
     'items_count' => 'Items Count',
     'status' => 'Status',
     'subtotal' => 'Subtotal',
+    'total_amount' => 'Total Amount',
+    'balance' => 'Balance',
+    'change_type' => 'Change Type',
+    'default' => 'Default',
 
 ];

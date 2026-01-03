@@ -370,7 +370,12 @@ return [
 
     'transaction_id' => 'Transaction ID',
     'optional' => 'Optional',
+    'accounts' => 'Accounts',
+    'no_additional_info' => 'No Additional Info',
+    'no_credit_accounts' => 'No Credit Accounts',
+    'payment_method_not_found' => 'Payment method not found or invalid',
     'select_payment_method' => 'Select Account Please',
+    'payment_valid_fail' => 'Payment method validation failed: ',
     'enter_transaction_id' => 'Enter transaction/reference number',
     'transaction_id_help' => 'Enter reference number, transaction ID, or receipt number for tracking',
 

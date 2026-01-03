@@ -9,7 +9,8 @@ use App\Models\{ Product, SingleShopInventoryLog, InventoryItems, ProductVariant
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str; 
-use App\Models\{ OrderItem, OrderPayment, InventoryLog, Customer, Inventory, OrderTax, InventoryAdjustments };
+use App\Models\{ OrderItem, OrderPayment, InventoryLog, Customer, Inventory, OrderTax, InventoryAdjustments,
+                    PaymentMethod };
 
 
 class POSController extends Controller
@@ -58,60 +59,60 @@ class POSController extends Controller
             $user_location_id = $user->location_id;
 
             $products = Product::with([
-                    'departments',
-                    'taxes' => fn($q) => $q->where('is_active', 1),
-                    'promotions' => fn($q) => $q
-                        ->where('is_active', 1)
-                        ->where('start_date', '<=', $now)
-                        ->where('end_date', '>=', $now),
-                    'variants' => function($query) use ($user_departments, $user_location_id) {
-                        $query->where('is_active', 1)
-                            ->whereHas('inventory')
-                            ->with(['inventory' => function($q) use ($user_departments, $user_location_id) {
-                                $q->whereIn('department_id', $user_departments)
-                                ->where('location_id', $user_location_id);
-                            }]);
-                    },
-                    'variants.variantTaxes' => fn($q) => $q->where('is_active', 1),
-                    'variants.variantPromotions' => fn($q) => $q
-                        ->where('is_active', 1)
-                        ->where('start_date', '<=', $now)
-                        ->where('end_date', '>=', $now),
-                ])
-                ->where('tenant_id', $tenantId)
-                ->where('is_active', 1)
-                ->whereHas('variants', function($q) use ($user_departments, $user_location_id) {
-                    $q->where('is_active', 1)
-                    ->whereHas('inventory', function($query) use ($user_departments, $user_location_id) {
-                        $query->whereIn('department_id', $user_departments)
-                                ->where('location_id', $user_location_id);
-                    });
-                })
-                ->latest()
+                'departments',
+                'taxes' => fn($q) => $q->where('is_active', 1),
+                'promotions' => fn($q) => $q
+                    ->where('is_active', 1)
+                    ->where('start_date', '<=', $now)
+                    ->where('end_date', '>=', $now),
+                'variants' => function($query) use ($user_departments, $user_location_id) {
+                    $query->where('is_active', 1)
+                        ->whereHas('inventory')
+                        ->with(['inventory' => function($q) use ($user_departments, $user_location_id) {
+                            $q->whereIn('department_id', $user_departments)
+                            ->where('location_id', $user_location_id);
+                        }]);
+                },
+                'variants.variantTaxes' => fn($q) => $q->where('is_active', 1),
+                'variants.variantPromotions' => fn($q) => $q
+                    ->where('is_active', 1)
+                    ->where('start_date', '<=', $now)
+                    ->where('end_date', '>=', $now),
+            ])
+            ->where('tenant_id', $tenantId)
+            ->where('is_active', 1)
+            ->whereHas('variants', function($q) use ($user_departments, $user_location_id) {
+                $q->where('is_active', 1)
+                ->whereHas('inventory', function($query) use ($user_departments, $user_location_id) {
+                    $query->whereIn('department_id', $user_departments)
+                            ->where('location_id', $user_location_id);
+                });
+            })
+            ->latest()
+            ->get();
+
+            // DEBUG: Check what inventory is actually being loaded
+            \Log::info("=== INVENTORY DEBUG ===");
+            foreach ($products as $product) {
+                foreach ($product->variants as $variant) {
+                    \Log::info("Variant {$variant->id} inventory count: " . $variant->inventory->count());
+                    foreach ($variant->inventory as $inv) {
+                        \Log::info("  - Inventory ID: {$inv->id}, Dept: {$inv->department_id}, Loc: {$inv->location_id}");
+                    }
+                }
+            }
+
+            // Also check if there are any inventory records that should match but aren't being loaded
+            $expectedInventory = \DB::table('inventory_items')
+                ->whereIn('variant_id', [228, 229])
+                ->whereIn('department_id', $user_departments)
+                ->where('location_id', $user_location_id)
                 ->get();
 
-                    // DEBUG: Check what inventory is actually being loaded
-    \Log::info("=== INVENTORY DEBUG ===");
-    foreach ($products as $product) {
-        foreach ($product->variants as $variant) {
-            \Log::info("Variant {$variant->id} inventory count: " . $variant->inventory->count());
-            foreach ($variant->inventory as $inv) {
-                \Log::info("  - Inventory ID: {$inv->id}, Dept: {$inv->department_id}, Loc: {$inv->location_id}");
+            \Log::info("Expected inventory records from DB: " . $expectedInventory->count());
+            foreach ($expectedInventory as $inv) {
+                \Log::info("  - Variant: {$inv->variant_id}, Dept: {$inv->department_id}, Loc: {$inv->location_id}");
             }
-        }
-    }
-
-    // Also check if there are any inventory records that should match but aren't being loaded
-    $expectedInventory = \DB::table('inventory_items')
-        ->whereIn('variant_id', [228, 229])
-        ->whereIn('department_id', $user_departments)
-        ->where('location_id', $user_location_id)
-        ->get();
-
-    \Log::info("Expected inventory records from DB: " . $expectedInventory->count());
-    foreach ($expectedInventory as $inv) {
-        \Log::info("  - Variant: {$inv->variant_id}, Dept: {$inv->department_id}, Loc: {$inv->location_id}");
-    }
         }
 
 
@@ -208,6 +209,7 @@ class POSController extends Controller
 
         return view('orders.pos-index', compact('user_departments', 'products'));
     }
+
 
     public function processPayment(Request $request)
     {
@@ -324,14 +326,38 @@ class POSController extends Controller
         try {
             $cartData = $request->items; 
             $paymentDetails = $request->payment_details;  
-            // \Log::info($paymentDetails);
             $user = Auth::user();
             $tenantId = $user->tenant_id;
             $isSingleShop = tenant_is_single_shop($tenantId);
 
             $order = Order::findOrFail($request->order_id);
+            $totalAmount = $request->total ?? 0;
+            
+            // Get payment method
+            $paymentMethod = PaymentMethod::findForTenant($request->payment_method_id, $tenantId);
+            
+            if (!$paymentMethod) {
+                return response()->json([
+                    'success' => false,
+                    'message' =>  __('pagination.payment_method_not_found')
+                ]);
+            }
+
+            // Validate payment method can receive this amount
+            $validation = $paymentMethod->validateTransaction($totalAmount);
+            if (!$validation['success']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('pagination.payment_valid_fail' . $validation['message'])
+                ]);
+            }
+
+            // Record payment transaction (money IN from sale)
+            $this->recordOrderPaymentTransaction($order, $paymentMethod, $totalAmount, $paymentDetails);
+
+            // Update order with payment details
             $order->update([
-                'paid_amount' => $paymentDetails['amount_tendered'] ?? 0,
+                'paid_amount' => $paymentDetails['amount_tendered'] ?? $totalAmount,
                 'balance_due' => $paymentDetails['change_due'] ?? 0,
                 'notes' => __('pagination.payment_completed'),
                 'status' => 'completed',
@@ -339,15 +365,13 @@ class POSController extends Controller
 
             // Payment Details
             $transactionId = $request->input('payment_details.transaction_id') ?: (string) Str::uuid();
-            // \Log::info($request->payment_method_id);
-            // die();
 
-            // Create Payment
+            // Create Payment record
             OrderPayment::updateOrCreate(
                 ['order_id' => $order->id],
                 [
-                    'amount' => $request->total ?? 0,
-                    'payment_method_id' => $request->payment_method_id,
+                    'amount' => $totalAmount,
+                    'payment_method_id' => $paymentMethod->id,
                     'transaction_id' => $transactionId,
                     'status' => 'completed',
                     'notes' => __('pagination.payment_completed'),
@@ -385,10 +409,24 @@ class POSController extends Controller
                 }
             }
 
+            // Get updated balance for response
+            $paymentMethod->refresh();
+            $balanceAfter = $paymentMethod->current_balance;
+
             return response()->json([
                 'success' => true,
                 'message' => __('pagination.payment_completed'),
                 'is_single_shop' => $isSingleShop,
+                'payment_method' => [
+                    'id' => $paymentMethod->id,
+                    'name' => $paymentMethod->name,
+                    'type' => $paymentMethod->type,
+                    'type_label' => $paymentMethod->getTypeLabel(),
+                ],
+                'balance_before' => $paymentMethod->current_balance - $totalAmount, // Calculate previous balance
+                'balance_after' => $balanceAfter,
+                'transaction_id' => $transactionId,
+                'order_number' => $order->order_number,
             ]);
 
         } catch (\Exception $e) {
@@ -399,6 +437,109 @@ class POSController extends Controller
                 'message' => 'Payment completion failed: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Record order payment transaction for POS sales
+     * When selling items, money comes IN to your payment method
+     */
+    private function recordOrderPaymentTransaction($order, $paymentMethod, $amount, $paymentDetails = []): void
+    {
+        try {
+            $transactionData = [
+                'tenant_id' => $order->tenant_id,
+                'user_id' => auth()->id(),
+                'payment_method_id' => $paymentMethod->id,
+                'transaction_type' => 'DEPOSIT', // CORRECT: Money coming IN from sales
+                'transaction_category' => 'ORDER',
+                'amount' => $amount,
+                'currency_id' => $paymentMethod->currency_id ?? Currency::default()->id,
+                'reference_table' => 'orders',
+                'reference_id' => $order->id,
+                'description' => 'POS Sale - Order #' . $order->order_number,
+                'notes' => 'Payment received for order',
+                'metadata' => [
+                    'order_number' => $order->order_number,
+                    'customer_id' => $order->customer_id,
+                    'customer_name' => $order->customer?->name,
+                    'items_count' => $order->items()->count(),
+                    'payment_type' => $paymentMethod->type,
+                    'payment_details' => $paymentDetails,
+                    'transaction_nature' => 'SALE_RECEIPT', // Indicates this is money received from sales
+                ],
+            ];
+
+            // For cash payments, add cash-specific details
+            if ($paymentMethod->type === 'cash') {
+                $transactionData['metadata']['cash_details'] = [
+                    'amount_tendered' => $paymentDetails['amount_tendered'] ?? 0,
+                    'change_due' => $paymentDetails['change_due'] ?? 0,
+                    'cash_handler' => auth()->user()->name,
+                    'cash_received' => $amount, // Actual cash received
+                ];
+            }
+
+            // For card payments
+            if ($paymentMethod->type === 'card') {
+                $transactionData['metadata']['card_details'] = [
+                    'card_last_four' => $paymentMethod->card_last_four,
+                    'card_type' => $paymentMethod->card_type,
+                    'transaction_reference' => $paymentDetails['transaction_id'] ?? null,
+                ];
+            }
+
+            // For bank transfers
+            if ($paymentMethod->type === 'bank_account') {
+                $transactionData['metadata']['bank_details'] = [
+                    'account_name' => $paymentMethod->account_name,
+                    'account_number' => $paymentMethod->account_number,
+                    'reference' => $paymentDetails['reference'] ?? null,
+                ];
+            }
+
+            // For mobile money
+            if ($paymentMethod->type === 'mobile_money') {
+                $transactionData['metadata']['mobile_money_details'] = [
+                    'account_number' => $paymentMethod->account_number,
+                    'provider' => $paymentMethod->provider,
+                    'transaction_id' => $paymentDetails['transaction_id'] ?? null,
+                ];
+            }
+
+            // Use the PaymentTransactionService to record the transaction
+            $transactionLog = app('payment-transaction')->recordTransaction($transactionData);
+
+            // Also update the order with payment method info
+            $order->update([
+                'payment_method_id' => $paymentMethod->id,
+                'payment_method_type' => $paymentMethod->type,
+                'payment_transaction_ref' => $transactionLog->transaction_ref ?? null,
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to record payment transaction: ' . $e->getMessage());
+            throw $e; // Re-throw to handle in main method
+        }
+    }
+
+    /**
+     * Helper method to record order payment using PaymentMethod model
+     */
+    private function recordOrderPaymentSimple($order, $paymentMethod, $amount): void
+    {
+        // Alternative simpler method using PaymentMethod model
+        $transactionData = [
+            'user_id' => auth()->id(),
+            'transaction_type' => 'WITHDRAWAL',
+            'transaction_category' => 'ORDER',
+            'amount' => $amount,
+            'currency_id' => $paymentMethod->currency_id ?? Currency::default()->id,
+            'reference_id' => $order->id,
+            'description' => 'Order payment #' . $order->order_number,
+            'notes' => 'Payment processed',
+        ];
+
+        $paymentMethod->recordTransaction($transactionData);
     }
 
     /**

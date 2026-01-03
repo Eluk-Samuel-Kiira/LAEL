@@ -138,3 +138,27 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="receiptModal" tabindex="-1" aria-labelledby="receiptModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="receiptModalLabel">{{ __('pagination.payment_receipt') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {{-- Receipt content will be inserted here by JavaScript --}}
+                <div id="receiptContent"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('pagination.close') }}</button>
+                <button type="button" class="btn btn-primary" onclick="printReceipt()">
+                    <i class="fas fa-print me-1"></i> {{ __('pagination.print_receipt') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Hidden receipt container for printing --}}
+<div id="printReceiptContainer" style="display: none;"></div>

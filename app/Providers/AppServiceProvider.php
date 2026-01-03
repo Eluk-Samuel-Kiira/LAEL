@@ -19,6 +19,8 @@ use App\Models\Customer;
 use App\Models\{ Tax, Employee, PaymentMethod };
 use App\Models\{ Promotion, Supplier, GeneralLedger, ChartOfAccount, ExpenseCategory };
 use Illuminate\Support\Facades\Auth;
+use App\Services\Payment\PaymentTransactionService;
+
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -27,7 +29,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton('payment-transaction', function ($app) {
+            return new PaymentTransactionService();
+        });
     }
 
     /**

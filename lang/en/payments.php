@@ -123,6 +123,8 @@ return [
     'payment_breakdown' => 'Payment Breakdown',
     'unassigned' => 'Unassigned',
     'transaction_id' => 'Transation ID',
+    'enter_transaction_id' => 'Enter Transation ID',
     'account_holder' => 'Account Holder',
     'provider' => 'Provider',
+    'payment_details' => 'Payment Details',
 ];

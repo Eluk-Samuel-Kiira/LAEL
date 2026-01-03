@@ -130,6 +130,8 @@ use App\Http\Controllers\Accounting\ReportController;
             ->name('orders.process-payment');
         Route::post('/orders/checkout', [POSController::class, 'completePayment'])->name('orders.checkout');
 
+        Route::post('/orders/complete-payment', [POSController::class, 'completePayment'])
+            ->name('orders.complete-payment');
 
         // Taxes and Promotions
         Route::resource('tax', TaxController::class);

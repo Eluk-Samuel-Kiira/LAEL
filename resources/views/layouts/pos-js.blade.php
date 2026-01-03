@@ -645,10 +645,6 @@
 
 
 
-
-
-
-
     // Calculate change (for cash payments)
     document.getElementById('cashAmountInput').addEventListener('input', function() {
         const amountTendered = parseFloat(this.value) || 0;
@@ -731,7 +727,7 @@
             bootstrap.Modal.getInstance(document.getElementById('cashModal'))?.hide();
 
             setTimeout(() => {
-                generateReceipt(order.payment_method, order);
+                generateReceipt(order);
                 openReceiptModal(window.currentOrder);
 
                 toastr['success']('{{ __("pagination.payment_completed") }}');
@@ -751,10 +747,12 @@
     }
 
     // --- Generate Receipt ---
-    function generateReceipt(paymentMethod, paymentDetails) {
+    function generateReceipt(paymentDetails) {
         const receiptContent = document.getElementById('receiptContent');
         const order = window.currentOrder;
-        // console.log(order)
+        const paymentMethod = window.currentPaymentMethodType
+        // console.log(paymentMethod)
+        
 
         // Determine customer display: use customerName if available
         let customerInfo = '{{ __("pagination.customer") }}: N/A';
@@ -930,6 +928,529 @@
 
 </script>
 
+
+
+
+
+
+<!-- Complete Orders -->
+
+
+<script>
+
+    function printOrder(orderId) {
+        console.log('Printing order:', orderId);
+        
+        const printElement = document.getElementById('printableOrder' + orderId);
+        
+        if (!printElement) {
+            console.error('Print element not found for order ID:', orderId);
+            toastr.error('Print content not found for this order.');
+            return;
+        }
+        
+        const printContent = printElement.innerHTML;
+        const printWindow = window.open('', '_blank', 'width=1000,height=800,scrollbars=yes');
+        
+        if (!printWindow) {
+            toastr.warning('Please allow popups to print this order.');
+            return;
+        }
+        
+        // Create an enhanced print document with Metronic-inspired styling
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <title>Invoice - Order #${orderId}</title>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <style>
+                    /* Metronic Color Palette */
+                    :root {
+                        --kt-primary: #009ef7;
+                        --kt-primary-light: #f1faff;
+                        --kt-success: #50cd89;
+                        --kt-success-light: #e8fff3;
+                        --kt-danger: #f1416c;
+                        --kt-danger-light: #fff5f8;
+                        --kt-warning: #ffc700;
+                        --kt-info: #7239ea;
+                        --kt-dark: #181c32;
+                        --kt-gray-100: #f9f9f9;
+                        --kt-gray-200: #f1f1f2;
+                        --kt-gray-300: #e4e6ef;
+                        --kt-gray-400: #b5b5c3;
+                        --kt-gray-500: #a1a5b7;
+                        --kt-gray-600: #7e8299;
+                        --kt-gray-700: #5e6278;
+                        --kt-gray-800: #3f4254;
+                    }
+                    
+                    * {
+                        margin: 0;
+                        padding: 0;
+                        box-sizing: border-box;
+                    }
+                    
+                    body {
+                        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                        line-height: 1.6;
+                        color: var(--kt-dark);
+                        background: #ffffff;
+                        padding: 30px 20px;
+                    }
+                    
+                    .invoice-container {
+                        max-width: 900px;
+                        margin: 0 auto;
+                        background: white;
+                        box-shadow: 0 0 40px rgba(0, 0, 0, 0.08);
+                        border-radius: 12px;
+                        overflow: hidden;
+                    }
+                    
+                    /* Header Section */
+                    .invoice-header {
+                        background: linear-gradient(135deg, var(--kt-primary) 0%, #0095e8 100%);
+                        color: white;
+                        padding: 40px;
+                        position: relative;
+                        overflow: hidden;
+                    }
+                    
+                    .invoice-header::before {
+                        content: '';
+                        position: absolute;
+                        top: -50%;
+                        right: -10%;
+                        width: 400px;
+                        height: 400px;
+                        background: rgba(255, 255, 255, 0.1);
+                        border-radius: 50%;
+                    }
+                    
+                    .header-content {
+                        position: relative;
+                        z-index: 1;
+                    }
+                    
+                    .invoice-title {
+                        font-size: 32px;
+                        font-weight: 700;
+                        margin-bottom: 8px;
+                        letter-spacing: -0.5px;
+                    }
+                    
+                    .invoice-subtitle {
+                        font-size: 18px;
+                        font-weight: 500;
+                        opacity: 0.95;
+                    }
+                    
+                    /* Main Content */
+                    .invoice-body {
+                        padding: 40px;
+                    }
+                    
+                    /* Info Grid */
+                    .info-grid {
+                        display: grid;
+                        grid-template-columns: repeat(2, 1fr);
+                        gap: 30px;
+                        margin-bottom: 35px;
+                        padding-bottom: 30px;
+                        border-bottom: 2px dashed var(--kt-gray-300);
+                    }
+                    
+                    .info-card {
+                        background: var(--kt-gray-100);
+                        border-radius: 8px;
+                        padding: 20px;
+                        border-left: 4px solid var(--kt-primary);
+                    }
+                    
+                    .info-label {
+                        color: var(--kt-gray-600);
+                        font-size: 12px;
+                        font-weight: 600;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                        margin-bottom: 6px;
+                    }
+                    
+                    .info-value {
+                        color: var(--kt-dark);
+                        font-size: 15px;
+                        font-weight: 600;
+                        margin-bottom: 12px;
+                    }
+                    
+                    .info-value:last-child {
+                        margin-bottom: 0;
+                    }
+                    
+                    /* Payment Section */
+                    .payment-section {
+                        background: linear-gradient(135deg, var(--kt-success-light) 0%, #d4f8e8 100%);
+                        border: 1px solid rgba(80, 205, 137, 0.3);
+                        border-radius: 10px;
+                        padding: 25px;
+                        margin-bottom: 35px;
+                    }
+                    
+                    .payment-header {
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 20px;
+                        padding-bottom: 15px;
+                        border-bottom: 1px dashed rgba(80, 205, 137, 0.3);
+                    }
+                    
+                    .payment-icon {
+                        width: 40px;
+                        height: 40px;
+                        background: var(--kt-success);
+                        border-radius: 8px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        margin-right: 12px;
+                        color: white;
+                        font-weight: 700;
+                        font-size: 18px;
+                    }
+                    
+                    .payment-title {
+                        color: var(--kt-dark);
+                        font-size: 18px;
+                        font-weight: 700;
+                    }
+                    
+                    .payment-grid {
+                        display: grid;
+                        grid-template-columns: repeat(3, 1fr);
+                        gap: 20px;
+                    }
+                    
+                    .payment-item {
+                        background: white;
+                        border-radius: 6px;
+                        padding: 15px;
+                    }
+                    
+                    .payment-label {
+                        color: var(--kt-gray-600);
+                        font-size: 11px;
+                        font-weight: 600;
+                        text-transform: uppercase;
+                        margin-bottom: 4px;
+                    }
+                    
+                    .payment-value {
+                        color: var(--kt-dark);
+                        font-size: 14px;
+                        font-weight: 700;
+                    }
+                    
+                    .payment-type-badge {
+                        display: inline-block;
+                        background: var(--kt-success);
+                        color: white;
+                        padding: 4px 10px;
+                        border-radius: 4px;
+                        font-size: 11px;
+                        font-weight: 600;
+                        text-transform: uppercase;
+                    }
+                    
+                    /* Items Table */
+                    .items-section {
+                        margin-bottom: 35px;
+                    }
+                    
+                    .section-title {
+                        color: var(--kt-dark);
+                        font-size: 18px;
+                        font-weight: 700;
+                        margin-bottom: 20px;
+                        display: flex;
+                        align-items: center;
+                    }
+                    
+                    .section-title::before {
+                        content: '';
+                        width: 4px;
+                        height: 24px;
+                        background: var(--kt-primary);
+                        border-radius: 2px;
+                        margin-right: 12px;
+                    }
+                    
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        background: white;
+                        border-radius: 8px;
+                        overflow: hidden;
+                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+                    }
+                    
+                    thead {
+                        background: var(--kt-gray-100);
+                    }
+                    
+                    th {
+                        padding: 14px 12px;
+                        text-align: left;
+                        color: var(--kt-gray-700);
+                        font-weight: 700;
+                        font-size: 11px;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                        border-bottom: 2px solid var(--kt-gray-300);
+                    }
+                    
+                    td {
+                        padding: 14px 12px;
+                        color: var(--kt-dark);
+                        font-size: 13px;
+                        border-bottom: 1px solid var(--kt-gray-200);
+                    }
+                    
+                    tbody tr:last-child td {
+                        border-bottom: none;
+                    }
+                    
+                    tbody tr:hover {
+                        background: var(--kt-gray-100);
+                    }
+                    
+                    .text-center {
+                        text-align: center;
+                    }
+                    
+                    .text-right {
+                        text-align: right;
+                    }
+                    
+                    .item-name {
+                        font-weight: 600;
+                        color: var(--kt-dark);
+                    }
+                    
+                    .item-sku {
+                        background: var(--kt-primary-light);
+                        color: var(--kt-primary);
+                        padding: 3px 8px;
+                        border-radius: 4px;
+                        font-size: 11px;
+                        font-weight: 600;
+                        display: inline-block;
+                    }
+                    
+                    /* Summary Section */
+                    .summary-section {
+                        display: flex;
+                        justify-content: flex-end;
+                    }
+                    
+                    .summary-box {
+                        width: 380px;
+                        background: var(--kt-gray-100);
+                        border-radius: 10px;
+                        padding: 25px;
+                        border: 1px solid var(--kt-gray-300);
+                    }
+                    
+                    .summary-row {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        padding: 10px 0;
+                    }
+                    
+                    .summary-row.total {
+                        border-top: 2px dashed var(--kt-gray-400);
+                        margin-top: 10px;
+                        padding-top: 15px;
+                    }
+                    
+                    .summary-label {
+                        color: var(--kt-gray-700);
+                        font-size: 13px;
+                        font-weight: 500;
+                    }
+                    
+                    .summary-value {
+                        font-weight: 700;
+                        font-size: 14px;
+                        color: var(--kt-dark);
+                    }
+                    
+                    .total .summary-label {
+                        font-size: 16px;
+                        font-weight: 700;
+                        color: var(--kt-dark);
+                    }
+                    
+                    .total .summary-value {
+                        font-size: 24px;
+                        color: var(--kt-primary);
+                    }
+                    
+                    .text-danger {
+                        color: var(--kt-danger) !important;
+                    }
+                    
+                    .text-success {
+                        color: var(--kt-success) !important;
+                    }
+                    
+                    /* Footer */
+                    .invoice-footer {
+                        background: var(--kt-gray-100);
+                        padding: 25px 40px;
+                        margin-top: 40px;
+                        text-align: center;
+                        color: var(--kt-gray-600);
+                        font-size: 13px;
+                    }
+                    
+                    .footer-thank-you {
+                        font-size: 16px;
+                        font-weight: 600;
+                        color: var(--kt-dark);
+                        margin-bottom: 8px;
+                    }
+                    
+                    /* Print Buttons */
+                    .print-actions {
+                        text-align: center;
+                        margin: 30px 0;
+                        padding: 0 40px;
+                    }
+                    
+                    .btn {
+                        display: inline-block;
+                        padding: 12px 28px;
+                        border: none;
+                        border-radius: 8px;
+                        font-weight: 600;
+                        font-size: 14px;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        text-decoration: none;
+                        margin: 0 6px;
+                    }
+                    
+                    .btn-primary {
+                        background: var(--kt-primary);
+                        color: white;
+                        box-shadow: 0 4px 12px rgba(0, 158, 247, 0.3);
+                    }
+                    
+                    .btn-primary:hover {
+                        background: #0095e8;
+                        transform: translateY(-2px);
+                        box-shadow: 0 6px 16px rgba(0, 158, 247, 0.4);
+                    }
+                    
+                    .btn-secondary {
+                        background: var(--kt-gray-200);
+                        color: var(--kt-gray-700);
+                    }
+                    
+                    .btn-secondary:hover {
+                        background: var(--kt-gray-300);
+                        color: var(--kt-dark);
+                    }
+                    
+                    /* Print Styles */
+                    @media print {
+                        body {
+                            padding: 0;
+                            background: white;
+                        }
+                        
+                        .invoice-container {
+                            box-shadow: none;
+                            max-width: 100%;
+                        }
+                        
+                        .no-print {
+                            display: none !important;
+                        }
+                        
+                        .invoice-header {
+                            print-color-adjust: exact;
+                            -webkit-print-color-adjust: exact;
+                        }
+                        
+                        .payment-section {
+                            print-color-adjust: exact;
+                            -webkit-print-color-adjust: exact;
+                        }
+                        
+                        tbody tr:hover {
+                            background: transparent;
+                        }
+                    }
+                    
+                    @page {
+                        size: A4;
+                        margin: 15mm;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="invoice-container">
+                    ${printContent}
+                </div>
+                
+                <div class="print-actions no-print">
+                    <button class="btn btn-primary" onclick="window.print()">
+                        🖨️ Print Invoice
+                    </button>
+                    <button class="btn btn-secondary" onclick="window.close()">
+                        ✕ Close Window
+                    </button>
+                </div>
+                
+                <script>
+                    window.onload = function() {
+                        window.focus();
+                        // Uncomment to auto-print
+                        // setTimeout(() => window.print(), 300);
+                    };
+                <\/script>
+            </body>
+            </html>
+        `);
+        
+        printWindow.document.close();
+    }
+
+    // Initialize tooltips and toggle functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Bootstrap tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
+        // Handle toggle animation
+        const toggleButtons = document.querySelectorAll('.toggle-items');
+        toggleButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const target = document.querySelector(this.getAttribute('data-bs-target'));
+                if (target) {
+                    this.classList.toggle('collapsed');
+                }
+            });
+        });
+    });
+</script>
 
 
 

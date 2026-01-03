@@ -86,4 +86,15 @@ class Order extends Model
     {
         return $this->hasOne(OrderPayment::class);
     }
+
+    // Add this relationship to your Order model
+    public function items()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    public function orderPayments()
+    {
+        return $this->hasMany(OrderPayment::class);
+    }
 }
