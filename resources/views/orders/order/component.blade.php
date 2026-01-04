@@ -16,7 +16,7 @@
                     <th class="min-w-125px">{{__('passwords._amount')}}</th>
                     <th class="min-w-125px">{{__('payments.payment_method')}}</th>
                     <th class="min-w-125px">{{__('auth._creater')}}</th>
-                    <th class="text-end min-w-100px">{{__('auth._actions')}}</th>
+                    <th class="min-w-100px">{{__('auth._actions')}}</th>
                 </tr>
             </thead>
             <tbody class="text-gray-600 fw-semibold">
@@ -113,6 +113,11 @@
                                                 <span class="path3"></span>
                                             </i>
                                             <span class="fw-bold">{{__('pagination._complete')}}</span>
+                                        </button>
+                                    @endif
+                                    @if ($order->status == 'confirmed')
+                                        <button class="btn btn-sm btn-danger" onclick="cancelPOSOrder({{ $order->id }})">
+                                            {{ __('passwords.cancel') }}
                                         </button>
                                     @endif
                                     <button 

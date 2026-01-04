@@ -306,6 +306,133 @@
                     </div>
                 </div>
 
+                <!-- Basic Accounting -->
+                <div data-kt-menu-trigger="click" class="menu-item here menu-accordion">
+                    <span class="menu-link">
+                        <span class="menu-icon">
+                            <i class="bi bi-calculator fs-2">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                                <span class="path3"></span>
+                            </i>
+                        </span>
+                        <span class="menu-title" style="font-family: {{ getMailOptions('font_family') }}; font-size: {{ getMailOptions('font_size') }}rem">{{__('accounting.basic_accounting')}}</span>
+                        <span class="menu-arrow"></span>
+                    </span>
+
+                    <div class="menu-sub menu-sub-accordion">
+                        <!-- Payment Methods -->
+                        <div class="menu-item">
+                            <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('accounting.payment-methods.index') }}')">
+                                <span class="menu-bullet">
+                                    <span class="bullet bullet-dot"></span>
+                                </span>
+                                <span class="menu-title">{{ __('accounting.payment_methods') }}</span>
+                            </a>
+                        </div>
+                        
+                        <!-- Account Balances -->
+                        <div class="menu-item">
+                            <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('accounting.account-balances') }}')">
+                                <span class="menu-bullet">
+                                    <span class="bullet bullet-dot"></span>
+                                </span>
+                                <span class="menu-title">{{ __('accounting.account_balances') }}</span>
+                            </a>
+                        </div>
+                        
+                        <!-- Transaction Ledger -->
+                        <div class="menu-item">
+                            <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('accounting.transaction-ledger') }}')">
+                                <span class="menu-bullet">
+                                    <span class="bullet bullet-dot"></span>
+                                </span>
+                                <span class="menu-title">{{ __('accounting.transaction_ledger') }}</span>
+                            </a>
+                        </div>
+                        
+                        <!-- Income Statement -->
+                        <div class="menu-item">
+                            <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('accounting.income-statement') }}')">
+                                <span class="menu-bullet">
+                                    <span class="bullet bullet-dot"></span>
+                                </span>
+                                <span class="menu-title">{{ __('accounting.income_statement') }}</span>
+                            </a>
+                        </div>
+                        
+                        <!-- Cash Flow -->
+                        <div class="menu-item">
+                            <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('accounting.cash-flow') }}')">
+                                <span class="menu-bullet">
+                                    <span class="bullet bullet-dot"></span>
+                                </span>
+                                <span class="menu-title">{{ __('accounting.cash_flow') }}</span>
+                            </a>
+                        </div>
+                        
+                        <!-- Transaction Analysis -->
+                        <div class="menu-item">
+                            <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('accounting.transaction-analysis') }}')">
+                                <span class="menu-bullet">
+                                    <span class="bullet bullet-dot"></span>
+                                </span>
+                                <span class="menu-title">{{ __('accounting.transaction_analysis') }}</span>
+                            </a>
+                        </div>
+                        
+                        <!-- Expense Analysis -->
+                        <div class="menu-item">
+                            <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('accounting.expense-analysis') }}')">
+                                <span class="menu-bullet">
+                                    <span class="bullet bullet-dot"></span>
+                                </span>
+                                <span class="menu-title">{{ __('accounting.expense_analysis') }}</span>
+                            </a>
+                        </div>
+                        
+                        <!-- Payment Method Analysis -->
+                        <div class="menu-item">
+                            <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('accounting.payment-method-analysis') }}')">
+                                <span class="menu-bullet">
+                                    <span class="bullet bullet-dot"></span>
+                                </span>
+                                <span class="menu-title">{{ __('accounting.payment_method_analysis') }}</span>
+                            </a>
+                        </div>
+                        
+                        <!-- Daily Summary -->
+                        <div class="menu-item">
+                            <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('accounting.daily-summary') }}')">
+                                <span class="menu-bullet">
+                                    <span class="bullet bullet-dot"></span>
+                                </span>
+                                <span class="menu-title">{{ __('accounting.daily_summary') }}</span>
+                            </a>
+                        </div>
+                        
+                        <!-- Monthly Report -->
+                        <div class="menu-item">
+                            <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('accounting.monthly-report') }}')">
+                                <span class="menu-bullet">
+                                    <span class="bullet bullet-dot"></span>
+                                </span>
+                                <span class="menu-title">{{ __('accounting.monthly_report') }}</span>
+                            </a>
+                        </div>
+                        
+                        <!-- Reconciliation -->
+                        <div class="menu-item">
+                            <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('accounting.reconciliation') }}')">
+                                <span class="menu-bullet">
+                                    <span class="bullet bullet-dot"></span>
+                                </span>
+                                <span class="menu-title">{{ __('accounting.reconciliation') }}</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Settings -->
                 <div data-kt-menu-trigger="click" class="menu-item here {{ is_tab_show([]) }} menu-accordion">
                     <span class="menu-link">

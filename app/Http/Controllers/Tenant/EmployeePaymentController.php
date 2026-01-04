@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\{ Employee, EmployeePayment };
-use Illuminate\Support\Facades\{ Auth, Log };
+use App\Models\{ Employee, EmployeePayment, PaymentMethod };
+use Illuminate\Support\Facades\{ Auth, Log, DB };
 use Illuminate\Validation\Rule;
 
 class EmployeePaymentController extends Controller
@@ -22,8 +22,13 @@ class EmployeePaymentController extends Controller
         $query = EmployeePayment::with(['employee', 'tenant']);
         
         // If user is NOT super_admin, filter by tenant
+        // if (!$user->hasRole('super_admin')) {
+        //     $query->scopeForTenant($query, $user->tenant_id);
+        // }
+
+        // If user is NOT super_admin, filter by tenant
         if (!$user->hasRole('super_admin')) {
-            $query->scopeForTenant($query, $user->tenant_id);
+            $query->where('tenant_id', current_tenant_id());
         }
         
         $payments = $query->latest()->get();
@@ -265,9 +270,6 @@ class EmployeePaymentController extends Controller
         ]);
     }
 
-    /**
-     * Update payment status
-     */
     public function updatePaymentStatus(Request $request, $id)
     {
         $user = Auth::user();
@@ -315,35 +317,134 @@ class EmployeePaymentController extends Controller
                     'message' => __('auth.cannot_complete_old_failed_payment'),
                 ]);
             }
+            
+            // Check if payment method exists
+            if (!$payment->payment_method_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('auth.no_payment_method_for_employee_payment'),
+                ]);
+            }
         }
 
-        // Update payment status
-        $payment->update([
-            'status' => $request->status,
-            'updated_at' => now(),
-        ]);
+        DB::beginTransaction();
+        try {
+            $updateData = [
+                'status' => $request->status,
+                'updated_at' => now(),
+            ];
 
-        // If marking as completed, you might want to update related records
-        // if ($request->status === 'completed') {
-        //     // Update related employee salary paid status if needed
-        //     if ($payment->employee_id) {
-        //         // Example: Update last_payment_date on employee
-        //         Employee::where('id', $payment->employee_id)
-        //             ->update(['last_payment_date' => now()]);
-        //     }
-            
-        //     // You could also trigger payment completion events here
-        //     event(new PaymentCompleted($payment));
-        // }
+            // ✅ PROCESS PAYMENT WITHDRAWAL WHEN STATUS IS COMPLETED
+            if ($request->status === 'completed') {
+                $paymentMethod = PaymentMethod::findForTenant($payment->payment_method_id, $tenantId);
+                
+                if (!$paymentMethod) {
+                    throw new \Exception(__('pagination.payment_method_not_found'));
+                }
+                
+                // Validate the payment method can handle this transaction
+                $validation = $paymentMethod->validateTransaction($payment->amount);
+                if (!$validation['success']) {
+                    throw new \Exception($validation['message']);
+                }
 
+                // Map payment_type from database to transaction_category
+                $categoryMap = [
+                    'salary' => 'SALARY',
+                    'allowance' => 'ALLOWANCE', 
+                    'bonus' => 'BONUS',
+                    'overtime' => 'OVERTIME',
+                    'advance' => 'ADVANCE',
+                    'other' => 'OTHER'
+                ];
 
-        return response()->json([
-            'success' => true,
-            'reload' => true,
-            'componentId' => 'reloadPaymentComponent',
-            'refresh' => false,
-            'message' => __('auth.status_updated'),
-            'redirect' => route('payment.index'),
-        ]);
+                // Get payment_type and convert to lowercase for mapping
+                $paymentType = strtolower($payment->payment_type);
+                $transactionCategory = $categoryMap[$paymentType] ?? 'OTHER';
+                \Log::info($transactionCategory);
+
+                // Record employee payment withdrawal using PaymentTransactionService
+                $transactionData = [
+                    'user_id' => $user->id,
+                    'payment_method_id' => $paymentMethod->id,
+                    'tenant_id' => $tenantId,
+                    'transaction_type' => 'WITHDRAWAL',
+                    'transaction_category' => $transactionCategory,
+                    'amount' => $payment->amount,
+                    'currency_id' => $paymentMethod->currency_id ?? \App\Models\Currency::default()->id,
+                    'reference_table' => 'employee_payments',
+                    'reference_id' => $payment->id,
+                    'description' => ucfirst($payment->payment_type) . ' Payment - ' . $payment->description,
+                    'notes' => ucfirst($payment->payment_type) . ' payment to ' . ($payment->employee->name ?? 'employee'),
+                    'metadata' => [
+                        'employee_id' => $payment->employee_id,
+                        'employee_name' => $payment->employee->name ?? 'Unknown',
+                        'payment_type' => $payment->payment_type,
+                        'payment_date' => $payment->payment_date,
+                        'reference_number' => $payment->reference_number,
+                        'pay_period_start' => $payment->pay_period_start,
+                        'pay_period_end' => $payment->pay_period_end,
+                        'hours_worked' => $payment->hours_worked,
+                        'hourly_rate' => $payment->hourly_rate,
+                        'processed_by_id' => $user->id,
+                        'processed_by_name' => $user->name,
+                        'transaction_nature' => 'EMPLOYEE_PAYMENT',
+                        'original_payment_type' => $payment->payment_type,
+                        'mapped_transaction_category' => $transactionCategory,
+                    ],
+                ];
+
+                // Record the transaction
+                $transactionLog = app('payment-transaction')->recordTransaction($transactionData);
+                
+                // Add completed_at timestamp
+                $updateData['completed_at'] = now();
+
+                \Log::info('Employee payment transaction recorded', [
+                    'employee_payment_id' => $payment->id,
+                    'payment_type' => $payment->payment_type,
+                    'transaction_category' => $transactionCategory,
+                    'amount' => $payment->amount,
+                    'payment_method' => $paymentMethod->name,
+                    'payment_method_id' => $payment->payment_method_id,
+                    'transaction_ref' => $transactionLog->transaction_ref ?? 'N/A',
+                ]);
+            } 
+            // If marking as failed or cancelled from pending
+            elseif (in_array($request->status, ['failed', 'cancelled']) && $payment->status === 'pending') {
+                // Set timestamp for failed or cancelled
+                $timestampField = $request->status === 'failed' ? 'failed_at' : 'cancelled_at';
+                $updateData[$timestampField] = now();
+            }
+
+            $payment->update($updateData);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'reload' => true,
+                'componentId' => 'reloadPaymentComponent',
+                'refresh' => false,
+                'message' => __('auth.status_updated'),
+                'redirect' => route('payment.index'),
+                'transaction_info' => isset($transactionLog) ? [
+                    'transaction_ref' => $transactionLog->transaction_ref,
+                    'transaction_type' => 'WITHDRAWAL',
+                    'transaction_category' => $transactionCategory ?? null,
+                    'amount' => $payment->amount,
+                    'payment_method' => $paymentMethod->name ?? null,
+                    'payment_type' => $payment->payment_type,
+                ] : null,
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Error updating payment status: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.error_updating_status') . ': ' . $e->getMessage(),
+            ]);
+        }
     }
 }

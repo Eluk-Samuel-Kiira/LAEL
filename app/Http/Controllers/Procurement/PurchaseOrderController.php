@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Procurement;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\{ Supplier, PurchaseOrder, ProductVariant, PurchaseOrderItem, InventoryItems,
+use App\Models\{ Supplier, PurchaseOrder, ProductVariant, PurchaseOrderItem, InventoryItems, PaymentMethod,
         PurchaseReceipt, InventoryTransactions, InventoryAdjustment, PurchaseReceiptItem, SingleShopInventoryLog };
 use Illuminate\Support\Facades\{ Auth, DB };
 
@@ -176,7 +176,7 @@ class PurchaseOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error creating purchase order: ' . $e->getMessage(),
-            ], 500);
+            ]);
         }
     }
 
@@ -275,7 +275,7 @@ class PurchaseOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error updating purchase order: ' . $e->getMessage(),
-            ], 500);
+            ]);
         }
     }
 
@@ -353,7 +353,7 @@ class PurchaseOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('auth._not_found'),
-            ], 404);
+            ]);
         }
 
         // Check if status is already pending_approval
@@ -361,7 +361,7 @@ class PurchaseOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('passwords.already_pending_approval'),
-            ], 422);
+            ]);
         }
 
         // Validate that status transition is allowed (only from draft to pending_approval)
@@ -369,7 +369,7 @@ class PurchaseOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('passwords.can_only_submit_from_draft'),
-            ], 422);
+            ]);
         }
 
         // Validate that the requested status is pending_approval
@@ -377,7 +377,7 @@ class PurchaseOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('passwords.invalid_status_transition'),
-            ], 422);
+            ]);
         }
 
         DB::beginTransaction();
@@ -411,7 +411,7 @@ class PurchaseOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('passwords.error_occurred') . $e->getMessage(),
-            ], 500);
+            ]);
         }
     }
 
@@ -429,7 +429,7 @@ class PurchaseOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('auth._not_found'),
-            ], 404);
+            ]);
         }
 
         // Check if status is already approved
@@ -437,7 +437,7 @@ class PurchaseOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('passwords.already_approved'),
-            ], 422);
+            ]);
         }
 
         // Validate that status transition is allowed (only from pending_approval to approved)
@@ -445,7 +445,7 @@ class PurchaseOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('passwords.can_only_approve_from_pending'),
-            ], 422);
+            ]);
         }
 
         // Validate that the requested status is approved
@@ -453,7 +453,7 @@ class PurchaseOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('passwords.invalid_status_transition'),
-            ], 422);
+            ]);
         }
 
         DB::beginTransaction();
@@ -488,7 +488,7 @@ class PurchaseOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('passwords.error_occurred') . $e->getMessage(),
-            ], 500);
+            ]);
         }
     }
 
@@ -506,7 +506,7 @@ class PurchaseOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('auth._not_found'),
-            ], 404);
+            ]);
         }
 
         // Check if status is already sent
@@ -514,7 +514,7 @@ class PurchaseOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('passwords.already_sent'),
-            ], 422);
+            ]);
         }
 
         // Validate that status transition is allowed (only from approved to sent)
@@ -522,7 +522,7 @@ class PurchaseOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('passwords.can_only_send_from_approved'),
-            ], 422);
+            ]);
         }
 
         // Validate that the requested status is sent
@@ -530,7 +530,7 @@ class PurchaseOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('passwords.invalid_status_transition'),
-            ], 422);
+            ]);
         }
 
         DB::beginTransaction();
@@ -570,7 +570,7 @@ class PurchaseOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('passwords.error_occurred') . $e->getMessage(),
-            ], 500);
+            ]);
         }
     }
 
@@ -608,7 +608,7 @@ class PurchaseOrderController extends Controller
             'items.*.purchase_order_item_id' => 'required|exists:purchase_order_items,id',
             'items.*.product_variant_id' => 'required|exists:product_variants,id',
             'items.*.quantity_received' => 'required|integer|min:0',
-            'payment_method_id' => 'nullable|exists:payment_methods,id',
+            'payment_method_id' => 'required|exists:payment_methods,id',
             'payment_status' => 'nullable|in:pending,partial,paid,overdue',
             'payment_date' => 'nullable|date',
             'batch_number' => 'nullable|string|max:100',
@@ -631,11 +631,13 @@ class PurchaseOrderController extends Controller
         try {
             $totalReceived = 0;
             $receiptItems = [];
+            $totalCost = 0; // Track total cost for payment processing
+            $user = auth()->user();
 
             // Create purchase receipt record first
             $purchaseReceipt = PurchaseReceipt::create([
                 'purchase_order_id' => $purchaseOrder->id,
-                'received_by' => auth()->id(),
+                'received_by' => $user->id,
                 'received_at' => now(),
                 'notes' => $validated['notes'] ?? null,
             ]);
@@ -653,6 +655,10 @@ class PurchaseOrderController extends Controller
                     if ($newReceivedQuantity > $purchaseOrderItem->quantity) {
                         throw new \Exception(__('passwords.cannot_receive_more_than_ordered'));
                     }
+
+                    // Calculate item cost for payment (cost * quantity)
+                    $itemCost = $purchaseOrderItem->unit_cost * $quantityReceived;
+                    $totalCost += $itemCost; // Accumulate total cost
 
                     // Get current inventory quantity before update
                     $quantityBefore = $variant->overal_quantity_at_hand;
@@ -687,14 +693,14 @@ class PurchaseOrderController extends Controller
                         'product_variant_id' => $variant->id,
                         'quantity_received' => $quantityReceived,
                         'unit_cost' => $purchaseOrderItem->unit_cost,
-                        'total_cost' => $purchaseOrderItem->unit_cost * $quantityReceived,
+                        'total_cost' => $itemCost,
                         'batch_number' => $validated['batch_number'] ?? null,
                         'expiry_date' => $validated['expiry_date'] ?? null,
                         'notes' => $validated['notes'] ?? null,
                         'inventory_quantity_before' => $quantityBefore,
                         'inventory_quantity_after' => $quantityAfter,
-                        'received_by' => auth()->id(),
-                        'tenant_id' => auth()->user()->tenant_id ?? 1,
+                        'received_by' => $user->id,
+                        'tenant_id' => $tenantId,
                     ]);
 
                     // ✅ LOG TO SINGLE SHOP INVENTORY LOG IF SINGLE SHOP
@@ -703,7 +709,7 @@ class PurchaseOrderController extends Controller
                             'variant_id' => $variant->id,
                             'order_id' => $purchaseOrder->id,
                             'tenant_id' => $tenantId,
-                            'created_by' => auth()->id(),
+                            'created_by' => $user->id,
                             'quantity_before' => $quantityBefore,
                             'quantity_after' => $quantityAfter,
                             'quantity_change' => $quantityReceived,
@@ -718,7 +724,7 @@ class PurchaseOrderController extends Controller
                                 'batch_number' => $validated['batch_number'] ?? null,
                                 'expiry_date' => $validated['expiry_date'] ?? null,
                                 'unit_cost' => $purchaseOrderItem->unit_cost,
-                                'total_cost' => $purchaseOrderItem->unit_cost * $quantityReceived,
+                                'total_cost' => $itemCost,
                             ],
                         ]);
                     }
@@ -726,6 +732,64 @@ class PurchaseOrderController extends Controller
                     // Store receipt item data for response
                     $receiptItems[] = $receiptItem;
                 }
+            }
+
+            // ✅ INTEGRATE PAYMENT WITHDRAWAL FROM ACCOUNT
+            // Only process payment if payment method is provided and there's a total cost
+            if (isset($validated['payment_method_id']) && $totalCost > 0) {
+                $paymentMethod = PaymentMethod::findForTenant($validated['payment_method_id'], $tenantId);
+                
+                if (!$paymentMethod) {
+                    throw new \Exception(__('pagination.payment_method_not_found'));
+                }
+                
+                // Validate the payment method can handle this transaction
+                $validation = $paymentMethod->validateTransaction($totalCost);
+                if (!$validation['success']) {
+                    throw new \Exception($validation['message']);
+                }
+
+                // Record purchase order payment withdrawal using PaymentTransactionService
+                $transactionData = [
+                    'user_id' => $user->id,
+                    'tenant_id' => $tenantId,
+                    'payment_method_id' => $paymentMethod->id,
+                    'transaction_type' => 'WITHDRAWAL',
+                    'transaction_category' => 'PURCHASE_ORDER',
+                    'amount' => $totalCost,
+                    'currency_id' => $paymentMethod->currency_id ?? \App\Models\Currency::default()->id,
+                    'reference_table' => 'purchase_orders',
+                    'reference_id' => $purchaseOrder->id,
+                    'description' => 'Purchase Order Payment - PO #' . $purchaseOrder->po_number,
+                    'notes' => 'Payment for received items (cost × quantity)',
+                    'metadata' => [
+                        'purchase_order_number' => $purchaseOrder->po_number,
+                        'purchase_receipt_id' => $purchaseReceipt->id,
+                        'total_items_received' => $totalReceived,
+                        'total_cost' => $totalCost,
+                        'payment_status' => $validated['payment_status'] ?? 'paid',
+                        'payment_date' => $validated['payment_date'] ?? now()->toDateString(),
+                        'items_count' => count($validated['items']),
+                        'receiver_id' => $user->id,
+                        'receiver_name' => $user->name,
+                        'transaction_nature' => 'PURCHASE_PAYMENT',
+                    ],
+                ];
+
+                // Add payment date if provided
+                if (isset($validated['payment_date'])) {
+                    $transactionData['effective_date'] = $validated['payment_date'];
+                }
+
+                // Record the withdrawal transaction
+                $transactionLog = app('payment-transaction')->recordTransaction($transactionData);
+                
+                \Log::info('Payment withdrawal recorded for PO #' . $purchaseOrder->po_number, [
+                    'transaction_ref' => $transactionLog->transaction_ref ?? 'N/A',
+                    'amount' => $totalCost,
+                    'payment_method' => $paymentMethod->name,
+                    'items_received' => $totalReceived,
+                ]);
             }
 
             // Update payment information for ALL items that were received
@@ -757,18 +821,40 @@ class PurchaseOrderController extends Controller
             // Update purchase order status
             $purchaseOrder->status = $validated['status'];
             $purchaseOrder->received_at = now();
-            $purchaseOrder->received_by = auth()->id();
+            $purchaseOrder->received_by = $user->id;
             $purchaseOrder->save();
 
             DB::commit();
 
-            return response()->json([
+            // Prepare response
+            $response = [
                 'success' => true,
                 'message' => $validated['status'] === 'received' 
                     ? __('passwords.items_fully_received_success')
                     : __('passwords.items_partially_received_success'),
                 'reload' => true,
+                'data' => [
+                    'total_received' => $totalReceived,
+                    'total_cost' => $totalCost,
+                    'purchase_receipt_id' => $purchaseReceipt->id,
+                ]
+            ];
+
+            // Add payment info to response if payment was processed
+            if (isset($paymentMethod)) {
+                $response['payment_info'] = [
+                    'payment_method' => $paymentMethod->name,
+                    'amount_withdrawn' => $totalCost,
+                    'transaction_completed' => true,
+                ];
+            }
+            
+            session()->flash('toast', [
+                'type' => 'success',
+                'message' => $response['message'],
             ]);
+
+            return response()->json($response);
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -776,9 +862,10 @@ class PurchaseOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('passwords.receiving_error') . $e->getMessage(),
-            ], 500);
+            ]);
         }
     }
+
 
     public function cancel(Request $request, $id)
     {
@@ -794,7 +881,7 @@ class PurchaseOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('auth._not_found'),
-            ], 404);
+            ]);
         }
 
         // Check if status is already cancelled
@@ -802,7 +889,7 @@ class PurchaseOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('passwords.already_cancelled'),
-            ], 422);
+            ]);
         }
 
         // Validate that status transition is allowed (only from draft, pending_approval, or approved)
@@ -811,7 +898,7 @@ class PurchaseOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('passwords.can_only_cancel_from_allowed_status'),
-            ], 422);
+            ]);
         }
 
         // Validate that the requested status is cancelled
@@ -819,7 +906,7 @@ class PurchaseOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('passwords.invalid_status_transition'),
-            ], 422);
+            ]);
         }
 
         DB::beginTransaction();
@@ -853,7 +940,7 @@ class PurchaseOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => __('passwords.error_occurred') . $e->getMessage(),
-            ], 500);
+            ]);
         }
     }
 

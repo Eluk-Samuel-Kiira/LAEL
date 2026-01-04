@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Orders;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\{ Auth, DB };
 use App\Models\{ Product, SingleShopInventoryLog, InventoryItems, ProductVariant, Order, InventoryTransactions };
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Validator;
@@ -622,101 +622,72 @@ class POSController extends Controller
     }
 
     
-    // public function completePayment(Request $request) 
-    // {
-    //     // \Log::info($request->all());
-    //     $cartData = $request->items; 
-    //     $paymentDetails = $request->payment_details;  
+    public function cancel(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'status' => 'required', 
+        ]);
+        
+        $order = Order::find($id);
 
-    //     $order = Order::findOrFail($request->order_id);
-    //     $order->update([
-    //         'paid_amount' => $paymentDetails['amount_tendered'] ?? 0,
-    //         'balance_due' => $paymentDetails['change_due'] ?? 0,
-    //         'notes'       => __('pagination.payment_completed'),
-    //         'status'      => 'completed',
-    //     ]);
+        if (!$order) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth._not_found'),
+            ], 404);
+        }
 
-    //     // Payment Details - FIXED: Access payment_method from $request, not $cartData
-    //     $transactionId = ($request->payment_method === 'cash') 
-    //                         ? (string) Str::uuid() 
-    //                         : null;
+        // Check if status is already cancelled
+        if ($order->status === 'cancelled') {
+            return response()->json([
+                'success' => false,
+                'message' => __('passwords.already_cancelled'),
+            ], 400);
+        }
+        
+        // Validate that the requested status is cancelled
+        if ($validated['status'] !== 'cancelled') {
+            return response()->json([
+                'success' => false,
+                'message' => __('passwords.invalid_status_transition'),
+            ], 400);
+        }
 
-    //     // --- Update or create Payment ---
-    //     OrderPayment::updateOrCreate(
-    //         ['order_id' => $order->id],
-    //         [
-    //             'amount'          => $request->total ?? 0,
-    //             'payment_method_id' => $request->payment_method_id, // Fixed this line too
-    //             'transaction_id'  => $transactionId,
-    //             'status'          => 'completed',
-    //             'notes'           => __('pagination.payment_completed'),
-    //             'processed_at'    => now(),
-    //             'processed_by'    => auth()->id(),
-    //         ]
-    //     );
+        DB::beginTransaction();
+        try {
+            // Update purchase order status
+            $order->status = $validated['status'];
+            $order->created_by = auth()->id();
+            
+            if ($order->save()) {  
+                DB::commit();
 
-    //     // --- Update or create total Tax ---
-    //     OrderTax::updateOrCreate(
-    //         [
-    //             'order_id' => $order->id,
-    //         ],
-    //         [
-    //             'tax_name'   => 'VAT',
-    //             'tax_rate'    => (($request->total - $request->subtotal) / $request->total) * 100,
-    //             'tax_amount'  => $request->tax,
-    //             'is_compound' => 1,
-    //             'created_by'  => auth()->id(),
-    //         ]
-    //     );
+                // Return JSON success - don't redirect here
+                return response()->json([
+                    'success' => true,
+                    'message' => __('passwords.cancel_success'),
+                    'redirect' => route('orders.index') // Optional: send redirect URL if needed
+                ]);
+            }
 
-    //     // Finally update the inventory
-    //     foreach ($cartData as $item) {
-    //         // Get product variant with inventory
-    //         $variant = ProductVariant::with('inventory')->find($item['variant_id']);
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => __('passwords.status_update_failed'),
+            ], 500);
 
-    //         if (!$variant || !$variant->inventory) {
-    //             continue;
-    //         }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => __('passwords.error_occurred') . $e->getMessage(),
+            ], 500);
+        }
+    }
 
-    //         $inventory = $variant->inventory;
 
-    //         $beforeQty = $inventory->quantity_allocated;
-    //         $afterQty  = $beforeQty - $item['quantity'];
 
-    //         // ✅ 1. Update stock
-    //         $inventory->quantity_allocated = $afterQty;
-    //         $inventory->save();
-
-    //         // ✅ 2. Record adjustment (audit trail)
-    //         InventoryAdjustments::create([
-    //             'quantity_before' => $beforeQty,
-    //             'quantity_after'  => $afterQty,
-    //             'reason'          => 'order_sale', // can be enum/string
-    //             'notes'           => 'Stock reduced due to order #' . $order->id,
-    //             'inventory_id'    => $inventory->id,
-    //             'created_by'      => auth()->id() ?? null,
-    //             'tenant_id'       => $order->tenant_id,
-    //         ]);
-
-    //         // ✅ 3. Record transaction (movement)
-    //         InventoryTransactions::create([
-    //             'quantity'       => -$item['quantity'], // negative for outflow
-    //             'reference_id'   => $order->id,
-    //             'reference_type' => 'order',
-    //             'type'           => 'sale', // e.g., sale, return, transfer
-    //             'notes'          => 'Sold ' . $item['quantity'] . ' units of ' . $variant->sku,
-    //             'inventory_id'   => $inventory->id,
-    //             'created_by'     => auth()->id() ?? null,
-    //             'tenant_id'      => $order->tenant_id,
-    //         ]);
-
-    //     }
-
-    //     return response()->json([
-    //         'success' => true,
-    //         'message' => __('pagination.payment_completed'),
-    //     ]);
-    // }
+    
 
 }
 
