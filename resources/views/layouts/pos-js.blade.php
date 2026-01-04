@@ -1453,4 +1453,66 @@
 </script>
 
 
+<script>
+    function cancelPOSOrder(orderId) {
+        const updateRoute = '/pos-cancel/' + orderId;
+        
+        Swal.fire({
+            title: '{{ __("passwords.cancel_title") }}',
+            text: '{{ __("passwords.cancel_confirmation") }}',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: '{{ __("passwords.cancel_order") }}',
+            cancelButtonText: '{{ __("passwords.keep_order") }}',
+            reverseButtons: true,
+            showLoaderOnConfirm: true,
+            preConfirm: () => {
+                return $.ajax({
+                    url: updateRoute,
+                    method: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        status: 'cancelled'
+                    },
+                    dataType: 'json'
+                })
+                .then(response => {
+                    // Check if response is successful
+                    if (response.success === false) {
+                        throw new Error(response.message || 'Failed to cancel order');
+                    }
+                    return response;
+                })
+                .catch(error => {
+                    Swal.showValidationMessage(
+                        `Request failed: ${error.statusText || error.message}`
+                    );
+                });
+            }
+        }).then((result) => {
+            if (result.isConfirmed && result.value && result.value.success) {
+                // Show success message and reload
+                Swal.fire({
+                    title: '{{ __("passwords.success") }}',
+                    text: result.value.message,
+                    icon: 'success',
+                    confirmButtonColor: '#3085d6',
+                }).then(() => {
+                    // Reload the page to see updated status
+                    location.reload();
+                    
+                    // OR redirect to orders index if needed
+                    // if (result.value.redirect) {
+                    //     window.location.href = result.value.redirect;
+                    // } else {
+                    //     location.reload();
+                    // }
+                });
+            }
+        });
+    }
+</script>
+
 

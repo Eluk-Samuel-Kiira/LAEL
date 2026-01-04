@@ -89,7 +89,7 @@
                     <div class="row g-4 mb-4">
                         <div class="col-md-4">
                             <label class="form-label">{{ __('payments.payment_method') }}</label>
-                            <select name="payment_method_id" class="form-select">
+                            <select name="payment_method_id" class="form-select" required>
                                 <option value="">{{ __('payments.select_payment_method') }}</option>
                                 @foreach($active_payment_methods as $method)
                                     <option value="{{ $method->id }}" 
@@ -101,6 +101,7 @@
                                     </option>
                                 @endforeach
                             </select>
+                            <div id="payment_method_id{{ $order->id }}"></div>
                         </div>
                         
                         <div class="col-md-4">

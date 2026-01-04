@@ -8,12 +8,8 @@ use App\Http\Controllers\Catalog\ {CategoryController, InventoryItemController, 
 use App\Http\Controllers\Orders\{ OrderController, POSController};
 use App\Http\Controllers\Setting\{ TaxController,PromotionController, PaymentMethodController };
 use App\Http\Controllers\Procurement\{ SupplierController, PurchaseOrderController, ExpenseCategoryController, ExpenseController };
+use App\Http\Controllers\Accounts\{ AccountingController };
 
-// 
-use App\Http\Controllers\Accounting\ChartOfAccountController;
-use App\Http\Controllers\Accounting\JournalEntryController;
-use App\Http\Controllers\Accounting\AccountingPeriodController;
-use App\Http\Controllers\Accounting\ReportController;
 
     Route::get('/', function () {
         return view('welcome');
@@ -132,6 +128,9 @@ use App\Http\Controllers\Accounting\ReportController;
 
         Route::post('/orders/complete-payment', [POSController::class, 'completePayment'])
             ->name('orders.complete-payment');
+        
+        Route::post('/pos-cancel/{id}', [POSController::class, 'cancel']);
+
 
         // Taxes and Promotions
         Route::resource('tax', TaxController::class);
@@ -167,6 +166,23 @@ use App\Http\Controllers\Accounting\ReportController;
         Route::post('/expenses/{id}/approve', [ExpenseController::class, 'approve'])
             ->name('expenses.approve')
             ->middleware('auth');
+
+
+
+        // Basic Accounting Routes
+        Route::prefix('accounting')->name('accounting.')->group(function () {
+            Route::get('/payment-methods', [AccountingController::class, 'paymentMethods'])->name('payment-methods.index');
+            Route::get('/account-balances', [AccountingController::class, 'accountBalances'])->name('account-balances');
+            Route::get('/transaction-ledger', [AccountingController::class, 'transactionLedger'])->name('transaction-ledger');
+            Route::get('/income-statement', [AccountingController::class, 'incomeStatement'])->name('income-statement');
+            Route::get('/cash-flow', [AccountingController::class, 'cashFlow'])->name('cash-flow');
+            Route::get('/transaction-analysis', [AccountingController::class, 'transactionAnalysis'])->name('transaction-analysis');
+            Route::get('/expense-analysis', [AccountingController::class, 'expenseAnalysis'])->name('expense-analysis');
+            Route::get('/payment-method-analysis', [AccountingController::class, 'paymentMethodAnalysis'])->name('payment-method-analysis');
+            Route::get('/daily-summary', [AccountingController::class, 'dailySummary'])->name('daily-summary');
+            Route::get('/monthly-report', [AccountingController::class, 'monthlyReport'])->name('monthly-report');
+            Route::get('/reconciliation', [AccountingController::class, 'reconciliation'])->name('reconciliation');
+        });
 
 
         // Accounts

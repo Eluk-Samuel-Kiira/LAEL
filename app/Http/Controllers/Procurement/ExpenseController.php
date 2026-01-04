@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Procurement;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\{ ExpenseCategory, Expense, Employee };
+use App\Models\{ ExpenseCategory, Expense, Employee, PaymentMethod };
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\{ Auth, Log, Storage };
+use Illuminate\Support\Facades\{ Auth, Log, Storage, DB };
 use Illuminate\Validation\Rule;
 
 class ExpenseController extends Controller
@@ -381,40 +381,140 @@ class ExpenseController extends Controller
             ]);
         }
 
-        $updateData = [
-            'payment_status' => $request->status,
-            'updated_at' => now(),
-        ];
-
-        // Set paid date only when marking as paid or reimbursed
-        if ($request->status === 'paid' || $request->status === 'reimbursed') {
-            $updateData['paid_date'] = now();
-            
-            // If reimbursed, also set paid_by to current user
-            if ($request->status === 'reimbursed') {
-                $updateData['paid_by'] = $user->id;
-            }
-        } else {
-            // If reverting to pending, clear paid date and paid_by
-            $updateData['paid_date'] = null;
-            $updateData['paid_by'] = null;
+        // Check if payment method exists for paid/reimbursed status
+        if (($request->status === 'paid' || $request->status === 'reimbursed') && !$expense->payment_method_id) {
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.no_payment_method_for_expense'),
+            ]);
         }
 
-        $expense->update($updateData);
+        DB::beginTransaction();
+        try {
+            $updateData = [
+                'payment_status' => $request->status,
+                'updated_at' => now(),
+            ];
 
-        // Log the activity
-        // activity()
-        //     ->causedBy($user)
-        //     ->performedOn($expense)
-        //     ->log('updated payment status to ' . $request->status);
+            // Get the total amount from the expense
+            $totalAmount = $expense->total_amount ?? $expense->amount + $expense->tax_amount;
 
-        return response()->json([
-            'success' => true,
-            'message' => __('auth.status_updated'),
-            'reload' => true,
-            'componentId' => 'reloadExpenseComponent',
-            'redirect' => route('expense.index'),
-        ]);
+            // Set paid date only when marking as paid or reimbursed
+            if ($request->status === 'paid' || $request->status === 'reimbursed') {
+                $updateData['paid_date'] = now();
+                
+                // If reimbursed, also set paid_by to current user
+                if ($request->status === 'reimbursed') {
+                    $updateData['paid_by'] = $user->id;
+                }
+                
+                // ✅ PROCESS PAYMENT TRANSACTION USING EXISTING PAYMENT METHOD FROM DATABASE
+                $paymentMethod = PaymentMethod::findForTenant($expense->payment_method_id, $tenantId);
+                
+                if (!$paymentMethod) {
+                    throw new \Exception(__('pagination.payment_method_not_found'));
+                }
+                
+                // Validate the payment method can handle this transaction
+                $validation = $paymentMethod->validateTransaction($totalAmount);
+                if (!$validation['success']) {
+                    throw new \Exception($validation['message']);
+                }
+
+                // Determine transaction type based on status
+                $transactionType = $request->status === 'paid' ? 'WITHDRAWAL' : 'DEPOSIT';
+                $transactionCategory = $request->status === 'paid' ? 'EXPENSE' : 'REFUND';
+                $description = $request->status === 'paid' 
+                    ? 'Expense Payment - ' . $expense->expense_number
+                    : 'Expense Reimbursement - ' . $expense->expense_number;
+                
+                $notes = $request->status === 'paid' 
+                    ? 'Payment for expense'
+                    : 'Reimbursement back to account';
+
+                // Record expense payment using PaymentTransactionService
+                $transactionData = [
+                    'user_id' => $user->id,
+                    'payment_method_id' => $paymentMethod->id,
+                    'tenant_id' => $tenantId,
+                    'transaction_type' => $transactionType,
+                    'transaction_category' => $transactionCategory,
+                    'amount' => $totalAmount,
+                    'currency_id' => $paymentMethod->currency_id ?? \App\Models\Currency::default()->id,
+                    'reference_table' => 'expenses',
+                    'reference_id' => $expense->id,
+                    'description' => $description,
+                    'notes' => $notes,
+                    'metadata' => [
+                        'expense_number' => $expense->expense_number,
+                        'expense_description' => $expense->description,
+                        'vendor_name' => $expense->vendor_name,
+                        'category_id' => $expense->category_id,
+                        'payment_status' => $request->status,
+                        'amount' => $expense->amount,
+                        'tax_amount' => $expense->tax_amount,
+                        'total_amount' => $totalAmount,
+                        'processed_by_id' => $user->id,
+                        'processed_by_name' => $user->name,
+                        'transaction_nature' => $request->status === 'paid' ? 'EXPENSE_PAYMENT' : 'EXPENSE_REIMBURSEMENT',
+                    ],
+                ];
+
+                // Record the transaction
+                $transactionLog = app('payment-transaction')->recordTransaction($transactionData);
+                
+                // Update expense with transaction reference
+                $updateData['payment_transaction_ref'] = $transactionLog->transaction_ref ?? null;
+
+                \Log::info('Expense payment transaction recorded', [
+                    'expense_number' => $expense->expense_number,
+                    'transaction_type' => $transactionType,
+                    'amount' => $totalAmount,
+                    'payment_method' => $paymentMethod->name,
+                    'payment_method_id' => $expense->payment_method_id,
+                    'transaction_ref' => $transactionLog->transaction_ref ?? 'N/A',
+                ]);
+
+            } else {
+                // If reverting to pending, clear payment info
+                $updateData['paid_date'] = null;
+                $updateData['paid_by'] = null;
+                $updateData['payment_transaction_ref'] = null;
+                // Note: We keep the payment_method_id since it's part of the original expense record
+            }
+
+            $expense->update($updateData);
+
+            DB::commit();
+
+            // Log the activity
+            // activity()
+            //     ->causedBy($user)
+            //     ->performedOn($expense)
+            //     ->log('updated payment status to ' . $request->status);
+
+            return response()->json([
+                'success' => true,
+                'message' => __('auth.status_updated'),
+                'reload' => true,
+                'componentId' => 'reloadExpenseComponent',
+                'redirect' => route('expense.index'),
+                'transaction_info' => isset($transactionLog) ? [
+                    'transaction_ref' => $transactionLog->transaction_ref,
+                    'transaction_type' => $transactionType ?? null,
+                    'amount' => $totalAmount,
+                    'payment_method' => $paymentMethod->name ?? null,
+                ] : null,
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Error updating expense status: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => __('auth.error_updating_status') . ': ' . $e->getMessage(),
+            ]);
+        }
     }
 
     /**
