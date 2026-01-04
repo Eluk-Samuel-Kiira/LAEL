@@ -23,7 +23,7 @@ class ExpenseCategoryController extends Controller
         
         // If user is NOT super_admin, filter by tenant
         if (!$user->hasRole('super_admin')) {
-            $query->scopeForTenant($query, $user->tenant_id);
+            $query->where('tenant_id', current_tenant_id());
         }
         
         $categories = $query->latest()->get();

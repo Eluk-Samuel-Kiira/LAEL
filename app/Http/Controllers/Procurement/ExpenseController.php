@@ -23,7 +23,7 @@ class ExpenseController extends Controller
         
         // If user is NOT super_admin, filter by tenant
         if (!$user->hasRole('super_admin')) {
-            $query->scopeForTenant($query, $user->tenant_id);
+            $query->where('tenant_id', current_tenant_id());
         }
         
         $expenses = $query->latest()->get();
@@ -455,7 +455,7 @@ class ExpenseController extends Controller
                         'tax_amount' => $expense->tax_amount,
                         'total_amount' => $totalAmount,
                         'processed_by_id' => $user->id,
-                        'processed_by_name' => $user->name,
+                        'processed_by_name' => $user->last_name.' '.$user->last_name ?? 'Unkown',
                         'transaction_nature' => $request->status === 'paid' ? 'EXPENSE_PAYMENT' : 'EXPENSE_REIMBURSEMENT',
                     ],
                 ];

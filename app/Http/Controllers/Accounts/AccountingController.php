@@ -79,8 +79,8 @@ class AccountingController extends Controller
         ];
         
         $query = PaymentTransactionLog::where('tenant_id', $tenantId)
-            ->with(['paymentMethod', 'currency']);
-            
+            ->with(['paymentMethod', 'currency', 'customer']); // Added customer here
+                
         // Apply filters
         if ($filters['start_date']) {
             $query->whereDate('transaction_date', '>=', $filters['start_date']);
@@ -120,6 +120,34 @@ class AccountingController extends Controller
             'transactions', 'filters', 'paymentMethods', 
             'transactionTypes', 'categories'
         ));
+    }
+
+    // Add this method to AccountingController
+    public function getTransactionDetails($id)
+    {
+        $user = Auth::user();
+        $tenantId = $user->tenant_id;
+        
+        $transaction = PaymentTransactionLog::where('tenant_id', $tenantId)
+            ->where('id', $id)
+            ->with(['paymentMethod.currency', 'customer'])
+            ->firstOrFail();
+        
+        // Handle metadata - ensure it's properly formatted
+        if ($transaction->metadata && is_string($transaction->metadata)) {
+            try {
+                $transaction->metadata = json_decode($transaction->metadata, true);
+            } catch (\Exception $e) {
+                $transaction->metadata = ['error' => 'Invalid JSON format'];
+            }
+        }
+        
+        return response()->json([
+            'transaction' => $transaction,
+            'customer' => $transaction->customer,
+            'payment_method' => $transaction->paymentMethod,
+            'currency' => $transaction->paymentMethod->currency ?? null,
+        ]);
     }
     
     // 4. Income Statement Report

@@ -27,7 +27,6 @@
                         @endphp
                         @for($i = 1; $i <= 12; $i++)
                             @php
-                                // Simple month names array
                                 $monthNames = [
                                     1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April',
                                     5 => 'May', 6 => 'June', 7 => 'July', 8 => 'August',
@@ -45,11 +44,47 @@
                         @endfor
                     </select>
                 </div>
+                
+                <!-- Export Dropdown -->
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="ki-duotone ki-file-down fs-2"></i> {{ __('accounting.export') }}
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" href="javascript:void(0)" 
+                            onclick="exportCurrentPage({tableId: 'dailyBreakdownTable', filename: 'monthly_report_{{ $year }}_{{ str_pad($month, 2, '0', STR_PAD_LEFT) }}', sheetName: 'Daily Breakdown'})">
+                                <i class="ki-duotone ki-file-excel fs-2 me-2 text-success"></i>
+                                {{ __('accounting.export_to_excel') }}
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="javascript:void(0)" 
+                            onclick="exportCurrentPage({tableId: 'dailyBreakdownTable', filename: 'monthly_report_{{ $year }}_{{ str_pad($month, 2, '0', STR_PAD_LEFT) }}', format: 'csv'})">
+                                <i class="ki-duotone ki-file-csv fs-2 me-2 text-primary"></i>
+                                {{ __('accounting.export_to_csv') }}
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item" href="javascript:void(0)" 
+                            onclick="exportCurrentPage({tableId: 'categoryBreakdownTable', filename: 'monthly_categories_{{ $year }}_{{ str_pad($month, 2, '0', STR_PAD_LEFT) }}', sheetName: 'Category Breakdown'})">
+                                <i class="ki-duotone ki-category fs-2 me-2 text-info"></i>
+                                {{ __('Export Category Breakdown') }}
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="javascript:void(0)" 
+                            onclick="exportCurrentPage({tableId: 'methodBreakdownTable', filename: 'monthly_methods_{{ $year }}_{{ str_pad($month, 2, '0', STR_PAD_LEFT) }}', sheetName: 'Payment Methods'})">
+                                <i class="ki-duotone ki-wallet fs-2 me-2 text-warning"></i>
+                                {{ __('Export Payment Methods') }}
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
                 <button class="btn btn-sm btn-light" onclick="printReport()">
                     <i class="ki-duotone ki-printer fs-2"></i> {{ __('accounting.print') }}
-                </button>
-                <button class="btn btn-sm btn-primary" onclick="exportToExcel()">
-                    <i class="ki-duotone ki-file-down fs-2"></i> {{ __('accounting.export') }}
                 </button>
             </div>
         </div>
@@ -181,7 +216,7 @@
                     </div>
                     <div class="card-body pt-0">
                         <div class="table-responsive">
-                            <table class="table table-row-bordered table-row-dashed gy-4 align-middle gs-0">
+                            <table class="table table-row-bordered table-row-dashed gy-4 align-middle gs-0" id="dailyBreakdownTable">
                                 <thead>
                                     <tr class="fs-7 fw-bold text-gray-500 border-bottom-0">
                                         <th class="min-w-120px">{{ __('accounting.date') }}</th>
@@ -255,7 +290,7 @@
                     </div>
                     <div class="card-body pt-0">
                         <div class="table-responsive">
-                            <table class="table table-row-bordered table-row-dashed gy-4 align-middle gs-0">
+                            <table class="table table-row-bordered table-row-dashed gy-4 align-middle gs-0" id="categoryBreakdownTable>
                                 <thead>
                                     <tr class="fs-7 fw-bold text-gray-500 border-bottom-0">
                                         <th class="min-w-200px">{{ __('accounting.category') }}</th>
@@ -307,7 +342,7 @@
                     </div>
                     <div class="card-body pt-0">
                         <div class="table-responsive">
-                            <table class="table table-row-bordered table-row-dashed gy-4 align-middle gs-0">
+                            <table class="table table-row-bordered table-row-dashed gy-4 align-middle gs-0" id="methodBreakdownTable">
                                 <thead>
                                     <tr class="fs-7 fw-bold text-gray-500 border-bottom-0">
                                         <th class="min-w-200px">{{ __('accounting.payment_method') }}</th>

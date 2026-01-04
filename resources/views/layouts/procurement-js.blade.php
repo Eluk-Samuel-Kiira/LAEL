@@ -1072,3 +1072,170 @@
         LiveBlade.loopUpdateStatus(updateRoute, selectedStatus);
     }
 </script>
+
+
+
+
+<!-- Excel functions  -->
+ <script>
+    // ONE REUSABLE FUNCTION FOR ALL EXPORTS
+    function exportCurrentPage(config = {}) {
+        // Default configuration that can be overridden
+        const defaultConfig = {
+            tableId: document.querySelector('table')?.id || '', // Auto-detect table if not specified
+            filename: 'export',     // Base filename
+            format: 'excel',        // 'excel' or 'csv'
+            sheetName: 'Sheet1',    // Sheet name for Excel
+            excludeColumns: [],     // Column indices to exclude (0-based)
+            includeHidden: false,   // Include hidden columns/rows
+            addTimestamp: true      // Add timestamp to filename
+        };
+        
+        // Merge defaults with provided config
+        const finalConfig = { ...defaultConfig, ...config };
+        
+        // Get table element
+        const table = document.getElementById(finalConfig.tableId);
+        if (!table) {
+            console.error(`Table with ID "${finalConfig.tableId}" not found`);
+            alert('Table not found for export');
+            return;
+        }
+        
+        // Get all rows
+        const rows = Array.from(table.querySelectorAll('tr'));
+        if (rows.length === 0) {
+            alert('No data to export');
+            return;
+        }
+        
+        // Prepare data array
+        let data = [];
+        
+        rows.forEach((row) => {
+            // Skip hidden rows if not including hidden
+            if (!finalConfig.includeHidden && row.style.display === 'none') {
+                return;
+            }
+            
+            const rowData = [];
+            const cells = Array.from(row.querySelectorAll('th, td'));
+            
+            cells.forEach((cell, colIndex) => {
+                // Skip excluded columns
+                if (finalConfig.excludeColumns.includes(colIndex)) {
+                    return;
+                }
+                
+                // Skip hidden cells if not including hidden
+                if (!finalConfig.includeHidden && cell.style.display === 'none') {
+                    return;
+                }
+                
+                let cellValue = '';
+                
+                // Handle different types of content
+                if (cell.querySelector('.badge')) {
+                    cellValue = cell.querySelector('.badge').textContent.trim();
+                } else if (cell.querySelector('span')) {
+                    const spans = Array.from(cell.querySelectorAll('span'));
+                    cellValue = spans.map(span => span.textContent.trim()).join(' ');
+                } else if (cell.querySelector('input[type="checkbox"]')) {
+                    const checkbox = cell.querySelector('input[type="checkbox"]');
+                    cellValue = checkbox.checked ? 'Yes' : 'No';
+                } else if (cell.querySelector('select')) {
+                    const select = cell.querySelector('select');
+                    cellValue = select.options[select.selectedIndex]?.text || '';
+                } else {
+                    cellValue = cell.textContent.trim();
+                }
+                
+                // Clean up the value
+                cellValue = cellValue.replace(/\s+/g, ' ').trim();
+                rowData.push(cellValue);
+            });
+            
+            // Only add row if it has data
+            if (rowData.length > 0) {
+                data.push(rowData);
+            }
+        });
+        
+        // Generate filename with timestamp
+        const timestamp = finalConfig.addTimestamp ? '_' + new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-') : '';
+        const fullFilename = `${finalConfig.filename}${timestamp}.${finalConfig.format === 'excel' ? 'xlsx' : 'csv'}`;
+        
+        // Export based on format
+        if (finalConfig.format === 'excel') {
+            exportToExcelFormat(data, fullFilename, finalConfig.sheetName);
+        } else {
+            exportToCSVFormat(data, fullFilename);
+        }
+    }
+
+    // Helper functions (keep these as they are)
+    function exportToExcelFormat(data, filename, sheetName) {
+        try {
+            if (typeof XLSX === 'undefined') {
+                console.warn('SheetJS not loaded, falling back to CSV');
+                exportToCSVFormat(data, filename.replace('.xlsx', '.csv'));
+                return;
+            }
+            
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            
+            const maxWidths = [];
+            data.forEach(row => {
+                row.forEach((cell, colIndex) => {
+                    const cellLength = cell ? cell.toString().length : 0;
+                    if (!maxWidths[colIndex] || cellLength > maxWidths[colIndex]) {
+                        maxWidths[colIndex] = cellLength;
+                    }
+                });
+            });
+            
+            ws['!cols'] = maxWidths.map(width => ({ wch: Math.min(width + 2, 50) }));
+            XLSX.utils.book_append_sheet(wb, ws, sheetName);
+            XLSX.writeFile(wb, filename);
+            
+        } catch (error) {
+            console.error('Excel export error:', error);
+            alert('Error exporting to Excel. Falling back to CSV.');
+            exportToCSVFormat(data, filename.replace('.xlsx', '.csv'));
+        }
+    }
+
+    function exportToCSVFormat(data, filename) {
+        try {
+            const csvContent = data.map(row => 
+                row.map(cell => {
+                    if (typeof cell === 'string' && (cell.includes(',') || cell.includes('"') || cell.includes('\n'))) {
+                        return '"' + cell.replace(/"/g, '""') + '"';
+                    }
+                    return cell;
+                }).join(',')
+            ).join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            } else {
+                alert('Your browser does not support automatic downloads. Please copy the data manually.');
+            }
+            
+        } catch (error) {
+            console.error('CSV export error:', error);
+            alert('Error exporting to CSV. Please try again.');
+        }
+    }
+ </script>

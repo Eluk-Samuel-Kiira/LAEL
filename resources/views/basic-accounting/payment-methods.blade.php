@@ -19,9 +19,27 @@
                 </ul>
             </div>
             <div class="d-flex align-items-center gap-2 gap-lg-3">
-                <button class="btn btn-sm btn-primary" onclick="exportToExcel()">
-                    <i class="ki-duotone ki-file-down fs-2"></i> {{ __('accounting.export') }}
-                </button>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="ki-duotone ki-file-down fs-2"></i> {{ __('accounting.export') }}
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" href="javascript:void(0)" 
+                            onclick="exportCurrentPage({tableId: 'methodsTable', filename: 'payment_methods', sheetName: 'Payment Methods', excludeColumns: [8]})">
+                                <i class="ki-duotone ki-file-excel fs-2 me-2 text-success"></i>
+                                {{ __('accounting.export_to_excel') }}
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="javascript:void(0)" 
+                            onclick="exportCurrentPage({tableId: 'methodsTable', filename: 'payment_methods', format: 'csv', excludeColumns: [8]})">
+                                <i class="ki-duotone ki-file-csv fs-2 me-2 text-primary"></i>
+                                {{ __('accounting.export_to_csv') }}
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
@@ -246,10 +264,6 @@
     
     @push('scripts')
     <script>
-        function exportToExcel() {
-            // Implement Excel export functionality
-            alert('Export to Excel functionality would be implemented here');
-        }
         
         // Search functionality
         document.getElementById('searchMethods').addEventListener('keyup', function() {

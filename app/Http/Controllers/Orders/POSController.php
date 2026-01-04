@@ -450,7 +450,7 @@ class POSController extends Controller
                 'tenant_id' => $order->tenant_id,
                 'user_id' => auth()->id(),
                 'payment_method_id' => $paymentMethod->id,
-                'transaction_type' => 'DEPOSIT', // CORRECT: Money coming IN from sales
+                'transaction_type' => 'DEPOSIT', 
                 'transaction_category' => 'ORDER',
                 'amount' => $amount,
                 'currency_id' => $paymentMethod->currency_id ?? Currency::default()->id,

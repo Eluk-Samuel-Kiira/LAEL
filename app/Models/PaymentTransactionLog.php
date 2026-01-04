@@ -104,6 +104,11 @@ class PaymentTransactionLog extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
     public function tenant()
     {
         return $this->belongsTo(Tenant::class);

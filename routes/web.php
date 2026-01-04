@@ -182,10 +182,13 @@ use App\Http\Controllers\Accounts\{ AccountingController };
             Route::get('/daily-summary', [AccountingController::class, 'dailySummary'])->name('daily-summary');
             Route::get('/monthly-report', [AccountingController::class, 'monthlyReport'])->name('monthly-report');
             Route::get('/reconciliation', [AccountingController::class, 'reconciliation'])->name('reconciliation');
+            Route::get('/transaction-ledger/details/{id}', [AccountingController::class, 'getTransactionDetails'])->name('transaction-details');
         });
 
+        
 
-        // Accounts
+
+        // Advance Accounts
         Route::middleware(['auth:sanctum', 'tenant'])->prefix('accounting')->group(function () {
             // Chart of Accounts
             Route::apiResource('chart-of-accounts', ChartOfAccountController::class);

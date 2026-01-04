@@ -378,7 +378,7 @@ class EmployeePaymentController extends Controller
                     'notes' => ucfirst($payment->payment_type) . ' payment to ' . ($payment->employee->name ?? 'employee'),
                     'metadata' => [
                         'employee_id' => $payment->employee_id,
-                        'employee_name' => $payment->employee->name ?? 'Unknown',
+                        'employee_name' => $payment->employee->first_name .' '.$payment->employee->last_name  ?? 'Unknown',
                         'payment_type' => $payment->payment_type,
                         'payment_date' => $payment->payment_date,
                         'reference_number' => $payment->reference_number,

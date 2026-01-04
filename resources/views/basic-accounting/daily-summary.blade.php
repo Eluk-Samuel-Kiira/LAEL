@@ -22,13 +22,53 @@
                 <!-- Date Selector -->
                 <div class="d-flex align-items-center">
                     <input type="date" id="dateSelector" class="form-control form-control-solid w-200px" 
+                        value="{{ $date }}" onchange="changeDate()">
+                </div>
+                <div class="d-flex align-items-center">
+                    <input type="date" id="dateSelector" class="form-control form-control-solid w-200px" 
                            value="{{ $date }}" onchange="changeDate()">
                 </div>
+                
+                <!-- Export Dropdown -->
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="ki-duotone ki-file-down fs-2"></i> {{ __('accounting.export') }}
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" href="javascript:void(0)" 
+                            onclick="exportCurrentPage({tableId: 'dailyTransactionsTable', filename: 'daily_summary_{{ $date }}', sheetName: 'Daily Transactions'})">
+                                <i class="ki-duotone ki-file-excel fs-2 me-2 text-success"></i>
+                                {{ __('accounting.export_to_excel') }}
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="javascript:void(0)" 
+                            onclick="exportCurrentPage({tableId: 'dailyTransactionsTable', filename: 'daily_summary_{{ $date }}', format: 'csv'})">
+                                <i class="ki-duotone ki-file-csv fs-2 me-2 text-primary"></i>
+                                {{ __('accounting.export_to_csv') }}
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item" href="javascript:void(0)" 
+                            onclick="exportCurrentPage({tableId: 'balanceChangesTable', filename: 'balance_changes_{{ $date }}', sheetName: 'Balance Changes'})">
+                                <i class="ki-duotone ki-wallet fs-2 me-2 text-info"></i>
+                                {{ __('Export Balance Changes') }}
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="javascript:void(0)" 
+                            onclick="exportCurrentPage({tableId: 'transactionsByTypeTable', filename: 'transactions_by_type_{{ $date }}', sheetName: 'By Type'})">
+                                <i class="ki-duotone ki-category fs-2 me-2 text-warning"></i>
+                                {{ __('Export by Type') }}
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
                 <button class="btn btn-sm btn-light" onclick="printReport()">
                     <i class="ki-duotone ki-printer fs-2"></i> {{ __('accounting.print') }}
-                </button>
-                <button class="btn btn-sm btn-primary" onclick="exportToExcel()">
-                    <i class="ki-duotone ki-file-down fs-2"></i> {{ __('accounting.export') }}
                 </button>
             </div>
         </div>
@@ -143,7 +183,7 @@
                     </div>
                     <div class="card-body pt-0">
                         <div class="table-responsive">
-                            <table class="table table-row-bordered table-row-dashed gy-4 align-middle gs-0">
+                            <table class="table table-row-bordered table-row-dashed gy-4 align-middle gs-0" id="transactionsByTypeTable">                               
                                 <thead>
                                     <tr class="fs-7 fw-bold text-gray-500 border-bottom-0">
                                         <th class="min-w-150px">{{ __('accounting.transaction_type') }}</th>
@@ -214,7 +254,7 @@
                     </div>
                     <div class="card-body pt-0">
                         <div class="table-responsive">
-                            <table class="table table-row-bordered table-row-dashed gy-4 align-middle gs-0">
+                            <table class="table table-row-bordered table-row-dashed gy-4 align-middle gs-0" id="transactionsByCategoryTable">
                                 <thead>
                                     <tr class="fs-7 fw-bold text-gray-500 border-bottom-0">
                                         <th class="min-w-200px">{{ __('accounting.category') }}</th>
@@ -267,7 +307,7 @@
                     </div>
                     <div class="card-body pt-0">
                         <div class="table-responsive">
-                            <table class="table table-row-bordered table-row-dashed gy-4 align-middle gs-0">
+                            <table class="table table-row-bordered table-row-dashed gy-4 align-middle gs-0" id="balanceChangesTable">
                                 <thead>
                                     <tr class="fs-7 fw-bold text-gray-500 border-bottom-0">
                                         <th class="min-w-200px">{{ __('accounting.payment_method') }}</th>
@@ -343,7 +383,7 @@
                     </div>
                     <div class="card-body pt-0">
                         <div class="table-responsive">
-                            <table class="table table-row-bordered table-row-dashed gy-4 align-middle gs-0">
+                            <table class="table table-row-bordered table-row-dashed gy-4 align-middle gs-0" id="dailyTransactionsTable">
                                 <thead>
                                     <tr class="fs-7 fw-bold text-gray-500 border-bottom-0">
                                         <th class="min-w-150px">{{ __('accounting.time') }}</th>
@@ -415,10 +455,6 @@
             window.print();
         }
         
-        function exportToExcel() {
-            // Implement Excel export functionality
-            alert('Export to Excel functionality would be implemented here');
-        }
         
         // Initialize date selector with today's date if empty
         document.addEventListener('DOMContentLoaded', function() {

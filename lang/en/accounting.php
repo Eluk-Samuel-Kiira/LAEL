@@ -253,4 +253,34 @@ return [
     'view_details_message' => 'View details functionality would be implemented here',
     'confirm_complete_transaction' => 'Are you sure you want to complete this transaction?',
     'complete_transaction_message' => 'Complete transaction functionality would be implemented here',
+
+    'notes' => 'Notes',
+    'field' => 'Field',
+    'value' => 'Value',
+    'metadata' => 'Metadata',
+    'formatted_view' => 'Formatted View',
+    'raw_json' => 'Raw JSON',
+    'reference_details' => 'Reference Details',
+    'reference_table' => 'Reference Table',
+    'reference_id' => 'Reference ID',
+    'external_reference' => 'External Reference',
+    'bank_reference' => 'Bank Reference',
+    
+    // Modal buttons (if not already in your file)
+    'close' => 'Close',
+    
+    // User info in modal
+    'user_id' => 'User ID',
+    'processed_by' => 'Processed By',
+    'receipt_number' => 'Receipt Number',
+    'user_id' => 'User ID',
+    'processed_by' => 'Processed By',
+    'customer' => 'Customer',
+    'processed_by' => 'Processed By',
+    'system' => 'System',
+    'export_to_excel' => 'Export to Excel',
+    'export_to_csv' => 'Export to CSV',
+    'export_all_including_filtered' => 'Export All (including filtered)',
+    'export_category_breakdown' => 'Export Category Breakdown',
+    'export_payment_methods' => 'Export Payment Methods',
 ];
