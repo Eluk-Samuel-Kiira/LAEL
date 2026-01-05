@@ -46,8 +46,8 @@ return new class extends Migration
             $table->decimal('monthly_limit', 15, 2)->nullable();
             
             // Balance information - CORRECTED SECTION
-            $table->decimal('current_balance', 20, 2)->default(5000.00);
-            $table->decimal('available_balance', 20, 2)->default(5000.00);
+            $table->decimal('current_balance', 20, 2)->default(0.00);
+            $table->decimal('available_balance', 20, 2)->default(0.00);
             $table->decimal('pending_balance', 20, 2)->default(0);
             $table->decimal('min_balance_limit', 20, 2)->nullable();
             $table->decimal('max_balance_limit', 20, 2)->nullable();

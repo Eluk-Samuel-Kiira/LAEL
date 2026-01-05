@@ -9,6 +9,7 @@ use App\Http\Controllers\Orders\{ OrderController, POSController};
 use App\Http\Controllers\Setting\{ TaxController,PromotionController, PaymentMethodController };
 use App\Http\Controllers\Procurement\{ SupplierController, PurchaseOrderController, ExpenseCategoryController, ExpenseController };
 use App\Http\Controllers\Accounts\{ AccountingController };
+use App\Http\Controllers\Reports\{ ExpenseReportsController };
 
 
     Route::get('/', function () {
@@ -183,6 +184,26 @@ use App\Http\Controllers\Accounts\{ AccountingController };
             Route::get('/monthly-report', [AccountingController::class, 'monthlyReport'])->name('monthly-report');
             Route::get('/reconciliation', [AccountingController::class, 'reconciliation'])->name('reconciliation');
             Route::get('/transaction-ledger/details/{id}', [AccountingController::class, 'getTransactionDetails'])->name('transaction-details');
+        });
+
+
+        Route::prefix('reports/expenses')->name('reports.expenses.')->group(function () {
+            Route::get('summary', [ExpenseReportsController::class, 'summary'])->name('summary');
+            Route::get('by-category', [ExpenseReportsController::class, 'byCategory'])->name('by-category');
+            Route::get('by-vendor', [ExpenseReportsController::class, 'byVendor'])->name('by-vendor');
+            Route::get('by-employee', [ExpenseReportsController::class, 'byEmployee'])->name('by-employee');
+            Route::get('by-payment-method', [ExpenseReportsController::class, 'byPaymentMethod'])->name('by-payment-method');
+            Route::get('recurring', [ExpenseReportsController::class, 'recurring'])->name('recurring');
+            Route::get('budget-vs-actual', [ExpenseReportsController::class, 'budgetVsActual'])->name('budget-vs-actual');
+            Route::get('trends', [ExpenseReportsController::class, 'trends'])->name('trends');
+            Route::get('tax-report', [ExpenseReportsController::class, 'taxReport'])->name('tax-report');
+            Route::get('audit', [ExpenseReportsController::class, 'audit'])->name('audit');
+            
+            // Export routes
+            Route::get('export/summary', [ExpenseReportsController::class, 'exportSummary'])->name('export.summary');
+            Route::get('export/by-category', [ExpenseReportsController::class, 'exportByCategory'])->name('export.by-category');
+            // Add other export routes...
+
         });
 
         

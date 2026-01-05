@@ -306,7 +306,8 @@
                     </div>
                 </div>
 
-                <!-- Basic Accounting -->
+                <!-- Financial Reports -->
+                {{--
                 <div data-kt-menu-trigger="click" class="menu-item here menu-accordion">
                     <span class="menu-link">
                         <span class="menu-icon">
@@ -316,7 +317,7 @@
                                 <span class="path3"></span>
                             </i>
                         </span>
-                        <span class="menu-title" style="font-family: {{ getMailOptions('font_family') }}; font-size: {{ getMailOptions('font_size') }}rem">{{__('accounting.basic_accounting')}}</span>
+                        <span class="menu-title" style="font-family: {{ getMailOptions('font_family') }}; font-size: {{ getMailOptions('font_size') }}rem">{{__('accounting.financial_reports')}}</span>
                         <span class="menu-arrow"></span>
                     </span>
 
@@ -343,7 +344,7 @@
                         
                         <!-- Transaction Ledger -->
                         <div class="menu-item">
-                            <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('accounting.transaction-ledger') }}')">
+                            <a class="menu-link" data-link href="javascript:void(0);" onclick="reloadToApp('{{ route('accounting.transaction-ledger') }}')">
                                 <span class="menu-bullet">
                                     <span class="bullet bullet-dot"></span>
                                 </span>
@@ -431,6 +432,271 @@
                             </a>
                         </div>
                     </div>
+                </div> 
+                --}}
+
+                <!-- Updated Reports Menu -->
+                <div data-kt-menu-trigger="{default:'click', lg: 'hover'}" data-kt-menu-placement="right-start" class="menu-item here menu-lg-down-accordion">
+                    <!--begin:Menu link-->
+                    <span class="menu-link">
+                        <span class="menu-icon">
+                            <i class="bi bi-calculator fs-2">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                                <span class="path3"></span>
+                            </i>
+                        </span>
+                        <span class="menu-title" style="font-family: {{ getMailOptions('font_family') }}; font-size: {{ getMailOptions('font_size') }}rem">
+                            {{__('accounting.reports')}}
+                        </span>
+                        <span class="menu-arrow"></span>
+                    </span>
+                    <!--end:Menu link-->
+                    
+                    <!--begin:Menu sub-->
+                    <div class="menu-sub menu-sub-lg-down-accordion menu-sub-lg-dropdown menu-active-bg px-lg-2 py-lg-4 w-lg-300px">
+                        
+                        <!-- Financial Reports Section -->
+                        <div data-kt-menu-trigger="click" class="menu-item menu-accordion menu-sub-indention">
+                            <span class="menu-link">
+                                <span class="menu-bullet">
+                                    <span class="bullet bullet-dot"></span>
+                                </span>
+                                <span class="menu-title" style="font-family: {{ getMailOptions('font_family') }}; font-size: {{ getMailOptions('font_size') }}rem">
+                                    {{__('accounting.financial_reports')}}
+                                </span>
+                                <span class="menu-arrow"></span>
+                            </span>
+                            <div class="menu-sub menu-sub-accordion">
+                                <!-- Payment Methods -->
+                                <div class="menu-item">
+                                    <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('accounting.payment-methods.index') }}')">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot"></span>
+                                        </span>
+                                        <span class="menu-title">{{ __('accounting.payment_methods') }}</span>
+                                    </a>
+                                </div>
+                                
+                                <!-- Account Balances -->
+                                <div class="menu-item">
+                                    <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('accounting.account-balances') }}')">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot"></span>
+                                        </span>
+                                        <span class="menu-title">{{ __('accounting.account_balances') }}</span>
+                                    </a>
+                                </div>
+                                
+                                <!-- Transaction Ledger -->
+                                <div class="menu-item">
+                                    <a class="menu-link" data-link href="javascript:void(0);" onclick="reloadToApp('{{ route('accounting.transaction-ledger') }}')">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot"></span>
+                                        </span>
+                                        <span class="menu-title">{{ __('accounting.transaction_ledger') }}</span>
+                                    </a>
+                                </div>
+                                
+                                <!-- Income Statement -->
+                                <div class="menu-item">
+                                    <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('accounting.income-statement') }}')">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot"></span>
+                                        </span>
+                                        <span class="menu-title">{{ __('accounting.income_statement') }}</span>
+                                    </a>
+                                </div>
+                                
+                                <!-- Cash Flow -->
+                                <div class="menu-item">
+                                    <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('accounting.cash-flow') }}')">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot"></span>
+                                        </span>
+                                        <span class="menu-title">{{ __('accounting.cash_flow') }}</span>
+                                    </a>
+                                </div>
+                                
+                                <!-- Transaction Analysis -->
+                                <div class="menu-item">
+                                    <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('accounting.transaction-analysis') }}')">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot"></span>
+                                        </span>
+                                        <span class="menu-title">{{ __('accounting.transaction_analysis') }}</span>
+                                    </a>
+                                </div>
+                                
+                                <!-- Expense Analysis -->
+                                <div class="menu-item">
+                                    <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('accounting.expense-analysis') }}')">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot"></span>
+                                        </span>
+                                        <span class="menu-title">{{ __('accounting.expense_analysis') }}</span>
+                                    </a>
+                                </div>
+                                
+                                <!-- Payment Method Analysis -->
+                                <div class="menu-item">
+                                    <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('accounting.payment-method-analysis') }}')">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot"></span>
+                                        </span>
+                                        <span class="menu-title">{{ __('accounting.payment_method_analysis') }}</span>
+                                    </a>
+                                </div>
+                                
+                                <!-- Daily Summary -->
+                                <div class="menu-item">
+                                    <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('accounting.daily-summary') }}')">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot"></span>
+                                        </span>
+                                        <span class="menu-title">{{ __('accounting.daily_summary') }}</span>
+                                    </a>
+                                </div>
+                                
+                                <!-- Monthly Report -->
+                                <div class="menu-item">
+                                    <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('accounting.monthly-report') }}')">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot"></span>
+                                        </span>
+                                        <span class="menu-title">{{ __('accounting.monthly_report') }}</span>
+                                    </a>
+                                </div>
+                                
+                                <!-- Reconciliation -->
+                                <div class="menu-item">
+                                    <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('accounting.reconciliation') }}')">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot"></span>
+                                        </span>
+                                        <span class="menu-title">{{ __('accounting.reconciliation') }}</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Expense Reports Section -->
+                        <div data-kt-menu-trigger="click" class="menu-item menu-accordion menu-sub-indention">
+                            <span class="menu-link">
+                                <span class="menu-bullet">
+                                    <span class="bullet bullet-dot"></span>
+                                </span>
+                                <span class="menu-title">{{__('accounting.expense_reports')}}</span>
+                                <span class="menu-arrow"></span>
+                            </span>
+                            <div class="menu-sub menu-sub-accordion">
+                                <!-- Expense Summary -->
+                                <div class="menu-item">
+                                    <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('reports.expenses.summary') }}')">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot"></span>
+                                        </span>
+                                        <span class="menu-title">{{__('accounting.expense_summary')}}</span>
+                                    </a>
+                                </div>
+                                
+                                <!-- Category Analysis -->
+                                <div class="menu-item">
+                                    <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('reports.expenses.by-category') }}')">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot"></span>
+                                        </span>
+                                        <span class="menu-title">{{__('accounting.by_category')}}</span>
+                                    </a>
+                                </div>
+                                
+                                <!-- Vendor Analysis -->
+                                <div class="menu-item">
+                                    <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('reports.expenses.by-vendor') }}')">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot"></span>
+                                        </span>
+                                        <span class="menu-title">{{__('accounting.by_vendor')}}</span>
+                                    </a>
+                                </div>
+                                
+                                <!-- Employee Expense -->
+                                <div class="menu-item">
+                                    <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('reports.expenses.by-employee') }}')">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot"></span>
+                                        </span>
+                                        <span class="menu-title">{{__('accounting.employee_expense')}}</span>
+                                    </a>
+                                </div>
+                                
+                                <!-- Payment Method -->
+                                <div class="menu-item">
+                                    <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('reports.expenses.by-payment-method') }}')">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot"></span>
+                                        </span>
+                                        <span class="menu-title">{{__('accounting.by_payment_method')}}</span>
+                                    </a>
+                                </div>
+                                
+                                <!-- Recurring Expenses -->
+                                <div class="menu-item">
+                                    <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('reports.expenses.recurring') }}')">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot"></span>
+                                        </span>
+                                        <span class="menu-title">{{__('accounting.recurring_expense')}}</span>
+                                    </a>
+                                </div>
+                                
+                                <!-- Budget vs Actual -->
+                                <div class="menu-item">
+                                    <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('reports.expenses.budget-vs-actual') }}')">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot"></span>
+                                        </span>
+                                        <span class="menu-title">{{__('accounting.budget_vs_actual')}}</span>
+                                    </a>
+                                </div>
+                                
+                                <!-- Expense Trends -->
+                                <div class="menu-item">
+                                    <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('reports.expenses.trends') }}')">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot"></span>
+                                        </span>
+                                        <span class="menu-title">{{__('accounting.expense_trends')}}</span>
+                                    </a>
+                                </div>
+                                
+                                <!-- Tax Report -->
+                                <div class="menu-item">
+                                    <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('reports.expenses.tax-report') }}')">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot"></span>
+                                        </span>
+                                        <span class="menu-title">{{__('accounting.expense_tax_report')}}</span>
+                                    </a>
+                                </div>
+                                
+                                <!-- Expense Audit -->
+                                <div class="menu-item">
+                                    <a class="menu-link" data-link href="javascript:void(0);" onclick="navigateToAppPages('{{ route('reports.expenses.audit') }}')">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot"></span>
+                                        </span>
+                                        <span class="menu-title">{{__('accounting.expense_audit')}}</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Existing Catalog, Sales, Customers menus remain here -->
+                        <!-- ... existing code ... -->
+                        
+                    </div>
+                    <!--end:Menu sub-->
                 </div>
 
                 <!-- Settings -->

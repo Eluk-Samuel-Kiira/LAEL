@@ -196,6 +196,27 @@ class UserSeeder extends Seeder
             'receive purchase_orders',
             'cancel purchase_orders',
 
+            // Payment Method
+            'create payment method',
+            'view payment method',
+            'edit payment method',
+            'delete payment method',
+            'update payment method',
+            'update current balance',
+
+            // Financial Reports
+            'view payment-method report',
+            'view account-balance report',
+            'view transaction-ledger  report',
+            'view income-settlement report',
+            'view cash-flow report',
+            'view Transaction-analysis report',
+            'view expense-analysis report',
+            'view payment-method-analysis report',
+            'view Daily Summary report',
+            'view monthly report',
+            'view Reconcillation report',
+
             // Admin Management
             'admin only',
             'create role',

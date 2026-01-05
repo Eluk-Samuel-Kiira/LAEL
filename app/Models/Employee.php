@@ -43,6 +43,7 @@ class Employee extends Model
         return $this->belongsTo(User::class);
     }
 
+
     /**
      * Get the tenant that owns the employee.
      */

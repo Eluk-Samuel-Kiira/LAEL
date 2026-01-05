@@ -77,6 +77,16 @@
                     <div class="row g-9 mb-8">
                         <div class="col-md-12">
                             <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                {{__('accounting.current_balance')}}
+                            </label>
+                            <input type="number" value="{{ $paymentMethod->current_balance }}" class="form-control form-control-solid" name="current_balance" @cannot('update current balance') readonly @endcannot/>
+                            <div id="current_balance{{ $paymentMethod->id }}"></div>
+                        </div>
+                    </div>
+
+                    <div class="row g-9 mb-8">
+                        <div class="col-md-12">
+                            <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
                                 {{__('payments.description')}}
                             </label>
                             <textarea class="form-control form-control-solid" name="description" rows="3">{{ $paymentMethod->description }}</textarea>

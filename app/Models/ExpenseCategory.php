@@ -116,4 +116,17 @@ class ExpenseCategory extends Model
     {
         $this->update(['is_active' => !$this->is_active]);
     }
+
+    // In ExpenseCategory model
+    public function getBudgetUtilizationAttribute()
+    {
+        if (!$this->budget_monthly) return null;
+        
+        $monthlyExpense = Expense::where('category_id', $this->id)
+            ->whereMonth('date', date('m'))
+            ->whereYear('date', date('Y'))
+            ->sum('total_amount');
+        
+        return ($monthlyExpense / $this->budget_monthly) * 100;
+    }
 }

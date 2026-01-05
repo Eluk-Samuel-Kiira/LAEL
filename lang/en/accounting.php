@@ -2,7 +2,7 @@
 
 return [
     // Menu items
-    'basic_accounting' => 'Basic Accounting',
+    'financial_reports' => 'Financial Reports',
     'payment_methods' => 'Payment Methods',
     'account_balances' => 'Account Balances',
     'transaction_ledger' => 'Transaction Ledger',
@@ -273,14 +273,142 @@ return [
     'user_id' => 'User ID',
     'processed_by' => 'Processed By',
     'receipt_number' => 'Receipt Number',
-    'user_id' => 'User ID',
-    'processed_by' => 'Processed By',
     'customer' => 'Customer',
-    'processed_by' => 'Processed By',
     'system' => 'System',
     'export_to_excel' => 'Export to Excel',
     'export_to_csv' => 'Export to CSV',
     'export_all_including_filtered' => 'Export All (including filtered)',
     'export_category_breakdown' => 'Export Category Breakdown',
     'export_payment_methods' => 'Export Payment Methods',
+
+
+    'reports' => 'Reports',
+    'expense_reports' => 'Expense Reports',
+    'expense_summary' => 'Expense Summary',
+    'by_category' => 'By Category',
+    'by_vendor' => 'By Vendor',
+    'employee_expense' => 'Employee Expenses',
+    'by_payment_method' => 'By Payment Method',
+    'recurring_expense' => 'Recurring Expenses',
+    'budget_vs_actual' => 'Budget vs Actual',
+    'expense_trends' => 'Expense Trends',
+    'expense_tax_report' => 'Expense Tax Report',
+    'expense_audit' => 'Expense Audit',
+    'no_payment_method' => 'No Payment Method',
+
+    'expense_report' => 'Expense Report',
+    'expense_summary' => 'Expense Summary',
+    'filter_by' => 'Filter by',
+    'date_range' => 'Date Range',
+    'start_date' => 'Start Date',
+    'end_date' => 'End Date',
+    'category' => 'Category',
+    'all_categories' => 'All Categories',
+    'vendor_name' => 'Vendor Name',
+    'payment_method' => 'Payment Method',
+    'all_payment_methods' => 'All Payment Methods',
+    'payment_status' => 'Payment Status',
+    'all_statuses' => 'All Statuses',
+    'employee' => 'Employee',
+    'all_employees' => 'All Employees',
+    'requires_receipt' => 'Requires Receipt',
+    'yes' => 'Yes',
+    'no' => 'No',
+    'recurring_expenses' => 'Recurring Expenses',
+    'apply_filters' => 'Apply Filters',
+    'clear_filters' => 'Clear Filters',
+    'generate_report' => 'Generate Report',
+    'export_to_excel' => 'Export to Excel',
+    'export_to_pdf' => 'Export to PDF',
+    
+    // Summary Statistics
+    'summary_statistics' => 'Summary Statistics',
+    'total_expenses' => 'Total Expenses',
+    'total_amount' => 'Total Amount',
+    'total_tax' => 'Total Tax',
+    'average_expense' => 'Average Expense',
+    'largest_expense' => 'Largest Expense',
+    'smallest_expense' => 'Smallest Expense',
+    
+    // Daily Breakdown
+    'daily_breakdown' => 'Daily Breakdown',
+    'date' => 'Date',
+    'expense_count' => 'Expense Count',
+    'daily_total' => 'Daily Total',
+    'daily_tax' => 'Daily Tax',
+    'daily_average' => 'Daily Average',
+    'no_data_available' => 'No data available for the selected period',
+    
+    // Top Expenses
+    'top_expenses' => 'Top 10 Largest Expenses',
+    'expense_number' => 'Expense #',
+    'description' => 'Description',
+    'vendor' => 'Vendor',
+    'amount' => 'Amount',
+    'tax' => 'Tax',
+    'total' => 'Total',
+    'status' => 'Status',
+    'payment_method_name' => 'Payment Method',
+    'default_method' => 'Default',
+    
+    // Payment Statuses
+    'pending' => 'Pending',
+    'paid' => 'Paid',
+    'reimbursed' => 'Reimbursed',
+    
+    // Filter Options
+    'requires_receipt_filter' => 'Requires Receipt',
+    'recurring_filter' => 'Recurring Only',
+    
+    // Placeholders
+    'enter_vendor_name' => 'Enter vendor name...',
+    'select_category' => 'Select category',
+    'select_payment_method' => 'Select payment method',
+    'select_payment_status' => 'Select payment status',
+    'select_employee' => 'Select employee',
+    
+    // Messages
+    'no_expenses_found' => 'No expenses found for the selected filters.',
+    'loading_data' => 'Loading data...',
+    'data_loaded' => 'Data loaded successfully',
+    
+    // Chart Titles
+    'expenses_by_category' => 'Expenses by Category',
+    'expenses_by_payment_method' => 'Expenses by Payment Method',
+    'expenses_by_status' => 'Expenses by Payment Status',
+    'expenses_trend' => 'Expenses Trend',
+    
+    // Units
+    'currency' => '$',
+    'items' => 'items',
+    
+    // Actions
+    'view_details' => 'View Details',
+    'edit_expense' => 'Edit Expense',
+    'delete_expense' => 'Delete Expense',
+    'mark_as_paid' => 'Mark as Paid',
+    'download_receipt' => 'Download Receipt',
+    
+    // Validation Messages
+    'start_date_required' => 'Start date is required',
+    'end_date_required' => 'End date is required',
+    'invalid_date_range' => 'End date must be after start date',
+    
+    // Report Types
+    'summary_report' => 'Summary Report',
+    'detailed_report' => 'Detailed Report',
+    'category_report' => 'Category Report',
+    'vendor_report' => 'Vendor Report',
+    'dashboard' => 'Dashboard',
+    'reports' => 'Reports',
+    'export' => 'Export',
+    'export_to_csv' => 'Export to CSV',
+    'export_to_pdf' => 'Export to PDF',
+    'date_range' => 'Date Range',
+    'all_statuses' => 'All Statuses',
+    'no_payment_method' => 'No Payment Method',
+    'basic_accounting' => 'Basic Accounting',
+    'payment_methods' => 'Payment Methods',
+    'export_daily_data' => 'Export Daily Data',
+    'clear_filters_view_all' => 'Clear Filters',
 ];

@@ -76,6 +76,7 @@ class PaymentMethodController extends Controller
             'provider' => 'nullable|string|max:255',
             'account_name' => 'nullable|string|max:255',
             'account_number' => 'nullable|string|max:255',
+            'current_balance' => 'required|numeric',
             'transaction_fee_percentage' => 'nullable|numeric|min:0|max:100',
             'transaction_fee_fixed' => 'nullable|numeric|min:0',
             'min_transaction_amount' => 'nullable|numeric|min:0',
@@ -103,6 +104,8 @@ class PaymentMethodController extends Controller
             'provider' => $request->provider,
             'account_name' => $request->account_name,
             'account_number' => $request->account_number,
+            'account_number' => $request->account_number,
+            'current_balance' => $request->current_balance,
             'transaction_fee_percentage' => $request->transaction_fee_percentage ?? 0,
             'transaction_fee_fixed' => $request->transaction_fee_fixed ?? 0,
             'min_transaction_amount' => $request->min_transaction_amount ?? 0,
@@ -183,6 +186,7 @@ class PaymentMethodController extends Controller
             'provider' => 'nullable|string|max:255',
             'account_name' => 'nullable|string|max:255',
             'account_number' => 'nullable|string|max:255',
+            'current_balance' => 'required|numeric',
             'transaction_fee_percentage' => 'nullable|numeric|min:0|max:100',
             'transaction_fee_fixed' => 'nullable|numeric|min:0',
             'min_transaction_amount' => 'nullable|numeric|min:0',
@@ -211,6 +215,7 @@ class PaymentMethodController extends Controller
             'provider' => $request->provider,
             'account_name' => $request->account_name,
             'account_number' => $request->account_number,
+            'current_balance' => $request->current_balance,
             'transaction_fee_percentage' => $request->transaction_fee_percentage ?? 0,
             'transaction_fee_fixed' => $request->transaction_fee_fixed ?? 0,
             'min_transaction_amount' => $request->min_transaction_amount ?? 0,
@@ -268,7 +273,7 @@ class PaymentMethodController extends Controller
         }
 
         // Check if it's being used in any payments
-        if ($paymentMethod->payments()->exists()) {
+        if ($paymentMethod->transactionLogs()->exists()) {
             return response()->json([
                 'success' => false,
                 'message' => __('payments.payment_method_in_use'),

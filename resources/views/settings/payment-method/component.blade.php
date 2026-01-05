@@ -13,6 +13,7 @@
                     <th class="min-w-125px">{{__('payments._type')}}</th>
                     <th class="min-w-125px">{{__('payments._provider')}}</th>
                     <th class="min-w-125px">{{__('payments.account_number')}}</th>
+                    <th class="min-w-125px">{{__('accounting.current_balance')}}</th>
                     <th class="min-w-125px">{{__('auth._creater')}}</th>
                     <th class="min-w-125px">{{__('auth.created_at')}}</th>
                     <th class="min-w-125px">{{__('auth._status')}}</th>
@@ -50,6 +51,7 @@
                                     <span class="text-muted">N/A</span>
                                 @endif
                             </td>
+                            <td>{{ $paymentMethod->current_balance }}</td>
                             <td>
                                 <div class="badge badge-light fw-bold">{{ $paymentMethod->creator->name ?? 'N/A' }}</div>
                             </td>

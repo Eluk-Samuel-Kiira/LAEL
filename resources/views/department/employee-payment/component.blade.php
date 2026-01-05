@@ -75,15 +75,21 @@
                                     @endswitch me-1"></i>
                                     {{ $typeName }}
                                 </span><br>
-                                
-                                @if($payment->paymentMethod->is_default)
-                                    <span class="badge badge-light-success">
-                                        <i class="fas fa-star me-1"></i>
-                                        {{ $payment->paymentMethod->name }}
-                                    </span>
+                                @if($payment->paymentMethod)
+                                    @if($payment->paymentMethod->is_default)
+                                        <span class="badge badge-light-success">
+                                            <i class="fas fa-star me-1"></i>
+                                            {{ $payment->paymentMethod->name }}
+                                        </span>
+                                    @else
+                                        <span class="badge badge-light-primary">
+                                            {{ $payment->paymentMethod->name }}
+                                        </span>
+                                    @endif
                                 @else
-                                    <span class="badge badge-light-primary">
-                                        {{ $payment->paymentMethod->name }}
+                                    <span class="badge badge-light-secondary">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>
+                                        {{__('accounting.no_payment_method')}}
                                     </span>
                                 @endif
                             </td>

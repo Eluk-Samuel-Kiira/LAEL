@@ -77,6 +77,16 @@
                     <div class="row g-9 mb-8">
                         <div class="col-md-12">
                             <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                {{__('accounting.current_balance')}}
+                            </label>
+                            <input type="number" class="form-control form-control-solid" name="current_balance" value="0"/>
+                            <div id="current_balance"></div>
+                        </div>
+                    </div>
+
+                    <div class="row g-9 mb-8">
+                        <div class="col-md-12">
+                            <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
                                 {{__('payments.description')}}
                             </label>
                             <textarea class="form-control form-control-solid" name="description" rows="3"></textarea>
